@@ -2615,97 +2615,183 @@ const INV_TEMPLATE_NAME_STD = 'Invoice Template no Deposit.docx'
 const INV_TEMPLATE_NAME_DEP = 'Invoice Template with Deposit.docx'
 
 function preprocessDocx(zip) {
-  Object.keys(zip.files).forEach(function(relativePath) {
-    if (!relativePath.startsWith('word/') || !relativePath.endsWith('.xml')) return
-    const f = zip.files[relativePath]
-    if (!f || f.dir) return
-    let xml = f.asText()
+  const xmlFiles = Object.keys(zip.files).filter(function(f) {
+    return f.startsWith('word/') && f.endsWith('.xml') && !zip.files[f].dir
+  })
+  console.log('[preprocessDocx] XML files found:', xmlFiles)
 
-    // ── Phase 1: Strip ALL inline cruft that Google Docs injects ──
-    xml = xml.replace(/<w:proofErr[^>]*\/>/g, '')
-    xml = xml.replace(/<w:bookmarkStart[^>]*\/>/g, '')
-    xml = xml.replace(/<w:bookmarkEnd[^>]*\/>/g, '')
-    xml = xml.replace(/<w:bookmarkStart[^>]*>[\s\S]*?<\/w:bookmarkStart>/g, '')
-    xml = xml.replace(/<w:bookmarkEnd[^>]*>[\s\S]*?<\/w:bookmarkEnd>/g, '')
-    xml = xml.replace(/<w:commentRangeStart[^>]*\/>/g, '')
-    xml = xml.replace(/<w:commentRangeEnd[^>]*\/>/g, '')
-    xml = xml.replace(/<w:lastRenderedPageBreak[^>]*\/>/g, '')
+  xmlFiles.forEach(function(filename) {
+    let xml = zip.files[filename].asText()
 
-    // ── Phase 2: Merge split <w:r> runs within each paragraph ──
+    // ── Phase 1: Strip ALL inline cruft that Google Docs / Word injects ──
+    // These elements sit BETWEEN <w:r> runs and prevent docxtemplater's
+    // built-in merger (and our merger) from recognising adjacent runs.
+    var before = xml.length
+    xml = xml.replace(/<w:proofErr[^>]*\/?>/g, '')
+    xml = xml.replace(/<w:bookmarkStart[^>]*\/?>/g, '')
+    xml = xml.replace(/<w:bookmarkEnd[^>]*\/?>/g, '')
+    xml = xml.replace(/<w:commentRangeStart[^>]*\/?>/g, '')
+    xml = xml.replace(/<w:commentRangeEnd[^>]*\/?>/g, '')
+    xml = xml.replace(/<w:commentReference[^>]*\/?>/g, '')
+    xml = xml.replace(/<w:lastRenderedPageBreak[^>]*\/?>/g, '')
+    xml = xml.replace(/<w:softHyphen[^>]*\/?>/g, '')
+    xml = xml.replace(/<w:noBreakHyphen[^>]*\/?>/g, '')
+    // Also strip <w:annotationRef/> (appears in Google Docs exports)
+    xml = xml.replace(/<w:annotationRef[^>]*\/?>/g, '')
+    console.log('[preprocessDocx] ' + filename + ': Phase 1 stripped ' + (before - xml.length) + ' chars of cruft')
+
+    // ── Phase 2: Collapse adjacent run boundaries inside paragraphs ──
+    // Strategy: for every <w:p> that contains a brace character,
+    // repeatedly merge adjacent </w:t></w:r>...<w:r>...<w:t> boundaries
+    // into nothing — joining the text of adjacent runs.
+    //
+    // This regex matches the XML BETWEEN two adjacent text nodes:
+    //   </w:t> </w:r> [whitespace] <w:r [attrs]> [optional <w:rPr>...</w:rPr>] <w:t [attrs]>
+    // Replacing it with '' joins the text.
+    var RUN_BOUNDARY = /<\/w:t>\s*<\/w:r>\s*<w:r\b[^>]*>\s*(?:<w:rPr>[\s\S]*?<\/w:rPr>\s*)?<w:t\b[^>]*>/g
+
+    var paraCount = 0, mergeCount = 0
     xml = xml.replace(/<w:p\b[^>]*>[\s\S]*?<\/w:p>/g, function(para) {
+      paraCount++
       if (para.indexOf('{') === -1) return para
-
-      // Step A: Parse every <w:r>…</w:r> with its position in the paragraph
-      const runs = []
-      const runRe = /<w:r\b[^>]*>[\s\S]*?<\/w:r>/g
-      let m
-      while ((m = runRe.exec(para)) !== null) {
-        const tMatch = m[0].match(/<w:t\b[^>]*>([\s\S]*?)<\/w:t>/)
-        const rPrMatch = m[0].match(/<w:rPr>[\s\S]*?<\/w:rPr>/)
-        runs.push({
-          xml:   m[0],
-          text:  tMatch ? tMatch[1] : '',
-          rPr:   rPrMatch ? rPrMatch[0] : '',
-          start: m.index,
-          end:   m.index + m[0].length
-        })
-      }
-      if (runs.length < 2) return para
-
-      // Step B: Build character→run index map
-      let fullText = ''
-      const charToRun = []
-      for (let i = 0; i < runs.length; i++) {
-        for (let c = 0; c < runs[i].text.length; c++) charToRun.push(i)
-        fullText += runs[i].text
-      }
-      if (fullText.indexOf('{{') === -1) return para
-
-      // Step C: Find every {{…}} tag and check if it spans multiple runs
-      const tagRe = /\{{2,3}[#/]?[^}]*\}{2,3}/g
-      const mergeRanges = []
-      while ((m = tagRe.exec(fullText)) !== null) {
-        const sChar = m.index
-        const eChar = m.index + m[0].length - 1
-        if (sChar >= charToRun.length || eChar >= charToRun.length) continue
-        const sRun = charToRun[sChar]
-        const eRun = charToRun[eChar]
-        if (sRun !== eRun) {
-          mergeRanges.push({ sRun, eRun, tag: m[0] })
-        }
-      }
-      if (mergeRanges.length === 0) return para
-
-      // Step D: Consolidate overlapping/adjacent ranges
-      mergeRanges.sort(function(a, b) { return a.sRun - b.sRun })
-      const consolidated = [{ sRun: mergeRanges[0].sRun, eRun: mergeRanges[0].eRun }]
-      for (let i = 1; i < mergeRanges.length; i++) {
-        const last = consolidated[consolidated.length - 1]
-        if (mergeRanges[i].sRun <= last.eRun + 1) {
-          last.eRun = Math.max(last.eRun, mergeRanges[i].eRun)
-        } else {
-          consolidated.push({ sRun: mergeRanges[i].sRun, eRun: mergeRanges[i].eRun })
-        }
-      }
-
-      // Step E: Rebuild paragraph BACKWARDS so positions stay valid
-      let result = para
-      for (let g = consolidated.length - 1; g >= 0; g--) {
-        const range = consolidated[g]
-        let combinedText = ''
-        for (let r = range.sRun; r <= range.eRun; r++) combinedText += runs[r].text
-        const rPr = runs[range.sRun].rPr
-        const newRun = '<w:r>' + (rPr || '') +
-          '<w:t xml:space="preserve">' + combinedText + '</w:t></w:r>'
-        const replaceStart = runs[range.sRun].start
-        const replaceEnd   = runs[range.eRun].end
-        console.log('[preprocessDocx] Merged runs ' + range.sRun + '–' + range.eRun + ': "' + combinedText + '"')
-        result = result.substring(0, replaceStart) + newRun + result.substring(replaceEnd)
+      // Repeatedly collapse until stable
+      var prev = '', result = para, passes = 0
+      while (result !== prev && passes < 20) {
+        prev = result
+        result = result.replace(RUN_BOUNDARY, function() { mergeCount++; return '' })
+        passes++
       }
       return result
     })
+    console.log('[preprocessDocx] ' + filename + ': Phase 2 found ' + paraCount + ' paragraphs, merged ' + mergeCount + ' run boundaries')
 
-    zip.file(relativePath, xml)
+    // ── Phase 3: Fallback — if Phase 2 found nothing, the paragraph regex ──
+    // may have failed (Google Docs can produce unusual XML structures).
+    // In that case, do a document-wide scan for split template tags.
+    if (mergeCount === 0 && xml.indexOf('{') !== -1) {
+      console.log('[preprocessDocx] ' + filename + ': Phase 2 found nothing — running Phase 3 fallback (document-wide)')
+
+      // Approach: find ALL <w:t>...</w:t> elements, build a text-to-XML
+      // position map, find template tags that span multiple <w:t> nodes,
+      // and merge them by collapsing the XML between them.
+      var tNodes = []
+      var tRe = /<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g
+      var m
+      while ((m = tRe.exec(xml)) !== null) {
+        tNodes.push({
+          fullMatch: m[0],
+          text:      m[1],
+          start:     m.index,             // position of <w:t...> in xml
+          end:       m.index + m[0].length // position after </w:t>
+        })
+      }
+
+      // Build character→tNode index map
+      var fullText = '', charToNode = []
+      for (var i = 0; i < tNodes.length; i++) {
+        for (var c = 0; c < tNodes[i].text.length; c++) charToNode.push(i)
+        fullText += tNodes[i].text
+      }
+      console.log('[preprocessDocx] Phase 3: ' + tNodes.length + ' text nodes, concatenated text length: ' + fullText.length)
+
+      // Log text around brace characters for debugging
+      var bracePositions = []
+      for (var bi = 0; bi < fullText.length; bi++) {
+        if (fullText[bi] === '{' || fullText[bi] === '}') bracePositions.push(bi)
+      }
+      if (bracePositions.length > 0) {
+        console.log('[preprocessDocx] Phase 3: brace chars at positions:', bracePositions.join(', '))
+        bracePositions.forEach(function(pos) {
+          var context = fullText.substring(Math.max(0, pos - 10), Math.min(fullText.length, pos + 15))
+          var nodeIdx = pos < charToNode.length ? charToNode[pos] : '?'
+          console.log('[preprocessDocx]   pos ' + pos + ' (node ' + nodeIdx + '): "' + context + '"')
+        })
+      }
+
+      // Find template tags that span multiple <w:t> nodes
+      var tagRe = /\{{2,3}[#/]?[^}]*?\}{2,3}/g
+      var mergeRanges = []
+      while ((m = tagRe.exec(fullText)) !== null) {
+        var sChar = m.index
+        var eChar = m.index + m[0].length - 1
+        if (sChar >= charToNode.length || eChar >= charToNode.length) continue
+        var sNode = charToNode[sChar]
+        var eNode = charToNode[eChar]
+        console.log('[preprocessDocx] Phase 3: tag "' + m[0] + '" spans nodes ' + sNode + '–' + eNode + (sNode === eNode ? ' (OK)' : ' (SPLIT — will merge)'))
+        if (sNode !== eNode) {
+          mergeRanges.push({ sNode: sNode, eNode: eNode, tag: m[0] })
+        }
+      }
+
+      if (mergeRanges.length > 0) {
+        // Consolidate overlapping ranges
+        mergeRanges.sort(function(a, b) { return a.sNode - b.sNode })
+        var consolidated = [{ sNode: mergeRanges[0].sNode, eNode: mergeRanges[0].eNode }]
+        for (var ri = 1; ri < mergeRanges.length; ri++) {
+          var last = consolidated[consolidated.length - 1]
+          if (mergeRanges[ri].sNode <= last.eNode + 1) {
+            last.eNode = Math.max(last.eNode, mergeRanges[ri].eNode)
+          } else {
+            consolidated.push({ sNode: mergeRanges[ri].sNode, eNode: mergeRanges[ri].eNode })
+          }
+        }
+
+        // For each range, find the parent <w:r> boundaries and merge
+        // We need to find the <w:r> that contains each <w:t>
+        // Strategy: from each <w:t>'s position, search backwards for <w:r
+        function findParentRunStart(xmlStr, tNodeStart) {
+          // Search backwards from the <w:t> position for the nearest <w:r
+          var searchFrom = tNodeStart
+          while (searchFrom > 0) {
+            var rIdx = xmlStr.lastIndexOf('<w:r', searchFrom - 1)
+            if (rIdx === -1) return tNodeStart // fallback
+            // Make sure this <w:r is actually a run start (not <w:rPr)
+            var nextChars = xmlStr.substring(rIdx, rIdx + 6)
+            if (nextChars === '<w:r>' || nextChars === '<w:r ' || nextChars.startsWith('<w:r\t') || nextChars.startsWith('<w:r\n')) {
+              return rIdx
+            }
+            searchFrom = rIdx - 1
+          }
+          return tNodeStart
+        }
+
+        function findParentRunEnd(xmlStr, tNodeEnd) {
+          var closeIdx = xmlStr.indexOf('</w:r>', tNodeEnd)
+          return closeIdx !== -1 ? closeIdx + 6 : tNodeEnd
+        }
+
+        // Apply merges backwards to keep positions valid
+        for (var gi = consolidated.length - 1; gi >= 0; gi--) {
+          var range = consolidated[gi]
+          var combinedText = ''
+          for (var ni = range.sNode; ni <= range.eNode; ni++) combinedText += tNodes[ni].text
+
+          var runStart = findParentRunStart(xml, tNodes[range.sNode].start)
+          var runEnd = findParentRunEnd(xml, tNodes[range.eNode].end)
+
+          // Extract the first run's <w:rPr> if any
+          var firstRunXml = xml.substring(runStart, tNodes[range.sNode].end)
+          var rPrMatch = firstRunXml.match(/<w:rPr>[\s\S]*?<\/w:rPr>/)
+          var rPr = rPrMatch ? rPrMatch[0] : ''
+
+          var newRun = '<w:r>' + rPr + '<w:t xml:space="preserve">' + combinedText + '</w:t></w:r>'
+
+          console.log('[preprocessDocx] Phase 3: MERGING nodes ' + range.sNode + '–' + range.eNode +
+                       ' ("' + combinedText + '") — replacing XML positions ' + runStart + '–' + runEnd)
+
+          xml = xml.substring(0, runStart) + newRun + xml.substring(runEnd)
+          mergeCount++
+        }
+      }
+    }
+
+    if (mergeCount > 0) {
+      console.log('[preprocessDocx] ' + filename + ': TOTAL merges applied: ' + mergeCount)
+    } else {
+      console.log('[preprocessDocx] ' + filename + ': No merges needed (tags are intact)')
+    }
+
+    zip.file(filename, xml)
   })
 }
 
