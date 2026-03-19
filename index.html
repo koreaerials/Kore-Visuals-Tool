@@ -446,6 +446,7 @@ body.privacy-mode #privacy-banner{display:block}
           <input type="hidden" id="inc-edit-id">
           <div class="fg">
             <div class="ff"><label>Date</label><input type="date" id="inc-date"></div>
+            <div class="ff"><label>Time <span style="font-weight:400;color:var(--text-2)">(optional)</span></label><input type="time" id="inc-time"></div>
             <div class="ff"><label>Client Name</label><input type="text" id="inc-client" placeholder="Client or company"></div>
             <div class="ff"><label>Amount Earned ($)</label><input type="number" id="inc-amount" placeholder="0.00" min="0" step="0.01" oninput="calcProfit()"></div>
             <div class="ff"><label>Payment Type</label>
@@ -756,7 +757,7 @@ const GS_SCOPE          = 'https://www.googleapis.com/auth/spreadsheets https://
 const SHEET_SCHEMA = {
   [K.inc]: {
     tab:  'Income',
-    cols: ['id','date','client','amount','paymentType','travelExpenses','profit','paymentStatus','description','invoiceNumber','agreementId','calendarEventId'],
+    cols: ['id','date','client','amount','paymentType','travelExpenses','profit','paymentStatus','description','invoiceNumber','agreementId','calendarEventId','jobTime'],
     toRow: o => [
       o.id, o.date, o.client, o.amount,
       o.pay||o.paymentType||'Other',
@@ -766,12 +767,13 @@ const SHEET_SCHEMA = {
       o.desc||o.description||'',
       o.invoiceNum||o.invoiceNumber||'',
       o.agreementId||'',
-      o.calendarEventId||''
+      o.calendarEventId||'',
+      o.jobTime||''
     ],
     toObj: r => ({
       id: r[0], date: r[1], client: r[2], amount: r[3],
       pay: r[4], travel: r[5], profit: r[6], status: r[7], desc: r[8],
-      invoiceNum: r[9]||'', agreementId: r[10]||'', calendarEventId: r[11]||''
+      invoiceNum: r[9]||'', agreementId: r[10]||'', calendarEventId: r[11]||'', jobTime: r[12]||''
     }),
   },
   [K.pur]: {
@@ -1173,7 +1175,7 @@ function renderRenewals() {
   if (_dashView !== 'renewals') {
     loadP(K.inc)
       .filter(e => e.calendarEventId && e.date >= todayStr)
-      .map(e => { const nd = toDate(e.date); const days = Math.round((nd - now) / 864e5); return { type:'shoot', date: e.date, nd, days, title: e.client, sub: 'Shoot', amount: e.amount, calLink: e.calendarEventId } })
+      .map(e => { const nd = toDate(e.date); const days = Math.round((nd - now) / 864e5); return { type:'shoot', date: e.date, nd, days, title: e.client, sub: 'Shoot', amount: e.amount, calLink: gcEventLink(e.calendarEventId) } })
       .filter(s => s.days >= 0 && s.days <= maxDays)
       .forEach(s => items.push(s))
   }
@@ -1461,6 +1463,7 @@ function calcProfit() {
 async function saveIncome() {
   const id=document.getElementById('inc-edit-id').value
   const date=document.getElementById('inc-date').value
+  const jobTime=document.getElementById('inc-time').value  // 'HH:MM' or ''
   const client=document.getElementById('inc-client').value.trim()
   const amount=parseFloat(document.getElementById('inc-amount').value)||0
   const pay=document.getElementById('inc-pay').value
@@ -1471,15 +1474,15 @@ async function saveIncome() {
   const profit=amount-travel
   const list=load(K.inc)
   const existing=id?list.find(e=>e.id===id):null
-  const entry={id:id||uid(),date,client,amount,pay,travel,profit,status,desc,invoiceNum:existing?.invoiceNum||'',agreementId:existing?.agreementId||'',calendarEventId:existing?.calendarEventId||''}
+  const entry={id:id||uid(),date,jobTime,client,amount,pay,travel,profit,status,desc,invoiceNum:existing?.invoiceNum||'',agreementId:existing?.agreementId||'',calendarEventId:existing?.calendarEventId||''}
   if(!id && privacyMode()) entry._priv = true
   if(id){const i=list.findIndex(e=>e.id===id);if(i>=0)list[i]=entry}else list.push(entry)
   save(K.inc,list); cancelForm('inc'); renderIncTable(); renderDash(); toast(id?'Job updated!':'Job saved!')
   // Auto-create a Google Calendar event for new jobs only
   console.log('[Calendar] saveIncome: id=', id, '| token present=', !!gsGetToken())
   if (!id && gsGetToken()) {
-    console.log('[Calendar] Calling gcCreateEvent with:', { date, client, desc })
-    const evLink = await gcCreateEvent(date, client, desc)
+    console.log('[Calendar] Calling gcCreateEvent with:', { date, jobTime, client, desc })
+    const evLink = await gcCreateEvent(date, client, desc, jobTime)
     console.log('[Calendar] gcCreateEvent returned:', evLink)
     if (evLink) {
       const updated = load(K.inc)
@@ -1493,6 +1496,7 @@ function editInc(id) {
   const e=load(K.inc).find(e=>e.id===id); if(!e)return
   document.getElementById('inc-edit-id').value=e.id
   document.getElementById('inc-date').value=e.date
+  document.getElementById('inc-time').value=e.jobTime||''
   document.getElementById('inc-client').value=e.client||''
   document.getElementById('inc-amount').value=e.amount||''
   document.getElementById('inc-pay').value=e.pay||e.paymentType||e.payment_type||'Zelle'
@@ -1504,9 +1508,12 @@ function editInc(id) {
   document.getElementById('inc-toggle-btn').innerHTML=`${icon('x',12)} Close`
 }
 
-function delInc(id) {
+async function delInc(id) {
   if(!confirm('Delete this income entry?'))return
-  save(K.inc,load(K.inc).filter(e=>e.id!==id)); renderIncTable(); renderDash(); toast('Entry deleted')
+  const list=load(K.inc)
+  const entry=list.find(e=>e.id===id)
+  if(entry?.calendarEventId) await gcDeleteEvent(entry.calendarEventId)
+  save(K.inc,list.filter(e=>e.id!==id)); renderIncTable(); renderDash(); toast('Entry deleted')
 }
 
 function renderIncSummary(list) {
@@ -1590,7 +1597,7 @@ function renderIncTable() {
         <td>${travel>0?`<span class="bdg bdg-o">${fmt(travel)}</span>`:'<span style="color:var(--text-2)">—</span>'}</td>
         <td><span class="${+e.profit>=0?'pos':'neg'}">${fmt(e.profit)}</span></td>
         <td style="min-width:140px;white-space:normal;word-break:break-word">${esc(desc||'—')}</td>
-        <td style="white-space:nowrap"><button class="btn btn-sm btn-s" style="${e.invoiceNum?'color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)':'opacity:0.45'}" title="${e.invoiceNum?'Invoice: '+e.invoiceNum:'Link Invoice'}" onclick="openInvLinkModal('${e.id}')">${icon('receipt',13)}</button> <button class="btn btn-sm btn-s" style="${attCount?'color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)':'opacity:0.45'}" title="${attCount?'Attachments: '+attCount:'Link Attachment'}" onclick="openAgrModal('${e.id}')">${icon('paperclip',13)}</button>${e.calendarEventId&&e.date>=today()?` <button class="btn btn-sm btn-s" style="color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)" title="View in Google Calendar" data-href="${esc(e.calendarEventId)}" onclick="window.open(this.dataset.href,'_blank')">${icon('calendar',13)}</button>`:''} <button class="btn btn-sm btn-s" onclick="editIncRow('${e.id}')">${icon('pencil',13)}</button> <button class="btn btn-sm btn-d" onclick="delInc('${e.id}')">${icon('trash',13)}</button></td>
+        <td style="white-space:nowrap"><button class="btn btn-sm btn-s" style="${e.invoiceNum?'color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)':'opacity:0.45'}" title="${e.invoiceNum?'Invoice: '+e.invoiceNum:'Link Invoice'}" onclick="openInvLinkModal('${e.id}')">${icon('receipt',13)}</button> <button class="btn btn-sm btn-s" style="${attCount?'color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)':'opacity:0.45'}" title="${attCount?'Attachments: '+attCount:'Link Attachment'}" onclick="openAgrModal('${e.id}')">${icon('paperclip',13)}</button>${(e.calendarEventId&&e.date>=today()&&gcEventLink(e.calendarEventId))?` <button class="btn btn-sm btn-s" style="color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)" title="View in Google Calendar" data-href="${esc(gcEventLink(e.calendarEventId))}" onclick="window.open(this.dataset.href,'_blank')">${icon('calendar',13)}</button>`:''} <button class="btn btn-sm btn-s" onclick="editIncRow('${e.id}')">${icon('pencil',13)}</button> <button class="btn btn-sm btn-d" onclick="delInc('${e.id}')">${icon('trash',13)}</button></td>
       </tr>`
     }).join('')}</tbody>
     <tfoot><tr><td colspan="2">Total (${list.length} jobs)</td><td><span class="pos">${fmt(totRev)}</span></td><td colspan="2"></td><td>${totTravel>0?`<span class="neg">${fmt(totTravel)}</span>`:''}</td><td><span class="${totProfit>=0?'pos':'neg'}">${fmt(totProfit)}</span></td><td colspan="2"></td></tr></tfoot>
@@ -2011,15 +2018,32 @@ const GC_CAL_API = 'https://www.googleapis.com/calendar/v3'
 
 // Create an all-day event on the user's primary calendar.
 // Returns the event's htmlLink (direct URL to view it) or null on failure.
-async function gcCreateEvent(date, title, description) {
+async function gcCreateEvent(date, title, description, time) {
   const token = gsGetToken()
-  console.log('[Calendar] gcCreateEvent called — token present:', !!token, '| date:', date, '| title:', title)
+  console.log('[Calendar] gcCreateEvent called — token present:', !!token, '| date:', date, '| time:', time||'(all-day)', '| title:', title)
   if (!token) { console.warn('[Calendar] No token — aborting'); return null }
-  // Google Calendar end date is exclusive — add 1 day for a single all-day event
-  const d = new Date(date + 'T00:00:00')
-  d.setDate(d.getDate() + 1)
-  const endDate = d.toISOString().split('T')[0]
-  const body = { summary: title, description: description || '', start: { date }, end: { date: endDate } }
+  let startObj, endObj
+  if (time) {
+    // Timed event — 2-hour duration, respecting midnight rollover
+    const [h, m] = time.split(':').map(Number)
+    const endTotalMins = h * 60 + m + 120
+    const endH = Math.floor(endTotalMins / 60) % 24
+    const endM = endTotalMins % 60
+    let endDate = date
+    if (endTotalMins >= 1440) { // rolled past midnight
+      const d = new Date(date + 'T00:00:00'); d.setDate(d.getDate() + 1)
+      endDate = d.toISOString().split('T')[0]
+    }
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+    startObj = { dateTime: `${date}T${time}:00`, timeZone: tz }
+    endObj   = { dateTime: `${endDate}T${String(endH).padStart(2,'0')}:${String(endM).padStart(2,'0')}:00`, timeZone: tz }
+  } else {
+    // All-day event — end date is exclusive in Google Calendar
+    const d = new Date(date + 'T00:00:00'); d.setDate(d.getDate() + 1)
+    startObj = { date }
+    endObj   = { date: d.toISOString().split('T')[0] }
+  }
+  const body = { summary: title, description: description || '', start: startObj, end: endObj }
   console.log('[Calendar] POST', `${GC_CAL_API}/calendars/primary/events`)
   console.log('[Calendar] Request body:', JSON.stringify(body, null, 2))
   const resp = await gsReq(`${GC_CAL_API}/calendars/primary/events`, { method: 'POST', body: JSON.stringify(body) })
@@ -2030,8 +2054,33 @@ async function gcCreateEvent(date, title, description) {
   if (!resp.ok) return null
   try {
     const ev = JSON.parse(respText)
-    return ev.htmlLink || null
+    // Store both id (for API operations like delete) and htmlLink (for opening in browser)
+    if (ev.id && ev.htmlLink) return JSON.stringify({ id: ev.id, link: ev.htmlLink })
+    return null
   } catch { return null }
+}
+
+// Extract the browser-openable URL from a calendarEventId value.
+// Handles both the new JSON format {id,link} and legacy plain-URL entries.
+function gcEventLink(val) {
+  if (!val) return null
+  try { return JSON.parse(val).link || null } catch { return val.startsWith('http') ? val : null }
+}
+
+// Extract the raw event ID needed for Calendar API calls (delete, update).
+// Returns null for legacy plain-URL entries — operations on those are skipped silently.
+function gcEventId(val) {
+  if (!val) return null
+  try { return JSON.parse(val).id || null } catch { return null }
+}
+
+// Delete a Google Calendar event. Silently ignores all errors (e.g. already deleted).
+async function gcDeleteEvent(calendarEventId) {
+  const eventId = gcEventId(calendarEventId)
+  if (!eventId || !gsGetToken()) return
+  try {
+    await gsReq(`${GC_CAL_API}/calendars/primary/events/${encodeURIComponent(eventId)}`, { method: 'DELETE' })
+  } catch(_) {}
 }
 
 // Like gsWriteTab but targets a different spreadsheet ID (for backups).
@@ -2158,7 +2207,7 @@ function toggleForm(type) {
 function cancelForm(type) {
   const w=document.getElementById(wrapIds[type]); if(w)w.classList.remove('open')
   if(type==='inc'){
-    ['inc-edit-id','inc-date','inc-client','inc-amount','inc-desc'].forEach(id=>document.getElementById(id).value='')
+    ['inc-edit-id','inc-date','inc-time','inc-client','inc-amount','inc-desc'].forEach(id=>document.getElementById(id).value='')
     document.getElementById('inc-pay').value='Zelle'
     document.getElementById('inc-status').value='Paid'
     document.getElementById('inc-travel').value='0'
