@@ -1447,6 +1447,7 @@ function renderIncTable() {
       const status=e.status||e.paymentStatus||e.payment_status||'Paid'
       const travel=+(e.travel||e.travelExpenses||e.travel_expenses||0)
       const desc=e.desc||e.description||''
+      const attCount=(()=>{if(!e.agreementId)return 0;try{const p=JSON.parse(e.agreementId);return Array.isArray(p)?p.length:1}catch{return 1}})()
       const opt=(val,cur)=>`<option${val===cur?' selected':''}>${val}</option>`
       if(e.id===editing.inc){
         const profit=+e.amount-travel
@@ -1472,7 +1473,7 @@ function renderIncTable() {
         <td>${travel>0?`<span class="bdg bdg-o">${fmt(travel)}</span>`:'<span style="color:var(--text-2)">—</span>'}</td>
         <td><span class="${+e.profit>=0?'pos':'neg'}">${fmt(e.profit)}</span></td>
         <td style="min-width:140px;white-space:normal;word-break:break-word">${esc(desc||'—')}</td>
-        <td style="white-space:nowrap"><button class="btn btn-sm btn-s" style="${e.invoiceNum?'color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)':'opacity:0.45'}" title="${e.invoiceNum?'Invoice: '+e.invoiceNum:'Link Invoice'}" onclick="openInvLinkModal('${e.id}')">${icon('receipt',13)}</button> <button class="btn btn-sm btn-s" style="${e.agreementId?'color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)':'opacity:0.45'}" title="${e.agreementId?'Agreement linked':'Link Agreement'}" onclick="openAgrModal('${e.id}')">${icon('paperclip',13)}</button> <button class="btn btn-sm btn-s" onclick="editIncRow('${e.id}')">${icon('pencil',13)}</button> <button class="btn btn-sm btn-d" onclick="delInc('${e.id}')">${icon('trash',13)}</button></td>
+        <td style="white-space:nowrap"><button class="btn btn-sm btn-s" style="${e.invoiceNum?'color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)':'opacity:0.45'}" title="${e.invoiceNum?'Invoice: '+e.invoiceNum:'Link Invoice'}" onclick="openInvLinkModal('${e.id}')">${icon('receipt',13)}</button> <button class="btn btn-sm btn-s" style="${attCount?'color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)':'opacity:0.45'}" title="${attCount?'Attachments: '+attCount:'Link Attachment'}" onclick="openAgrModal('${e.id}')">${icon('paperclip',13)}</button> <button class="btn btn-sm btn-s" onclick="editIncRow('${e.id}')">${icon('pencil',13)}</button> <button class="btn btn-sm btn-d" onclick="delInc('${e.id}')">${icon('trash',13)}</button></td>
       </tr>`
     }).join('')}</tbody>
     <tfoot><tr><td colspan="2">Total (${list.length} jobs)</td><td><span class="pos">${fmt(totRev)}</span></td><td colspan="2"></td><td>${totTravel>0?`<span class="neg">${fmt(totTravel)}</span>`:''}</td><td><span class="${totProfit>=0?'pos':'neg'}">${fmt(totProfit)}</span></td><td colspan="2"></td></tr></tfoot>
@@ -3238,30 +3239,36 @@ async function autoLinkInvoiceToJob(invNum, clientName) {
   }
 }
 
-// ── AGREEMENT MODAL ───────────────────────────────────────────
+// ── ATTACHMENT MODAL ──────────────────────────────────────────
 let _agrId = null
 
 function parseFileId(input) {
-  // /d/FILE_ID/ pattern (standard shareable links)
   let m = input.match(/\/d\/([a-zA-Z0-9_-]{20,})/)
   if(m) return m[1]
-  // id=FILE_ID pattern (open/export links)
   m = input.match(/[?&]id=([a-zA-Z0-9_-]{20,})/)
   if(m) return m[1]
-  // Assume raw file ID
   return input.trim()
+}
+
+function parseAttachments(val) {
+  if(!val) return []
+  try {
+    const p = JSON.parse(val)
+    if(Array.isArray(p)) return p
+    return [{ label: 'Attachment', fileId: String(val) }]
+  } catch { return val ? [{ label: 'Attachment', fileId: String(val) }] : [] }
 }
 
 function openAgrModal(id) {
   _agrId = id
   const e = load(K.inc).find(e=>e.id===id); if(!e) return
-  const has = !!(e.agreementId)
-  document.getElementById('agr-client').textContent = e.client||''
-  document.getElementById('agr-input').value = e.agreementId||''
-  document.getElementById('agr-current').style.display = has ? 'flex' : 'none'
-  document.getElementById('agr-current-id').textContent = has ? e.agreementId : ''
-  document.getElementById('agr-remove-btn').style.display = has ? '' : 'none'
-  document.getElementById('agr-status').textContent = ''
+  document.getElementById('att-client').textContent = e.client||''
+  document.getElementById('att-status').textContent = ''
+  const rows = document.getElementById('att-rows')
+  rows.innerHTML = ''
+  const atts = parseAttachments(e.agreementId)
+  if(atts.length) atts.forEach(a => addAttachmentRow(a.label||'', a.fileId||''))
+  else addAttachmentRow('', '')
   document.getElementById('agr-modal-overlay').classList.add('open')
 }
 
@@ -3270,88 +3277,70 @@ function closeAgrModal() {
   _agrId = null
 }
 
-async function saveAgrLink() {
+function addAttachmentRow(label='', fileId='') {
+  const rows = document.getElementById('att-rows')
+  const div = document.createElement('div')
+  div.className = 'att-row'
+  div.style.cssText = 'display:flex;gap:6px;align-items:center;margin-bottom:8px'
+  div.innerHTML = `
+    <input type="text" class="isel att-label" placeholder="Label" style="flex:0 0 110px;min-width:0;font-size:12px">
+    <input type="text" class="isel att-file" placeholder="File ID or Drive link" style="flex:1;min-width:0;font-size:12px">
+    <button class="btn btn-sm btn-s" title="Download" onclick="attDownloadRow(this)" style="flex-shrink:0;padding:5px 9px"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+    <button class="btn btn-sm btn-d" title="Remove" onclick="this.closest('.att-row').remove()" style="flex-shrink:0;padding:5px 9px"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  `
+  div.querySelector('.att-label').value = label
+  div.querySelector('.att-file').value = fileId
+  rows.appendChild(div)
+}
+
+async function saveAttachments() {
   if(!_agrId) return
-  const raw = document.getElementById('agr-input').value.trim()
-  if(!raw){ toast('Paste a file ID or Drive link'); return }
+  const atts = [...document.querySelectorAll('.att-row')].map(r => ({
+    label: r.querySelector('.att-label').value.trim(),
+    fileId: parseFileId(r.querySelector('.att-file').value.trim())
+  })).filter(a => a.fileId)
+  const val = atts.length ? JSON.stringify(atts) : ''
+  const list = load(K.inc)
+  const i = list.findIndex(e=>e.id===_agrId); if(i<0) return
+  list[i].agreementId = val
+  const token = gsGetToken()
+  if(token) {
+    try {
+      const colIdx = SHEET_SCHEMA[K.inc].cols.indexOf('agreementId')
+      const colLetter = String.fromCharCode(65 + colIdx)
+      const range = `Income!${colLetter}${i + 2}`
+      await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${GS_SPREADSHEET_ID}/values/${encodeURIComponent(range)}?valueInputOption=RAW`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ range, majorDimension: 'ROWS', values: [[val]] })
+      })
+    } catch(err) { console.log('Attachment Sheets write failed:', err) }
+  }
+  localStorage.setItem(K.inc, JSON.stringify(list))
+  renderIncTable()
+  toast(atts.length ? `${atts.length} attachment${atts.length>1?'s':''} saved!` : 'Attachments cleared')
+  closeAgrModal()
+}
+
+async function attDownloadRow(btn) {
+  const row = btn.closest('.att-row')
+  const label = row.querySelector('.att-label').value.trim() || 'attachment'
+  const raw = row.querySelector('.att-file').value.trim()
+  if(!raw){ toast('No file ID entered'); return }
   const fileId = parseFileId(raw)
-  // Write directly to Sheets for this cell, update in-memory without touching the full save queue
-  const list = load(K.inc)
-  const i = list.findIndex(e=>e.id===_agrId); if(i<0) return
-  list[i].agreementId = fileId
-  const token = gsGetToken()
-  if(token) {
-    try {
-      const colIdx = SHEET_SCHEMA[K.inc].cols.indexOf('agreementId')
-      const colLetter = String.fromCharCode(65 + colIdx)
-      const rowNum = i + 2
-      const range = `Income!${colLetter}${rowNum}`
-      await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${GS_SPREADSHEET_ID}/values/${encodeURIComponent(range)}?valueInputOption=RAW`, {
-        method: 'PUT',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ range, majorDimension: 'ROWS', values: [[fileId]] })
-      })
-    } catch(err) { console.log('Agreement Sheets write failed:', err) }
-  }
-  // Update in-memory store so UI and future full syncs stay consistent
-  localStorage.setItem(K.inc, JSON.stringify(list))
-  renderIncTable()
-  toast('Agreement linked!')
-  closeAgrModal()
-}
-
-async function removeAgrLink() {
-  if(!_agrId) return
-  if(!confirm('Remove the agreement link from this job?')) return
-  const list = load(K.inc)
-  const i = list.findIndex(e=>e.id===_agrId); if(i<0) return
-  list[i].agreementId = ''
-  const token = gsGetToken()
-  if(token) {
-    try {
-      const colIdx = SHEET_SCHEMA[K.inc].cols.indexOf('agreementId')
-      const colLetter = String.fromCharCode(65 + colIdx)
-      const rowNum = i + 2
-      const range = `Income!${colLetter}${rowNum}`
-      await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${GS_SPREADSHEET_ID}/values/${encodeURIComponent(range)}?valueInputOption=RAW`, {
-        method: 'PUT',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ range, majorDimension: 'ROWS', values: [['']] })
-      })
-    } catch(err) { console.log('Agreement Sheets clear failed:', err) }
-  }
-  localStorage.setItem(K.inc, JSON.stringify(list))
-  renderIncTable()
-  toast('Agreement link removed')
-  closeAgrModal()
-}
-
-async function downloadAgreement() {
-  if(!_agrId) return
-  const e = load(K.inc).find(e=>e.id===_agrId); if(!e?.agreementId) return
   const token = gsGetToken()
   if(!token){ toast('Sign in with Google to access Drive'); return }
-  const statusEl = document.getElementById('agr-status')
-  // Always parse the stored value in case a full URL was saved previously
-  const fileId = parseFileId(e.agreementId)
-  statusEl.textContent = 'Downloading…'
+  const statusEl = document.getElementById('att-status')
+  statusEl.textContent = `Downloading "${label}"…`
   statusEl.style.color = 'var(--text-2)'
   try {
-    // Best-effort metadata fetch for filename only — never blocks the download
-    let fileName = 'agreement'
+    let fileName = label
     try {
-      const metaResp = await fetch(
-        `https://www.googleapis.com/drive/v3/files/${fileId}?fields=name`,
-        { headers: { 'Authorization': `Bearer ${token}` } }
-      )
+      const metaResp = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?fields=name`, { headers: { 'Authorization': `Bearer ${token}` } })
       if(metaResp.ok) { const m = await metaResp.json(); if(m.name) fileName = m.name }
     } catch(_) {}
-    // Download directly by file ID
-    const dlResp = await fetch(
-      `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
-      { headers: { 'Authorization': `Bearer ${token}` } }
-    )
-    if(!dlResp.ok) { statusEl.textContent = 'Agreement not found'; statusEl.style.color = 'var(--red)'; return }
+    const dlResp = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, { headers: { 'Authorization': `Bearer ${token}` } })
+    if(!dlResp.ok) { statusEl.textContent = `"${label}" not found`; statusEl.style.color = 'var(--red)'; return }
     const blob = await dlResp.blob()
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a'); a.href = url; a.download = fileName; a.click()
@@ -3359,7 +3348,7 @@ async function downloadAgreement() {
     statusEl.textContent = `Downloaded: ${fileName}`
     statusEl.style.color = 'var(--green)'
   } catch(err) {
-    statusEl.textContent = 'Agreement not found'
+    statusEl.textContent = `"${label}" not found`
     statusEl.style.color = 'var(--red)'
   }
 }
@@ -3527,27 +3516,22 @@ async function downloadAgreement() {
   </div>
 </div>
 
-<!-- AGREEMENT MODAL -->
+<!-- ATTACHMENT MODAL -->
 <div class="smod-overlay" id="agr-modal-overlay" onclick="if(event.target===this)closeAgrModal()">
-  <div class="smod" style="max-width:400px">
+  <div class="smod" style="max-width:460px">
     <div class="smod-hdr">
-      <span class="smod-ttl">Link Agreement</span>
+      <span class="smod-ttl">Link Attachments</span>
       <button class="smod-close" onclick="closeAgrModal()">&#x2715;</button>
     </div>
-    <div style="font-size:12px;color:var(--text-2);margin-bottom:14px">Job: <strong id="agr-client"></strong></div>
-    <div id="agr-current" style="display:none;align-items:center;gap:10px;background:rgba(175,82,222,0.08);border:1px solid rgba(175,82,222,0.2);border-radius:8px;padding:10px 12px;margin-bottom:14px">
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
-      <span style="font-size:12px;color:var(--purple);font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="agr-current-id"></span>
-      <button class="btn btn-sm" style="flex-shrink:0;color:var(--purple);border-color:rgba(175,82,222,0.3);background:rgba(175,82,222,0.1)" onclick="downloadAgreement()"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:3px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download</button>
+    <div style="font-size:12px;color:var(--text-2);margin-bottom:14px">Job: <strong id="att-client"></strong></div>
+    <div class="smod-row" style="margin-bottom:8px">
+      <div class="smod-lbl">Attachments</div>
+      <div id="att-rows"></div>
+      <button class="btn btn-s btn-sm" onclick="addAttachmentRow()" type="button" style="margin-top:2px">+ Add Attachment</button>
     </div>
-    <div class="smod-row" style="margin-bottom:4px">
-      <div class="smod-lbl">File ID or Drive link</div>
-      <input type="text" id="agr-input" class="isel" style="width:100%;box-sizing:border-box" placeholder="Paste file ID or shareable Drive link" onkeydown="if(event.key==='Enter')saveAgrLink()">
-    </div>
-    <div id="agr-status" style="font-size:12px;min-height:18px;margin-bottom:10px"></div>
+    <div id="att-status" style="font-size:12px;min-height:18px;margin-bottom:10px"></div>
     <div class="smod-footer">
-      <button class="btn btn-sm" style="flex:1;padding:8px 14px;font-size:13px;background:rgba(175,82,222,0.12);color:var(--purple);border:1px solid rgba(175,82,222,0.28)" onclick="saveAgrLink()"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:4px"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>Link Agreement</button>
-      <button class="btn btn-d btn-sm" onclick="removeAgrLink()" id="agr-remove-btn" style="display:none">Remove</button>
+      <button class="btn btn-p" onclick="saveAttachments()" style="flex:1"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:4px"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>Save Attachments</button>
       <button class="btn btn-s" onclick="closeAgrModal()">Cancel</button>
     </div>
   </div>
