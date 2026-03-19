@@ -2614,6 +2614,20 @@ document.addEventListener('DOMContentLoaded', ()=>{
 const INV_TEMPLATE_NAME_STD = 'Invoice Template no Deposit.docx'
 const INV_TEMPLATE_NAME_DEP = 'Invoice Template with Deposit.docx'
 
+function fixSplitTags(zip) {
+  const xmlFiles = ['word/document.xml', 'word/header1.xml', 'word/footer1.xml']
+  xmlFiles.forEach(filename => {
+    if (!zip.files[filename]) return
+    let xml = zip.files[filename].asText()
+    // Merge text runs that contain split template tags
+    xml = xml.replace(/<\/w:t>(<\/w:r>(?:<w:r>(?:<w:rPr>.*?<\/w:rPr>)?)?<w:t[^>]*>)+/g, '')
+    // Clean up duplicate delimiters
+    xml = xml.replace(/\{+\{/g, '{{').replace(/\}+\}/g, '}}')
+    zip.file(filename, xml)
+  })
+  return zip
+}
+
 function openInvoiceModal() {
   const now = new Date()
   const mm = String(now.getMonth()+1).padStart(2,'0')
@@ -2773,17 +2787,12 @@ async function generateInvoice() {
     const DocxTemplater = window.docxtemplater?.Docxtemplater || window.Docxtemplater || window.docxtemplater?.default || window.docxtemplater
     if (!DocxTemplater) throw new Error('Docxtemplater constructor not found on window')
     console.log('DocxTemplater resolved: ' + typeof DocxTemplater)
-    const zip = new PizZip(tBuf)
-
-    // Fix split/corrupted tag runs in document.xml before parsing
-    let xml = zip.files['word/document.xml'].asText()
-    // Join split tags across runs
-    xml = xml.replace(/\{(\{[^}]*)\}/g, (match) => match)
-    // Fix duplicate delimiters
-    xml = xml.replace(/\{\{+/g, '{{').replace(/\}\}+/g, '}}')
-    zip.file('word/document.xml', xml)
-
-    const doc = new DocxTemplater(zip, { paragraphLoop: true, linebreaks: true })
+    const zip = fixSplitTags(new PizZip(tBuf))
+    const doc = new DocxTemplater(zip, {
+      paragraphLoop: true,
+      linebreaks: true,
+      nullGetter: () => ''
+    })
     const tplData = {
       INVOICE_NUMBER: invNum,
       DATE: dateStr,
