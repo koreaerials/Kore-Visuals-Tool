@@ -2774,6 +2774,15 @@ async function generateInvoice() {
     if (!DocxTemplater) throw new Error('Docxtemplater constructor not found on window')
     console.log('DocxTemplater resolved: ' + typeof DocxTemplater)
     const zip = new PizZip(tBuf)
+
+    // Fix split/corrupted tag runs in document.xml before parsing
+    let xml = zip.files['word/document.xml'].asText()
+    // Join split tags across runs
+    xml = xml.replace(/\{(\{[^}]*)\}/g, (match) => match)
+    // Fix duplicate delimiters
+    xml = xml.replace(/\{\{+/g, '{{').replace(/\}\}+/g, '}}')
+    zip.file('word/document.xml', xml)
+
     const doc = new DocxTemplater(zip, { paragraphLoop: true, linebreaks: true })
     const tplData = {
       INVOICE_NUMBER: invNum,
