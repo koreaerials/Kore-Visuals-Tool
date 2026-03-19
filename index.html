@@ -337,6 +337,28 @@ body.privacy-mode #privacy-banner{display:block}
 .inv-job-opt:hover{background:rgba(0,122,255,0.07)}
 [data-theme=dark] .inv-job-opt:hover{background:rgba(0,122,255,0.12)}
 [data-theme=dark] .inv-job-opt{border-bottom-color:rgba(255,255,255,0.06)}
+/* ── CLIENTS TAB ── */
+.cli-type-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:.3px}
+.cli-type-re{background:rgba(0,122,255,.13);color:#007aff}
+.cli-type-wed{background:rgba(255,45,85,.13);color:#ff2d55}
+.cli-type-biz{background:rgba(52,199,89,.13);color:#34c759}
+.cli-type-per{background:rgba(255,149,0,.13);color:#ff9500}
+.cli-type-prod{background:rgba(88,86,214,.13);color:#5856d6}
+.cli-type-oth{background:rgba(120,120,128,.13);color:#8e8e93}
+.fu-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.fu-overdue{background:rgba(255,59,48,.13);color:#ff3b30}
+.fu-soon{background:rgba(255,149,0,.13);color:#ff9500}
+.fu-ok{background:rgba(52,199,89,.13);color:#34c759}
+.cli-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;cursor:pointer;transition:box-shadow .15s,border-color .15s;display:flex;align-items:center;gap:12px}
+.cli-card:hover{border-color:var(--blue);box-shadow:0 0 0 2px rgba(0,122,255,.12)}
+.cli-avatar{width:38px;height:38px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0}
+.cli-card-info{flex:1;min-width:0}
+.cli-card-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cli-card-sub{font-size:12px;color:var(--text-2);margin-top:2px;display:flex;align-items:center;flex-wrap:wrap;gap:4px}
+.cli-card-meta{text-align:right;flex-shrink:0;font-size:12px;color:var(--text-2)}
+.cli-card-rev{font-weight:700;font-size:14px;color:var(--blue);margin-bottom:2px}
+.cli-detail-hdr{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.cli-detail-avatar{width:50px;height:50px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;flex-shrink:0}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.7/dist/pizzip.js"></script>
 <script>
@@ -363,6 +385,7 @@ body.privacy-mode #privacy-banner{display:block}
       <button class="tab" data-tab="income"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg> Income</button>
       <button class="tab" data-tab="purchases"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Purchases</button>
       <button class="tab" data-tab="subscriptions"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg> Subscriptions</button>
+      <button class="tab" data-tab="clients"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Clients</button>
       <button class="tab" data-tab="taxes"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/><line x1="16" y1="8" x2="8" y2="8"/><line x1="16" y1="12" x2="8" y2="12"/><line x1="13" y1="16" x2="8" y2="16"/></svg> Tax Summary</button>
       <button class="tab" data-tab="export"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Export</button>
     </nav>
@@ -641,6 +664,12 @@ body.privacy-mode #privacy-banner{display:block}
     <div class="card" style="margin-top:16px" id="data-summary"></div>
   </section>
 
+  <!-- CLIENTS -->
+  <section class="panel" id="panel-clients">
+    <div id="cli-list-view"></div>
+    <div id="cli-detail-view" style="display:none"></div>
+  </section>
+
 </main>
 
 <div id="toast"></div>
@@ -684,6 +713,7 @@ const ICONS = {
   'check-open':'<circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/>',
   'eye-off':   '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>',
   paperclip:   '<path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>',
+  users:       '<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>',
 }
 function icon(name, size=16) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;flex-shrink:0">${ICONS[name]||''}</svg>`
@@ -2579,7 +2609,7 @@ function toggleTheme() {
 }
 
 // ── TAB SWITCHING ─────────────────────────────────────────────
-const tabRenders={dashboard:renderDash,income:renderIncTable,purchases:renderPurTable,subscriptions:()=>{renderSubTable()},taxes:renderTaxes,export:renderDataSummary}
+const tabRenders={dashboard:renderDash,income:renderIncTable,purchases:renderPurTable,subscriptions:()=>{renderSubTable()},taxes:renderTaxes,export:renderDataSummary,clients:renderClientsTab}
 
 function openTab(t) {
   const tab=document.querySelector(`[data-tab="${t}"]`); if(!tab)return
@@ -3352,6 +3382,349 @@ async function attDownloadRow(btn) {
     statusEl.style.color = 'var(--red)'
   }
 }
+
+// ── CLIENTS / CRM ─────────────────────────────────────────────
+const CLI_TAB = 'Clients'
+const CLI_COLS = ['id','name','company','phone','email','clientType','notes','followUpDate']
+const CLI_TYPES = {'Real Estate':'re','Wedding':'wed','Business':'biz','Personal':'per','Production Company':'prod','Other':'oth'}
+let _clients = null // null = not yet loaded
+let _cliDetailName = null
+let _cliSort = 'recent-desc'
+
+function cliTypeSlug(t) { return CLI_TYPES[t] || 'oth' }
+
+function getFuStatus(dateStr) {
+  if (!dateStr) return null
+  const diff = Math.floor((new Date(dateStr) - new Date()) / (1000*60*60*24))
+  if (diff < 0) return { label:'Overdue', cls:'fu-overdue', diff }
+  if (diff <= 7) return { label:`Due in ${diff}d`, cls:'fu-soon', diff }
+  return { label:fmtDate(dateStr), cls:'fu-ok', diff }
+}
+
+function getClientStats(name) {
+  const entries = (load(K.inc)||[]).filter(e => e.client === name)
+  const revenue = entries.reduce((s, e) => s + parseFloat(e.amount||0), 0)
+  const lastJob = entries.map(e => e.date).sort().pop() || ''
+  return { jobs: entries.length, revenue, lastJob, entries }
+}
+
+function getClientList() {
+  const incomeNames = (load(K.inc)||[]).map(e => e.client).filter(Boolean)
+  const cliMap = {}
+  if (_clients) _clients.forEach(c => { cliMap[c.name] = c })
+  const names = new Set([...incomeNames, ...Object.keys(cliMap)])
+  return [...names].sort((a,b) => a.localeCompare(b)).map(name => ({
+    id:'', company:'', phone:'', email:'', clientType:'', notes:'', followUpDate:'',
+    ...(cliMap[name] || {}),
+    name
+  }))
+}
+
+async function loadClientsFromSheets() {
+  try {
+    const rows = await gsReadTab(CLI_TAB)
+    if (!rows || rows.length <= 1) { _clients = []; return }
+    _clients = rows.slice(1).filter(r => r && r[0]).map(r => ({
+      id: r[0]||'', name: r[1]||'', company: r[2]||'', phone: r[3]||'',
+      email: r[4]||'', clientType: r[5]||'', notes: r[6]||'', followUpDate: r[7]||''
+    }))
+  } catch(e) { _clients = [] }
+}
+
+async function writeClientsToSheets() {
+  if (!_clients) return
+  const rows = _clients.map(c => [c.id, c.name, c.company||'', c.phone||'', c.email||'', c.clientType||'', c.notes||'', c.followUpDate||''])
+  await gsWriteTab(CLI_TAB, CLI_COLS, rows)
+}
+
+async function renderClientsTab() {
+  if (_clients === null) {
+    document.getElementById('cli-list-view').innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-2)">Loading clients...</div>'
+    document.getElementById('cli-detail-view').style.display = 'none'
+    document.getElementById('cli-list-view').style.display = ''
+    await loadClientsFromSheets()
+  }
+  if (_cliDetailName) {
+    renderClientDetail(_cliDetailName)
+  } else {
+    renderClientList()
+  }
+}
+
+function cliSortClients(clients) {
+  const withStats = clients.map(c => ({ c, s: getClientStats(c.name) }))
+  if      (_cliSort === 'az-asc')       withStats.sort((a,b) => a.c.name.localeCompare(b.c.name))
+  else if (_cliSort === 'az-desc')      withStats.sort((a,b) => b.c.name.localeCompare(a.c.name))
+  else if (_cliSort === 'revenue-desc') withStats.sort((a,b) => b.s.revenue - a.s.revenue)
+  else if (_cliSort === 'revenue-asc')  withStats.sort((a,b) => a.s.revenue - b.s.revenue)
+  else if (_cliSort === 'jobs-desc')    withStats.sort((a,b) => b.s.jobs - a.s.jobs)
+  else if (_cliSort === 'jobs-asc')     withStats.sort((a,b) => a.s.jobs - b.s.jobs)
+  else if (_cliSort === 'recent-asc')   withStats.sort((a,b) => (a.s.lastJob||'').localeCompare(b.s.lastJob||''))
+  else /* recent-desc */                withStats.sort((a,b) => (b.s.lastJob||'').localeCompare(a.s.lastJob||''))
+  return withStats
+}
+
+function renderClientList() {
+  _cliDetailName = null
+  document.getElementById('cli-list-view').style.display = ''
+  document.getElementById('cli-detail-view').style.display = 'none'
+  const clients = getClientList()
+  const q = (document.getElementById('cli-search')||{value:''}).value.toLowerCase()
+  const filtered = q ? clients.filter(c => c.name.toLowerCase().includes(q) || (c.company||'').toLowerCase().includes(q)) : clients
+  const sorted = cliSortClients(filtered)
+  const recentActive = _cliSort === 'recent-desc' || _cliSort === 'recent-asc'
+  const recentNext  = _cliSort === 'recent-desc' ? 'recent-asc' : 'recent-desc'
+  const recentArrow = _cliSort === 'recent-desc' ? ' ↓' : _cliSort === 'recent-asc' ? ' ↑' : ''
+  const azActive    = _cliSort === 'az-asc' || _cliSort === 'az-desc'
+  const azNext      = _cliSort === 'az-asc' ? 'az-desc' : 'az-asc'
+  const azArrow     = _cliSort === 'az-asc' ? ' ↑' : _cliSort === 'az-desc' ? ' ↓' : ''
+  const revActive   = _cliSort === 'revenue-desc' || _cliSort === 'revenue-asc'
+  const revNext     = _cliSort === 'revenue-desc' ? 'revenue-asc' : 'revenue-desc'
+  const revArrow    = _cliSort === 'revenue-desc' ? ' ↓' : _cliSort === 'revenue-asc' ? ' ↑' : ''
+  const jobsActive  = _cliSort === 'jobs-desc' || _cliSort === 'jobs-asc'
+  const jobsNext    = _cliSort === 'jobs-desc' ? 'jobs-asc' : 'jobs-desc'
+  const jobsArrow   = _cliSort === 'jobs-desc' ? ' ↓' : _cliSort === 'jobs-asc' ? ' ↑' : ''
+  const sortPills =
+    `<button class="fbtn${recentActive?' on':''}" onclick="_cliSort='${recentNext}';renderClientList()">Recent${recentArrow}</button>` +
+    `<button class="fbtn${azActive?' on':''}" onclick="_cliSort='${azNext}';renderClientList()">A–Z${azArrow}</button>` +
+    `<button class="fbtn${revActive?' on':''}" onclick="_cliSort='${revNext}';renderClientList()">Revenue${revArrow}</button>` +
+    `<button class="fbtn${jobsActive?' on':''}" onclick="_cliSort='${jobsNext}';renderClientList()">Job Count${jobsArrow}</button>`
+  document.getElementById('cli-list-view').innerHTML = `
+    <div class="sec-hdr">
+      <h2>Clients</h2>
+      <p>Client CRM and contact management</p>
+    </div>
+    <div class="fbar" style="margin-bottom:12px">
+      <span class="lbl">Sort:</span>
+      ${sortPills}
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
+      <input id="cli-search" class="inp" placeholder="Search clients..." value="${esc(q)}" oninput="renderClientList()" style="flex:1;min-width:180px">
+      <button class="btn btn-p" onclick="openNewClientForm()">+ Add Client</button>
+    </div>
+    <div style="display:grid;gap:10px">
+      ${sorted.length ? sorted.map(({c, s: stats}) => {
+        const fu = getFuStatus(c.followUpDate)
+        const initials = c.name.split(' ').map(w=>w[0]||'').slice(0,2).join('').toUpperCase()
+        return `<div class="cli-card" onclick="openClientDetail('${esc(c.name).replace(/'/g,"\\'")}')">
+          <div class="cli-avatar">${initials}</div>
+          <div class="cli-card-info">
+            <div class="cli-card-name">${esc(c.name)}</div>
+            <div class="cli-card-sub">
+              ${c.company ? `<span>${esc(c.company)}</span><span>·</span>` : ''}
+              <span>${stats.jobs} job${stats.jobs!==1?'s':''}</span>
+              ${stats.lastJob ? `<span>· Last: ${fmtDate(stats.lastJob)}</span>` : ''}
+              ${c.clientType ? `<span class="cli-type-badge cli-type-${cliTypeSlug(c.clientType)}">${esc(c.clientType)}</span>` : ''}
+              ${fu ? `<span class="fu-badge ${fu.cls}">${esc(fu.label)}</span>` : ''}
+            </div>
+          </div>
+          <div class="cli-card-meta">
+            <div class="cli-card-rev">${privacyMode()?'—':fmt(stats.revenue)}</div>
+            <div>${stats.jobs} jobs</div>
+          </div>
+        </div>`
+      }).join('') : '<div style="text-align:center;padding:40px;color:var(--text-2)">No clients found</div>'}
+    </div>
+  `
+}
+
+function openClientDetail(name) {
+  _cliDetailName = name
+  document.getElementById('cli-list-view').style.display = 'none'
+  document.getElementById('cli-detail-view').style.display = ''
+  renderClientDetail(name)
+}
+
+function renderClientDetail(name) {
+  const clients = getClientList()
+  const c = clients.find(x => x.name === name) || {id:'',name,company:'',phone:'',email:'',clientType:'',notes:'',followUpDate:''}
+  const stats = getClientStats(name)
+  const fu = getFuStatus(c.followUpDate)
+  const initials = name.split(' ').map(w=>w[0]||'').slice(0,2).join('').toUpperCase()
+  const typeOptions = ['','Real Estate','Wedding','Business','Personal','Production Company','Other'].map(t =>
+    `<option value="${t}"${c.clientType===t?' selected':''}>${t||'Select type...'}</option>`
+  ).join('')
+  const jobRows = stats.entries.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(e => `
+    <tr>
+      <td style="white-space:nowrap">${fmtDate(e.date)}</td>
+      <td>${esc(e.desc||e.description||'—')}</td>
+      <td style="white-space:nowrap">${esc(e.status||e.paymentStatus||'')}</td>
+      <td style="text-align:right;white-space:nowrap">${privacyMode()?'—':fmt(e.amount)}</td>
+      <td style="white-space:nowrap">
+        ${e.invoiceNum ? `<button class="btn btn-sm btn-s" title="Download invoice ${esc(e.invoiceNum)}" onclick="downloadInvFromDetail('${esc(e.invoiceNum)}',this)" style="color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)">${icon('receipt',12)} ${esc(e.invoiceNum)}</button>` : '—'}
+      </td>
+    </tr>`
+  ).join('')
+  document.getElementById('cli-detail-view').innerHTML = `
+    <div style="margin-bottom:16px">
+      <button class="btn btn-s btn-sm" onclick="backToClientList()">← Back to Clients</button>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="cli-detail-hdr">
+        <div class="cli-detail-avatar">${initials}</div>
+        <div style="flex:1">
+          <div style="font-size:20px;font-weight:700;line-height:1.2">${esc(name)}</div>
+          ${c.company ? `<div style="color:var(--text-2);font-size:13px;margin-top:2px">${esc(c.company)}</div>` : ''}
+          ${c.clientType ? `<span class="cli-type-badge cli-type-${cliTypeSlug(c.clientType)}" style="margin-top:6px;display:inline-block">${esc(c.clientType)}</span>` : ''}
+        </div>
+        <button class="btn btn-d btn-sm" onclick="deleteClient('${esc(c.id||'')}','${esc(name).replace(/'/g,"\\'")}')">Delete</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px">
+        <div class="card" style="text-align:center;padding:12px 8px">
+          <div style="font-size:22px;font-weight:700;color:var(--blue)">${privacyMode()?'—':fmt(stats.revenue)}</div>
+          <div style="font-size:11px;color:var(--text-2);margin-top:2px">Total Revenue</div>
+        </div>
+        <div class="card" style="text-align:center;padding:12px 8px">
+          <div style="font-size:22px;font-weight:700">${stats.jobs}</div>
+          <div style="font-size:11px;color:var(--text-2);margin-top:2px">Jobs</div>
+        </div>
+        <div class="card" style="text-align:center;padding:12px 8px">
+          <div style="font-size:14px;font-weight:700">${stats.lastJob ? fmtDate(stats.lastJob) : '—'}</div>
+          <div style="font-size:11px;color:var(--text-2);margin-top:2px">Last Job</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+        <div>
+          <div class="smod-lbl">Phone</div>
+          <input class="inp" id="cli-phone" value="${esc(c.phone||'')}" placeholder="Phone number">
+        </div>
+        <div>
+          <div class="smod-lbl">Email</div>
+          <input class="inp" id="cli-email" value="${esc(c.email||'')}" placeholder="Email address">
+        </div>
+        <div>
+          <div class="smod-lbl">Company</div>
+          <input class="inp" id="cli-company" value="${esc(c.company||'')}" placeholder="Company name">
+        </div>
+        <div>
+          <div class="smod-lbl">Client Type</div>
+          <select class="inp" id="cli-type">${typeOptions}</select>
+        </div>
+        <div style="grid-column:1/-1">
+          <div class="smod-lbl">Follow-Up Date ${fu ? `<span class="fu-badge ${fu.cls}" style="margin-left:6px">${esc(fu.label)}</span>` : ''}</div>
+          <input class="inp" type="date" id="cli-followup" value="${c.followUpDate||''}">
+        </div>
+        <div style="grid-column:1/-1">
+          <div class="smod-lbl">Notes</div>
+          <textarea class="inp" id="cli-notes" rows="3" placeholder="Internal notes about this client...">${esc(c.notes||'')}</textarea>
+        </div>
+      </div>
+      <div id="cli-save-status" style="font-size:12px;min-height:16px;margin-bottom:8px"></div>
+      <button class="btn btn-p" onclick="saveClientDetail('${esc(name).replace(/'/g,"\\'")}')">Save Changes</button>
+    </div>
+    ${stats.entries.length ? `
+    <div class="card">
+      <div class="smod-lbl" style="margin-bottom:10px">Job History</div>
+      <div style="overflow-x:auto">
+        <table class="tbl"><thead><tr><th>Date</th><th>Description</th><th>Status</th><th style="text-align:right">Amount</th><th>Invoice</th></tr></thead>
+        <tbody>${jobRows}</tbody></table>
+      </div>
+    </div>` : ''}
+  `
+}
+
+function backToClientList() {
+  _cliDetailName = null
+  document.getElementById('cli-list-view').style.display = ''
+  document.getElementById('cli-detail-view').style.display = 'none'
+  renderClientList()
+}
+
+async function saveClientDetail(name) {
+  if (!_clients) _clients = []
+  const phone = document.getElementById('cli-phone').value.trim()
+  const email = document.getElementById('cli-email').value.trim()
+  const company = document.getElementById('cli-company').value.trim()
+  const clientType = document.getElementById('cli-type').value
+  const followUpDate = document.getElementById('cli-followup').value
+  const notes = document.getElementById('cli-notes').value.trim()
+  const existing = _clients.find(c => c.name === name)
+  if (existing) {
+    Object.assign(existing, { phone, email, company, clientType, followUpDate, notes })
+  } else {
+    _clients.push({ id:uid(), name, company, phone, email, clientType, notes, followUpDate })
+  }
+  const statusEl = document.getElementById('cli-save-status')
+  statusEl.style.color = 'var(--text-2)'
+  statusEl.textContent = 'Saving...'
+  try {
+    await writeClientsToSheets()
+    statusEl.style.color = 'var(--green)'
+    statusEl.textContent = 'Saved!'
+    setTimeout(() => { if (statusEl) statusEl.textContent = '' }, 2000)
+    renderClientDetail(name)
+  } catch(e) {
+    statusEl.style.color = 'var(--red)'
+    statusEl.textContent = 'Save failed: ' + e.message
+  }
+}
+
+async function deleteClient(id, name) {
+  if (!confirm(`Delete "${name}" from clients? This removes contact info but won't delete income entries.`)) return
+  if (_clients) _clients = _clients.filter(c => c.name !== name)
+  try { await writeClientsToSheets() } catch(_) {}
+  backToClientList()
+}
+
+function openNewClientForm() {
+  ;['cli-new-name','cli-new-company','cli-new-phone','cli-new-email'].forEach(id => { document.getElementById(id).value = '' })
+  document.getElementById('cli-new-type').value = ''
+  document.getElementById('cli-new-status').textContent = ''
+  document.getElementById('cli-new-overlay').classList.add('open')
+}
+
+function closeNewClientForm() {
+  document.getElementById('cli-new-overlay').classList.remove('open')
+}
+
+async function saveNewClient() {
+  const name = document.getElementById('cli-new-name').value.trim()
+  const statusEl = document.getElementById('cli-new-status')
+  if (!name) { statusEl.textContent = 'Name is required'; return }
+  if (!_clients) _clients = []
+  if (_clients.find(c => c.name === name)) { statusEl.textContent = 'A client with this name already exists'; return }
+  const c = {
+    id: uid(), name,
+    company: document.getElementById('cli-new-company').value.trim(),
+    phone: document.getElementById('cli-new-phone').value.trim(),
+    email: document.getElementById('cli-new-email').value.trim(),
+    clientType: document.getElementById('cli-new-type').value,
+    notes: '', followUpDate: ''
+  }
+  _clients.push(c)
+  statusEl.style.color = 'var(--text-2)'
+  statusEl.textContent = 'Saving...'
+  try {
+    await writeClientsToSheets()
+    closeNewClientForm()
+    openClientDetail(name)
+  } catch(e) {
+    statusEl.style.color = 'var(--red)'
+    statusEl.textContent = 'Save failed: ' + e.message
+  }
+}
+
+async function downloadInvFromDetail(invNum, btn) {
+  const tok = gsGetToken()
+  if (!tok) { toast('Sign in with Google to access Drive'); return }
+  const prev = btn.innerHTML
+  btn.disabled = true; btn.innerHTML = '…'
+  try {
+    const q = encodeURIComponent(`name contains '${invNum}' and trashed=false`)
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&spaces=drive&fields=files(id,name,mimeType)`, { headers:{Authorization:'Bearer '+tok} })
+    if (!res.ok) throw new Error('Drive search failed')
+    const data = await res.json()
+    if (!data.files?.length) { toast('No invoice found for ' + invNum); return }
+    const file = data.files[0]
+    const dlRes = await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`, { headers:{Authorization:'Bearer '+tok} })
+    if (!dlRes.ok) throw new Error('Download failed')
+    const blob = await dlRes.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a'); a.href = url; a.download = file.name; a.click()
+    setTimeout(() => URL.revokeObjectURL(url), 5000)
+  } catch(e) { toast('Download error: ' + (e.message||String(e))) }
+  finally { btn.disabled = false; btn.innerHTML = prev }
+}
 </script>
 <!-- SETTINGS MODAL -->
 <div class="smod-overlay" id="settings-overlay" onclick="if(event.target===this)closeSettings()">
@@ -3533,6 +3906,49 @@ async function attDownloadRow(btn) {
     <div class="smod-footer">
       <button class="btn btn-p" onclick="saveAttachments()" style="flex:1"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:4px"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>Save Attachments</button>
       <button class="btn btn-s" onclick="closeAgrModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD CLIENT MODAL -->
+<div class="smod-overlay" id="cli-new-overlay" onclick="if(event.target===this)closeNewClientForm()">
+  <div class="smod" style="max-width:440px">
+    <div class="smod-hdr">
+      <span class="smod-ttl">Add Client</span>
+      <button class="smod-close" onclick="closeNewClientForm()">&#x2715;</button>
+    </div>
+    <div class="smod-row">
+      <div class="smod-lbl">Name <span style="color:var(--red)">*</span></div>
+      <input class="inp" id="cli-new-name" placeholder="Client name">
+    </div>
+    <div class="smod-row">
+      <div class="smod-lbl">Company</div>
+      <input class="inp" id="cli-new-company" placeholder="Company (optional)">
+    </div>
+    <div class="smod-row">
+      <div class="smod-lbl">Phone</div>
+      <input class="inp" id="cli-new-phone" placeholder="Phone number">
+    </div>
+    <div class="smod-row">
+      <div class="smod-lbl">Email</div>
+      <input class="inp" id="cli-new-email" placeholder="Email address">
+    </div>
+    <div class="smod-row">
+      <div class="smod-lbl">Client Type</div>
+      <select class="inp" id="cli-new-type">
+        <option value="">Select type...</option>
+        <option value="Real Estate">Real Estate</option>
+        <option value="Wedding">Wedding</option>
+        <option value="Business">Business</option>
+        <option value="Personal">Personal</option>
+        <option value="Production Company">Production Company</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div id="cli-new-status" style="font-size:12px;min-height:16px;margin-bottom:10px;color:var(--red)"></div>
+    <div class="smod-footer">
+      <button class="btn btn-p" onclick="saveNewClient()" style="flex:1">Add Client</button>
+      <button class="btn btn-s" onclick="closeNewClientForm()">Cancel</button>
     </div>
   </div>
 </div>
