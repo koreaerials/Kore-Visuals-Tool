@@ -2614,18 +2614,62 @@ document.addEventListener('DOMContentLoaded', ()=>{
 const INV_TEMPLATE_NAME_STD = 'Invoice Template no Deposit.docx'
 const INV_TEMPLATE_NAME_DEP = 'Invoice Template with Deposit.docx'
 
-function fixSplitTags(zip) {
-  const xmlFiles = ['word/document.xml', 'word/header1.xml', 'word/footer1.xml']
-  xmlFiles.forEach(filename => {
+function preprocessDocx(zip) {
+  const filesToProcess = ['word/document.xml']
+  filesToProcess.forEach(filename => {
     if (!zip.files[filename]) return
     let xml = zip.files[filename].asText()
-    // Merge text runs that contain split template tags
-    xml = xml.replace(/<\/w:t>(<\/w:r>(?:<w:r>(?:<w:rPr>.*?<\/w:rPr>)?)?<w:t[^>]*>)+/g, '')
-    // Clean up duplicate delimiters
-    xml = xml.replace(/\{+\{/g, '{{').replace(/\}+\}/g, '}}')
+
+    // Phase 1: Strip inline cruft elements that Google Docs injects
+    xml = xml.replace(/<w:proofErr[^/]\/>/g, '')
+    xml = xml.replace(/<w:proofErr[^>]*\/>/g, '')
+    xml = xml.replace(/<w:bookmarkStart[^>]*\/>/g, '')
+    xml = xml.replace(/<w:bookmarkEnd[^>]*\/>/g, '')
+    xml = xml.replace(/<w:commentRangeStart[^>]*\/>/g, '')
+    xml = xml.replace(/<w:commentRangeEnd[^>]*\/>/g, '')
+    xml = xml.replace(/<w:lastRenderedPageBreak[^>]*\/>/g, '')
+
+    // Phase 2: Merge split runs within paragraphs that contain template tags
+    xml = xml.replace(/<w:p[ >][\s\S]*?<\/w:p>/g, para => {
+      if (!para.includes('{')) return para
+      // Extract all runs
+      const runs = []
+      const runRegex = /<w:r[ >][\s\S]*?<\/w:r>/g
+      let match
+      while ((match = runRegex.exec(para)) !== null) {
+        const textMatch = match[0].match(/<w:t[^>]*>([\s\S]*?)<\/w:t>/)
+        runs.push({ full: match[0], text: textMatch ? textMatch[1] : '', index: match.index })
+      }
+      const fullText = runs.map(r => r.text).join('')
+      if (!fullText.includes('{{')) return para
+      // Find tag boundaries and merge runs that span a tag
+      const tagRegex = /\{\{[^}]*\}\}/g
+      let result = para
+      let tagMatch
+      while ((tagMatch = tagRegex.exec(fullText)) !== null) {
+        const tagStart = tagMatch.index
+        const tagEnd = tagMatch.index + tagMatch[0].length
+        let charCount = 0
+        const spannedRuns = []
+        for (const run of runs) {
+          const runStart = charCount
+          const runEnd = charCount + run.text.length
+          if (runEnd > tagStart && runStart < tagEnd) spannedRuns.push(run)
+          charCount += run.text.length
+        }
+        if (spannedRuns.length > 1) {
+          const mergedText = spannedRuns.map(r => r.text).join('')
+          const firstRun = spannedRuns[0].full
+          const mergedRun = firstRun.replace(/<w:t[^>]*>[\s\S]*?<\/w:t>/, `<w:t>${mergedText}</w:t>`)
+          const allRunsText = spannedRuns.map(r => r.full).join('')
+          result = result.replace(allRunsText, mergedRun)
+        }
+      }
+      return result
+    })
+
     zip.file(filename, xml)
   })
-  return zip
 }
 
 function openInvoiceModal() {
@@ -2787,7 +2831,8 @@ async function generateInvoice() {
     const DocxTemplater = window.docxtemplater?.Docxtemplater || window.Docxtemplater || window.docxtemplater?.default || window.docxtemplater
     if (!DocxTemplater) throw new Error('Docxtemplater constructor not found on window')
     console.log('DocxTemplater resolved: ' + typeof DocxTemplater)
-    const zip = fixSplitTags(new PizZip(tBuf))
+    const zip = new PizZip(tBuf)
+    preprocessDocx(zip)
     const doc = new DocxTemplater(zip, {
       paragraphLoop: true,
       linebreaks: true,
