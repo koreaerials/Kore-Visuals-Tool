@@ -2616,7 +2616,7 @@ const INV_TEMPLATE_NAME_DEP = 'Invoice Template with Deposit.docx'
 
 function preprocessDocx(zip) {
   // Process every XML part that could contain template tags
-  Object.keys(zip.files).forEach(function(relativePath) {
+  zip.forEach(function(relativePath) {
     if (!relativePath.startsWith('word/') || !relativePath.endsWith('.xml')) return
     const f = zip.file(relativePath)
     if (!f) return
