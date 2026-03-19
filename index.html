@@ -2656,28 +2656,34 @@ function processLoops(xml, data) {
     if (openPos === -1) return
     const closePos = xml.indexOf(closeTag)
     if (closePos === -1) return
-    let trStart = xml.lastIndexOf('<w:tr', openPos)
+
+    // Find the <w:tr> that CONTAINS the open tag.
+    // IMPORTANT: lastIndexOf('<w:tr', pos) also matches <w:trPr>, <w:trHeight>, etc.
+    // We must ensure we find the actual <w:tr> or <w:tr > element tag.
+    let trStart = findElementBackwards(xml, 'w:tr', openPos)
     if (trStart === -1) {
-      trStart = xml.lastIndexOf('<w:p', openPos)
-      if (trStart === -1) return
+      // Not inside a table row — fall back to paragraph-level
+      let pStart = findElementBackwards(xml, 'w:p', openPos)
+      if (pStart === -1) return
       const pEnd = xml.indexOf('</w:p>', closePos)
       if (pEnd === -1) return
       const blockEnd = pEnd + 6
-      const cleanTemplate = xml.substring(trStart, blockEnd).replace(openTag, '').replace(closeTag, '')
+      const cleanTemplate = xml.substring(pStart, blockEnd).replace(openTag, '').replace(closeTag, '')
       let expanded = ''
       items.forEach(item => {
         let row = cleanTemplate
         Object.keys(item).forEach(k => { row = row.split('{{' + k + '}}').join(escapeXml(String(item[k]))) })
         expanded += row
       })
-      xml = xml.substring(0, trStart) + expanded + xml.substring(blockEnd)
+      xml = xml.substring(0, pStart) + expanded + xml.substring(blockEnd)
       return
     }
+
     const trEndSearch = xml.indexOf('</w:tr>', closePos)
     if (trEndSearch === -1) return
     const blockEnd = trEndSearch + 7
     const template = xml.substring(trStart, blockEnd)
-    console.log('[fillDocx] Loop "' + name + '": found row template (' + template.length + ' chars)')
+    console.log('[fillDocx] Loop "' + name + '": found row template (' + template.length + ' chars, starts at ' + trStart + ')')
     const cleanTemplate = template.replace(openTag, '').replace(closeTag, '')
     let expanded = ''
     items.forEach(item => {
@@ -2689,6 +2695,28 @@ function processLoops(xml, data) {
     xml = xml.substring(0, trStart) + expanded + xml.substring(blockEnd)
   })
   return xml
+}
+
+/**
+ * Search backwards from `fromPos` for an XML element with the given local name.
+ * Unlike lastIndexOf('<w:tr', pos), this ensures we match the ELEMENT itself
+ * (e.g. <w:tr> or <w:tr ..attrs..>) and NOT child elements that start with
+ * the same prefix (e.g. <w:trPr>, <w:trHeight>).
+ */
+function findElementBackwards(xml, tagName, fromPos) {
+  const needle = '<' + tagName
+  let pos = fromPos
+  while (pos >= 0) {
+    pos = xml.lastIndexOf(needle, pos)
+    if (pos === -1) return -1
+    // Check the character right after the tag name
+    var afterTag = xml.charAt(pos + needle.length)
+    if (afterTag === '>' || afterTag === ' ' || afterTag === '\t' || afterTag === '\n' || afterTag === '\r' || afterTag === '/') {
+      return pos  // It's the actual element, not a prefix match like <w:trPr>
+    }
+    pos--  // It was <w:trPr> or similar — keep searching
+  }
+  return -1
 }
 
 function processConditionals(xml, data) {
