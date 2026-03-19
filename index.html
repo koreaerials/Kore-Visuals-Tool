@@ -683,6 +683,7 @@ const ICONS = {
   document:    '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
   'check-open':'<circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/>',
   'eye-off':   '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>',
+  paperclip:   '<path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>',
 }
 function icon(name, size=16) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;flex-shrink:0">${ICONS[name]||''}</svg>`
@@ -710,7 +711,7 @@ const GS_SCOPE          = 'https://www.googleapis.com/auth/spreadsheets https://
 const SHEET_SCHEMA = {
   [K.inc]: {
     tab:  'Income',
-    cols: ['id','date','client','amount','paymentType','travelExpenses','profit','paymentStatus','description','invoiceNumber'],
+    cols: ['id','date','client','amount','paymentType','travelExpenses','profit','paymentStatus','description','invoiceNumber','agreementId'],
     toRow: o => [
       o.id, o.date, o.client, o.amount,
       o.pay||o.paymentType||'Other',
@@ -718,12 +719,13 @@ const SHEET_SCHEMA = {
       o.profit||0,
       o.status||o.paymentStatus||'Paid',
       o.desc||o.description||'',
-      o.invoiceNum||o.invoiceNumber||''
+      o.invoiceNum||o.invoiceNumber||'',
+      o.agreementId||''
     ],
     toObj: r => ({
       id: r[0], date: r[1], client: r[2], amount: r[3],
       pay: r[4], travel: r[5], profit: r[6], status: r[7], desc: r[8],
-      invoiceNum: r[9]||''
+      invoiceNum: r[9]||'', agreementId: r[10]||''
     }),
   },
   [K.pur]: {
@@ -1364,7 +1366,7 @@ function saveIncome() {
   const profit=amount-travel
   const list=load(K.inc)
   const existing=id?list.find(e=>e.id===id):null
-  const entry={id:id||uid(),date,client,amount,pay,travel,profit,status,desc,invoiceNum:existing?.invoiceNum||''}
+  const entry={id:id||uid(),date,client,amount,pay,travel,profit,status,desc,invoiceNum:existing?.invoiceNum||'',agreementId:existing?.agreementId||''}
   if(!id && privacyMode()) entry._priv = true
   if(id){const i=list.findIndex(e=>e.id===id);if(i>=0)list[i]=entry}else list.push(entry)
   save(K.inc,list); cancelForm('inc'); renderIncTable(); renderDash(); toast(id?'Job updated!':'Job saved!')
@@ -1470,7 +1472,7 @@ function renderIncTable() {
         <td>${travel>0?`<span class="bdg bdg-o">${fmt(travel)}</span>`:'<span style="color:var(--text-2)">—</span>'}</td>
         <td><span class="${+e.profit>=0?'pos':'neg'}">${fmt(e.profit)}</span></td>
         <td style="min-width:140px;white-space:normal;word-break:break-word">${esc(desc||'—')}</td>
-        <td style="white-space:nowrap"><button class="btn btn-sm btn-s" style="${e.invoiceNum?'color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)':'opacity:0.45'}" title="${e.invoiceNum?'Invoice: '+e.invoiceNum:'Link Invoice'}" onclick="openInvLinkModal('${e.id}')">${icon('receipt',13)}</button> <button class="btn btn-sm btn-s" onclick="editIncRow('${e.id}')">${icon('pencil',13)}</button> <button class="btn btn-sm btn-d" onclick="delInc('${e.id}')">${icon('trash',13)}</button></td>
+        <td style="white-space:nowrap"><button class="btn btn-sm btn-s" style="${e.invoiceNum?'color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)':'opacity:0.45'}" title="${e.invoiceNum?'Invoice: '+e.invoiceNum:'Link Invoice'}" onclick="openInvLinkModal('${e.id}')">${icon('receipt',13)}</button> <button class="btn btn-sm btn-s" style="${e.agreementId?'color:var(--purple);background:rgba(175,82,222,0.12);border-color:rgba(175,82,222,0.28)':'opacity:0.45'}" title="${e.agreementId?'Agreement linked':'Link Agreement'}" onclick="openAgrModal('${e.id}')">${icon('paperclip',13)}</button> <button class="btn btn-sm btn-s" onclick="editIncRow('${e.id}')">${icon('pencil',13)}</button> <button class="btn btn-sm btn-d" onclick="delInc('${e.id}')">${icon('trash',13)}</button></td>
       </tr>`
     }).join('')}</tbody>
     <tfoot><tr><td colspan="2">Total (${list.length} jobs)</td><td><span class="pos">${fmt(totRev)}</span></td><td colspan="2"></td><td>${totTravel>0?`<span class="neg">${fmt(totTravel)}</span>`:''}</td><td><span class="${totProfit>=0?'pos':'neg'}">${fmt(totProfit)}</span></td><td colspan="2"></td></tr></tfoot>
@@ -3235,6 +3237,131 @@ async function autoLinkInvoiceToJob(invNum, clientName) {
     console.log('autoLinkInvoiceToJob error:', err)
   }
 }
+
+// ── AGREEMENT MODAL ───────────────────────────────────────────
+let _agrId = null
+
+function parseFileId(input) {
+  // /d/FILE_ID/ pattern (standard shareable links)
+  let m = input.match(/\/d\/([a-zA-Z0-9_-]{20,})/)
+  if(m) return m[1]
+  // id=FILE_ID pattern (open/export links)
+  m = input.match(/[?&]id=([a-zA-Z0-9_-]{20,})/)
+  if(m) return m[1]
+  // Assume raw file ID
+  return input.trim()
+}
+
+function openAgrModal(id) {
+  _agrId = id
+  const e = load(K.inc).find(e=>e.id===id); if(!e) return
+  const has = !!(e.agreementId)
+  document.getElementById('agr-client').textContent = e.client||''
+  document.getElementById('agr-input').value = e.agreementId||''
+  document.getElementById('agr-current').style.display = has ? 'flex' : 'none'
+  document.getElementById('agr-current-id').textContent = has ? e.agreementId : ''
+  document.getElementById('agr-remove-btn').style.display = has ? '' : 'none'
+  document.getElementById('agr-status').textContent = ''
+  document.getElementById('agr-modal-overlay').classList.add('open')
+}
+
+function closeAgrModal() {
+  document.getElementById('agr-modal-overlay').classList.remove('open')
+  _agrId = null
+}
+
+async function saveAgrLink() {
+  if(!_agrId) return
+  const raw = document.getElementById('agr-input').value.trim()
+  if(!raw){ toast('Paste a file ID or Drive link'); return }
+  const fileId = parseFileId(raw)
+  // Write directly to Sheets for this cell, update in-memory without touching the full save queue
+  const list = load(K.inc)
+  const i = list.findIndex(e=>e.id===_agrId); if(i<0) return
+  list[i].agreementId = fileId
+  const token = gsGetToken()
+  if(token) {
+    try {
+      const colIdx = SHEET_SCHEMA[K.inc].cols.indexOf('agreementId')
+      const colLetter = String.fromCharCode(65 + colIdx)
+      const rowNum = i + 2
+      const range = `Income!${colLetter}${rowNum}`
+      await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${GS_SPREADSHEET_ID}/values/${encodeURIComponent(range)}?valueInputOption=RAW`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ range, majorDimension: 'ROWS', values: [[fileId]] })
+      })
+    } catch(err) { console.log('Agreement Sheets write failed:', err) }
+  }
+  // Update in-memory store so UI and future full syncs stay consistent
+  localStorage.setItem(K.inc, JSON.stringify(list))
+  renderIncTable()
+  toast('Agreement linked!')
+  closeAgrModal()
+}
+
+async function removeAgrLink() {
+  if(!_agrId) return
+  if(!confirm('Remove the agreement link from this job?')) return
+  const list = load(K.inc)
+  const i = list.findIndex(e=>e.id===_agrId); if(i<0) return
+  list[i].agreementId = ''
+  const token = gsGetToken()
+  if(token) {
+    try {
+      const colIdx = SHEET_SCHEMA[K.inc].cols.indexOf('agreementId')
+      const colLetter = String.fromCharCode(65 + colIdx)
+      const rowNum = i + 2
+      const range = `Income!${colLetter}${rowNum}`
+      await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${GS_SPREADSHEET_ID}/values/${encodeURIComponent(range)}?valueInputOption=RAW`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ range, majorDimension: 'ROWS', values: [['']] })
+      })
+    } catch(err) { console.log('Agreement Sheets clear failed:', err) }
+  }
+  localStorage.setItem(K.inc, JSON.stringify(list))
+  renderIncTable()
+  toast('Agreement link removed')
+  closeAgrModal()
+}
+
+async function downloadAgreement() {
+  if(!_agrId) return
+  const e = load(K.inc).find(e=>e.id===_agrId); if(!e?.agreementId) return
+  const token = gsGetToken()
+  if(!token){ toast('Sign in with Google to access Drive'); return }
+  const statusEl = document.getElementById('agr-status')
+  statusEl.textContent = 'Fetching file…'
+  statusEl.style.color = 'var(--text-2)'
+  try {
+    const metaResp = await fetch(
+      `https://www.googleapis.com/drive/v3/files/${e.agreementId}?fields=name,mimeType`,
+      { headers: { 'Authorization': `Bearer ${token}` } }
+    )
+    if(!metaResp.ok) { statusEl.textContent = 'Agreement not found'; statusEl.style.color = 'var(--red)'; return }
+    const meta = await metaResp.json()
+    statusEl.textContent = `Downloading ${meta.name}…`
+    const isGoogleType = meta.mimeType.startsWith('application/vnd.google-apps.')
+    const dlUrl = isGoogleType
+      ? `https://www.googleapis.com/drive/v3/files/${e.agreementId}/export?mimeType=application/pdf`
+      : `https://www.googleapis.com/drive/v3/files/${e.agreementId}?alt=media`
+    const dlResp = await fetch(dlUrl, { headers: { 'Authorization': `Bearer ${token}` } })
+    if(!dlResp.ok) throw new Error('Download failed')
+    const blob = await dlResp.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = isGoogleType ? meta.name + '.pdf' : meta.name
+    a.click()
+    setTimeout(() => URL.revokeObjectURL(url), 5000)
+    statusEl.textContent = `Downloaded: ${meta.name}`
+    statusEl.style.color = 'var(--green)'
+  } catch(err) {
+    statusEl.textContent = 'Agreement not found'
+    statusEl.style.color = 'var(--red)'
+  }
+}
 </script>
 <!-- SETTINGS MODAL -->
 <div class="smod-overlay" id="settings-overlay" onclick="if(event.target===this)closeSettings()">
@@ -3395,6 +3522,32 @@ async function autoLinkInvoiceToJob(invNum, clientName) {
       <button class="btn btn-p" onclick="saveInvLink()" style="flex:1"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:4px"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>Link Invoice</button>
       <button class="btn btn-d btn-sm" onclick="removeInvLink()" id="inv-link-remove-btn">Remove Link</button>
       <button class="btn btn-s" onclick="closeInvLinkModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- AGREEMENT MODAL -->
+<div class="smod-overlay" id="agr-modal-overlay" onclick="if(event.target===this)closeAgrModal()">
+  <div class="smod" style="max-width:400px">
+    <div class="smod-hdr">
+      <span class="smod-ttl">Link Agreement</span>
+      <button class="smod-close" onclick="closeAgrModal()">&#x2715;</button>
+    </div>
+    <div style="font-size:12px;color:var(--text-2);margin-bottom:14px">Job: <strong id="agr-client"></strong></div>
+    <div id="agr-current" style="display:none;align-items:center;gap:10px;background:rgba(175,82,222,0.08);border:1px solid rgba(175,82,222,0.2);border-radius:8px;padding:10px 12px;margin-bottom:14px">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+      <span style="font-size:12px;color:var(--purple);font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="agr-current-id"></span>
+      <button class="btn btn-sm" style="flex-shrink:0;color:var(--purple);border-color:rgba(175,82,222,0.3);background:rgba(175,82,222,0.1)" onclick="downloadAgreement()"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:3px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download</button>
+    </div>
+    <div class="smod-row" style="margin-bottom:4px">
+      <div class="smod-lbl">File ID or Drive link</div>
+      <input type="text" id="agr-input" class="isel" style="width:100%;box-sizing:border-box" placeholder="Paste file ID or shareable Drive link" onkeydown="if(event.key==='Enter')saveAgrLink()">
+    </div>
+    <div id="agr-status" style="font-size:12px;min-height:18px;margin-bottom:10px"></div>
+    <div class="smod-footer">
+      <button class="btn btn-sm" style="flex:1;padding:8px 14px;font-size:13px;background:rgba(175,82,222,0.12);color:var(--purple);border:1px solid rgba(175,82,222,0.28)" onclick="saveAgrLink()"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:4px"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>Link Agreement</button>
+      <button class="btn btn-d btn-sm" onclick="removeAgrLink()" id="agr-remove-btn" style="display:none">Remove</button>
+      <button class="btn btn-s" onclick="closeAgrModal()">Cancel</button>
     </div>
   </div>
 </div>
