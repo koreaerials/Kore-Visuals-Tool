@@ -2756,7 +2756,35 @@ function invUpdateNumber() {
 function invAddLineItem(desc='', amount='') {
   const row = document.createElement('div')
   row.className = 'inv-item-row'
-  row.innerHTML = `<input type="text" class="inv-item-desc" placeholder="Description" value="${esc(String(desc))}" oninput="invUpdateTotal()"><input type="number" class="inv-item-amt" placeholder="0.00" value="${esc(String(amount))}" min="0" step="0.01" oninput="invUpdateTotal()"><button class="btn btn-sm btn-d" onclick="this.closest('.inv-item-row').remove();invUpdateTotal()" type="button">&#x2715;</button>`
+
+  const descInput = document.createElement('input')
+  descInput.type = 'text'
+  descInput.className = 'inv-item-desc'
+  descInput.placeholder = 'Description'
+  descInput.value = desc
+  descInput.addEventListener('input', invUpdateTotal)
+
+  const amtInput = document.createElement('input')
+  amtInput.type = 'number'
+  amtInput.className = 'inv-item-amt'
+  amtInput.placeholder = '0.00'
+  amtInput.value = amount
+  amtInput.min = '0'
+  amtInput.step = '0.01'
+  amtInput.addEventListener('input', invUpdateTotal)
+
+  const removeBtn = document.createElement('button')
+  removeBtn.type = 'button'
+  removeBtn.className = 'btn btn-sm btn-d'
+  removeBtn.innerHTML = '&#x2715;'
+  removeBtn.addEventListener('click', function() {
+    row.remove()
+    invUpdateTotal()
+  })
+
+  row.appendChild(descInput)
+  row.appendChild(amtInput)
+  row.appendChild(removeBtn)
   document.getElementById('inv-items').appendChild(row)
 }
 
