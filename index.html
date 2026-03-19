@@ -329,6 +329,9 @@ body.privacy-mode #privacy-banner{display:block}
 [data-theme=dark] .inv-deposit-box{background:rgba(0,122,255,0.1);border-color:rgba(0,122,255,0.2)}
 .inv-chk-row{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;margin-bottom:14px}
 .inv-chk-row input[type=checkbox]{width:16px;height:16px;margin:0;accent-color:var(--blue);cursor:pointer}
+#inv-job-dropdown{background:#fff}
+[data-theme=dark] #inv-job-dropdown{background:rgba(30,30,42,0.98)}
+[data-theme=dark] #inv-job-replace-warn{background:rgba(255,159,10,0.1);border-color:rgba(255,159,10,0.28);color:#e09820}
 .inv-job-opt{padding:9px 12px;font-size:13px;cursor:pointer;border-bottom:1px solid rgba(0,0,0,0.05);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .inv-job-opt:last-child{border-bottom:none}
 .inv-job-opt:hover{background:rgba(0,122,255,0.07)}
@@ -1467,7 +1470,7 @@ function renderIncTable() {
         <td>${travel>0?`<span class="bdg bdg-o">${fmt(travel)}</span>`:'<span style="color:var(--text-2)">—</span>'}</td>
         <td><span class="${+e.profit>=0?'pos':'neg'}">${fmt(e.profit)}</span></td>
         <td style="min-width:140px;white-space:normal;word-break:break-word">${esc(desc||'—')}</td>
-        <td style="white-space:nowrap"><button class="btn btn-sm" style="color:${e.invoiceNum?'var(--blue)':'var(--text-2)'};opacity:${e.invoiceNum?'1':'0.45'};background:transparent;border-color:transparent" title="${e.invoiceNum?'Invoice: '+e.invoiceNum:'Link Invoice'}" onclick="openInvLinkModal('${e.id}')">${icon('receipt',13)}</button> <button class="btn btn-sm btn-s" onclick="editIncRow('${e.id}')">${icon('pencil',13)}</button> <button class="btn btn-sm btn-d" onclick="delInc('${e.id}')">${icon('trash',13)}</button></td>
+        <td style="white-space:nowrap"><button class="btn btn-sm btn-s" style="${e.invoiceNum?'color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)':'opacity:0.45'}" title="${e.invoiceNum?'Invoice: '+e.invoiceNum:'Link Invoice'}" onclick="openInvLinkModal('${e.id}')">${icon('receipt',13)}</button> <button class="btn btn-sm btn-s" onclick="editIncRow('${e.id}')">${icon('pencil',13)}</button> <button class="btn btn-sm btn-d" onclick="delInc('${e.id}')">${icon('trash',13)}</button></td>
       </tr>`
     }).join('')}</tbody>
     <tfoot><tr><td colspan="2">Total (${list.length} jobs)</td><td><span class="pos">${fmt(totRev)}</span></td><td colspan="2"></td><td>${totTravel>0?`<span class="neg">${fmt(totTravel)}</span>`:''}</td><td><span class="${totProfit>=0?'pos':'neg'}">${fmt(totProfit)}</span></td><td colspan="2"></td></tr></tfoot>
@@ -2772,6 +2775,14 @@ function invSelectJob(id) {
   document.getElementById('inv-job-dropdown').style.display = 'none'
   document.getElementById('inv-client').value = e.client||''
   invUpdateNumber()
+  // Show warning if job already has an invoice linked
+  const warnEl = document.getElementById('inv-job-replace-warn')
+  if(e.invoiceNum) {
+    warnEl.textContent = `⚠ This job already has invoice ${e.invoiceNum} linked. Generating will replace it and delete the existing PDF from Google Drive.`
+    warnEl.style.display = 'block'
+  } else {
+    warnEl.style.display = 'none'
+  }
 }
 
 function openInvoiceModal() {
@@ -2787,6 +2798,7 @@ function openInvoiceModal() {
   document.getElementById('inv-job-search').value = ''
   document.getElementById('inv-job-id').value = ''
   document.getElementById('inv-job-dropdown').style.display = 'none'
+  document.getElementById('inv-job-replace-warn').style.display = 'none'
   document.getElementById('inv-include-deposit').checked = false
   document.getElementById('inv-deposit-box').style.display = 'none'
   document.getElementById('inv-deposit-paid').checked = false
@@ -2924,6 +2936,10 @@ async function generateInvoice() {
     if (parts.length !== 3 || parts[2].length !== 4) { toast('Date must be MM/DD/YYYY'); return }
     const invNum = client.substring(0,2).toUpperCase() + parts[2] + parts[0].padStart(2,'0') + parts[1].padStart(2,'0')
 
+    // Capture linked job ID and any existing invoice number before async work begins
+    const linkedJobId = document.getElementById('inv-job-id').value
+    const oldInvoiceNum = linkedJobId ? (load(K.inc).find(e=>e.id===linkedJobId)?.invoiceNum||'') : ''
+
     const items = [...document.querySelectorAll('.inv-item-row')].map(r=>({
       description: r.querySelector('.inv-item-desc').value.trim(),
       amount: parseFloat(r.querySelector('.inv-item-amt').value)||0
@@ -3059,8 +3075,30 @@ async function generateInvoice() {
     successEl.style.display = 'block'
     toast('Invoice saved to Drive!', 4000)
 
+    // Delete old PDF from Drive if this job had a previous invoice
+    if(oldInvoiceNum) {
+      try {
+        console.log('Deleting old invoice PDF for:', oldInvoiceNum)
+        const oldQ = encodeURIComponent(`name contains '${oldInvoiceNum}' and trashed=false`)
+        const oldSearch = await fetch(`https://www.googleapis.com/drive/v3/files?q=${oldQ}&spaces=drive&fields=files(id,name)`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        if(oldSearch.ok) {
+          const oldData = await oldSearch.json()
+          for(const f of (oldData.files||[])) {
+            console.log('Deleting old invoice file:', f.name)
+            await fetch(`https://www.googleapis.com/drive/v3/files/${f.id}`, {
+              method: 'DELETE',
+              headers: { 'Authorization': `Bearer ${token}` }
+            })
+          }
+        }
+      } catch(delErr) {
+        console.log('Could not delete old invoice PDF:', delErr)
+      }
+    }
+
     // Link invoice number to explicitly selected job (if any)
-    const linkedJobId = document.getElementById('inv-job-id').value
     if(linkedJobId) {
       const incList = load(K.inc)
       const incIdx = incList.findIndex(e=>e.id===linkedJobId)
@@ -3270,8 +3308,9 @@ async function autoLinkInvoiceToJob(invNum, clientName) {
     <div style="margin-bottom:16px;position:relative" id="inv-job-picker">
       <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-2);display:block;margin-bottom:6px">Link to Job <span style="font-weight:400;text-transform:none;letter-spacing:0">— optional</span></label>
       <input type="text" id="inv-job-search" class="isel" style="width:100%;box-sizing:border-box" placeholder="Search by client or description…" oninput="invFilterJobSelect(this.value)" onfocus="invFilterJobSelect(this.value)" onblur="setTimeout(()=>{const d=document.getElementById('inv-job-dropdown');if(d)d.style.display='none'},160)" autocomplete="off">
-      <div id="inv-job-dropdown" style="display:none;position:absolute;left:0;right:0;top:calc(100% + 2px);z-index:300;background:var(--card,#fff);border:1px solid var(--border,rgba(0,0,0,0.12));border-radius:8px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,0.15);max-height:200px;overflow-y:auto"></div>
+      <div id="inv-job-dropdown" style="display:none;position:absolute;left:0;right:0;top:calc(100% + 2px);z-index:300;border:1px solid var(--card-border,rgba(0,0,0,0.12));border-radius:8px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,0.25);max-height:200px;overflow-y:auto"></div>
       <input type="hidden" id="inv-job-id" value="">
+      <div id="inv-job-replace-warn" style="display:none;margin-top:8px;padding:10px 12px;background:rgba(255,159,10,0.12);border:1px solid rgba(255,159,10,0.35);border-radius:8px;font-size:12px;color:#b86e00;line-height:1.5"></div>
     </div>
 
     <div class="fg" style="margin-bottom:16px">
