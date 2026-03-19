@@ -19,6 +19,7 @@
   --shadow: 0 8px 32px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
   --r: 20px;
   --r-sm: 12px;
+  --dropdown-bg: #ffffff;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;background:linear-gradient(135deg,#dce8f5 0%,#ead5f5 50%,#d5f0e8 100%);background-attachment:fixed;min-height:100vh;color:var(--text);font-size:14px;line-height:1.5}
@@ -163,6 +164,9 @@ tfoot td{font-weight:700;background:rgba(255,255,255,0.45);border-top:2px solid 
 .ren-name{font-weight:600;font-size:13px}
 .ren-when{font-size:11px;color:var(--text-2);margin-top:2px}
 .ren-amt{font-weight:700;font-size:13px;color:var(--red)}
+.ren-view-menu{display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:200;background:var(--dropdown-bg);border:1px solid var(--border);border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.18);min-width:148px;padding:4px}
+.ren-view-opt{display:block;width:100%;text-align:left;padding:7px 12px;background:none;border:none;cursor:pointer;font-size:13px;color:var(--text);border-radius:6px}
+.ren-view-opt:hover{background:var(--hover)}
 .d-bdg{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600}
 .d-urg{background:rgba(255,59,48,0.15);color:#c0392b}
 .d-soon{background:rgba(255,149,0,0.15);color:#c47200}
@@ -226,6 +230,7 @@ svg{flex-shrink:0}
   --card-border: rgba(255,255,255,0.09);
   --shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
   --blur: blur(24px) saturate(160%);
+  --dropdown-bg: #1c1c22;
 }
 [data-theme="dark"] body{background:linear-gradient(135deg,#0d0d10 0%,#170e1e 50%,#0c1710 100%)}
 [data-theme="dark"] .hdr{background:rgba(16,16,20,0.78);border-color:rgba(255,255,255,0.08)}
@@ -723,6 +728,7 @@ const ICONS = {
   'eye-off':   '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>',
   paperclip:   '<path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>',
   users:       '<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>',
+  calendar:    '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
 }
 function icon(name, size=16) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;flex-shrink:0">${ICONS[name]||''}</svg>`
@@ -742,7 +748,7 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2)
 const GS_CLIENT_ID      = '767039224660-kjc6t9ue5c3ickdosd2kqkhbn9dqa2n2.apps.googleusercontent.com'
 const GS_CLIENT_SECRET  = 'YOUR_CLIENT_SECRET_HEGOCSPX-8xIcsMz8VeprkFUiufdxBCdNRrZV'  // for reference
 const GS_SPREADSHEET_ID = '16Qq8ggagfDl1fnGe2bnVQvLLlhtQAyNphYoDxSofpiM'
-const GS_SCOPE          = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.readonly'
+const GS_SCOPE          = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/calendar'
 // Maps each localStorage data key → its Sheets tab name + column order
 // SHEET_SCHEMA — cols must exactly match the header row in each Google Sheet tab.
 // toRow: converts an in-memory app object → sheet row array (for writing)
@@ -750,7 +756,7 @@ const GS_SCOPE          = 'https://www.googleapis.com/auth/spreadsheets https://
 const SHEET_SCHEMA = {
   [K.inc]: {
     tab:  'Income',
-    cols: ['id','date','client','amount','paymentType','travelExpenses','profit','paymentStatus','description','invoiceNumber','agreementId'],
+    cols: ['id','date','client','amount','paymentType','travelExpenses','profit','paymentStatus','description','invoiceNumber','agreementId','calendarEventId'],
     toRow: o => [
       o.id, o.date, o.client, o.amount,
       o.pay||o.paymentType||'Other',
@@ -759,12 +765,13 @@ const SHEET_SCHEMA = {
       o.status||o.paymentStatus||'Paid',
       o.desc||o.description||'',
       o.invoiceNum||o.invoiceNumber||'',
-      o.agreementId||''
+      o.agreementId||'',
+      o.calendarEventId||''
     ],
     toObj: r => ({
       id: r[0], date: r[1], client: r[2], amount: r[3],
       pay: r[4], travel: r[5], profit: r[6], status: r[7], desc: r[8],
-      invoiceNum: r[9]||'', agreementId: r[10]||''
+      invoiceNum: r[9]||'', agreementId: r[10]||'', calendarEventId: r[11]||''
     }),
   },
   [K.pur]: {
@@ -781,16 +788,18 @@ const SHEET_SCHEMA = {
   },
   [K.sub]: {
     tab:  'Subscriptions',
-    cols: ['id','name','amount','billingType','status','startDate','lastProcessed','totalSpent','description'],
+    cols: ['id','name','amount','billingType','status','startDate','lastProcessed','totalSpent','description','calendarEventId'],
     toRow: o => [
       o.id, o.name, o.amount, o.billingType, o.status, o.startDate,
       o.lastProcessed||'',
       o.totalSpent||'',
-      o.desc||o.description||''
+      o.desc||o.description||'',
+      o.calendarEventId||''
     ],
     toObj: r => ({
       id: r[0], name: r[1], amount: r[2], billingType: r[3], status: r[4],
-      startDate: r[5], lastProcessed: r[6]||null, totalSpent: r[7], desc: r[8]
+      startDate: r[5], lastProcessed: r[6]||null, totalSpent: r[7], desc: r[8],
+      calendarEventId: r[9]||''
     }),
   },
   [K.subx]: {
@@ -924,6 +933,7 @@ const editing = {inc:null, pur:null, sub:null}
 
 // ── RENEWAL FILTER STATE ──────────────────────────────────────
 let _renewalFilter = '30d'  // '30d' | '1y' | 'all'
+let _dashView = 'renewals'  // 'renewals' | 'shoots' | 'both'
 
 // ── FILTER STATE ──────────────────────────────────────────────
 const FS = {
@@ -1033,7 +1043,7 @@ function renderDash() {
     ...mainCards,
     ...subCards,
     `<div class="card-ttl">Monthly Revenue vs Expenses (Last 12 Months)</div><div class="chart-wrap" id="chart"></div>`,
-    `<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px"><div class="card-ttl" style="margin-bottom:0;display:flex;align-items:center;gap:7px">${icon('bell',16)} Upcoming Renewals</div><div style="display:flex;gap:5px"><button id="ren-f-30d" class="fbtn" onclick="setRenewalFilter('30d')">30 Days</button><button id="ren-f-1y" class="fbtn" onclick="setRenewalFilter('1y')">1 Year</button><button id="ren-f-all" class="fbtn" onclick="setRenewalFilter('all')">All Active</button></div></div><div id="renewals-list"></div>`,
+    `<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><div style="position:relative"><div id="ren-view-heading" class="card-ttl" style="margin-bottom:0;display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none" onclick="toggleDashViewMenu()">${icon('bell',16)} <span id="ren-view-label">Upcoming Renewals</span><span style="font-size:14px;opacity:.75;margin-left:4px;line-height:1">▾</span></div><div id="ren-view-menu" class="ren-view-menu"><button id="ren-opt-renewals" class="ren-view-opt" onclick="setDashView('renewals')">Renewals</button><button id="ren-opt-shoots" class="ren-view-opt" onclick="setDashView('shoots')">Shoots</button><button id="ren-opt-both" class="ren-view-opt" onclick="setDashView('both')">All</button></div></div></div><div style="display:flex;justify-content:flex-end;gap:5px;margin-bottom:12px"><button id="ren-f-30d" class="fbtn" onclick="setRenewalFilter('30d')">30 Days</button><button id="ren-f-1y" class="fbtn" onclick="setRenewalFilter('1y')">1 Year</button><button id="ren-f-all" class="fbtn" onclick="setRenewalFilter('all')">All Active</button></div><div id="renewals-list"></div>`,
     `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="card-ttl" style="margin-bottom:0;display:flex;align-items:center;gap:7px">${icon('link',16)} Quick Links</div><button class="btn btn-sm btn-p" id="link-add-btn" onclick="toggleLinkForm()">+ Add Link</button></div><div class="link-form-area" id="link-form-area"><div class="form-inner" style="margin-bottom:0"><input type="hidden" id="link-edit-id"><div class="fg" style="grid-template-columns:1fr 1fr;margin-bottom:10px"><div class="ff"><label>Name</label><input type="text" id="link-name" placeholder="e.g. FAA DroneZone"></div><div class="ff"><label>URL</label><input type="text" id="link-url" placeholder="https://..."></div></div><div style="display:flex;gap:8px"><button class="btn btn-p btn-sm" onclick="saveLink()">${icon('save',13)} Save</button><button class="btn btn-s btn-sm" onclick="cancelLinkForm()">Cancel</button></div></div></div><div id="links-list"></div>`,
   ]
   const order = loadGridOrder('dt_dash_order', 9)
@@ -1106,30 +1116,86 @@ function renderChart() {
 }
 
 function setRenewalFilter(f) { _renewalFilter = f; renderRenewals() }
+function setDashView(v) {
+  _dashView = v
+  const m = document.getElementById('ren-view-menu')
+  if (m) m.style.display = 'none'
+  renderRenewals()
+}
+function toggleDashViewMenu() {
+  const m = document.getElementById('ren-view-menu')
+  if (!m) return
+  const opening = m.style.display === 'none' || !m.style.display
+  m.style.display = opening ? 'block' : 'none'
+  if (opening) {
+    // Close when clicking anywhere outside the heading/menu
+    setTimeout(() => document.addEventListener('click', function h(e) {
+      if (!document.getElementById('ren-view-heading')?.contains(e.target)) {
+        const menu = document.getElementById('ren-view-menu')
+        if (menu) menu.style.display = 'none'
+        document.removeEventListener('click', h)
+      }
+    }), 0)
+  }
+}
 
 function renderRenewals() {
-  // sync pill active state
+  // sync time-range pill active state
   ;['30d','1y','all'].forEach(f => {
     const btn = document.getElementById('ren-f-' + f)
     if (btn) btn.classList.toggle('on', f === _renewalFilter)
   })
+  // update heading label and bold active option
+  const labels = { renewals:'Upcoming Renewals', shoots:'Upcoming Shoots', both:'Upcoming — All' }
+  const labelEl = document.getElementById('ren-view-label')
+  if (labelEl) labelEl.textContent = labels[_dashView] || 'Upcoming'
+  ;['renewals','shoots','both'].forEach(v => {
+    const btn = document.getElementById('ren-opt-' + v)
+    if (btn) btn.style.fontWeight = v === _dashView ? '700' : ''
+  })
   const el = document.getElementById('renewals-list')
   if (!el) return
   const now = toDate(today())
+  const todayStr = today()
   const maxDays = _renewalFilter === '30d' ? 30 : _renewalFilter === '1y' ? 365 : Infinity
-  const emptyMsg = _renewalFilter === '30d' ? 'No renewals in the next 30 days'
-    : _renewalFilter === '1y' ? 'No renewals in the next 12 months'
-    : 'No active recurring subscriptions'
-  const upcoming = loadP(K.sub)
-    .filter(s => s.status === 'Active' && s.billingType !== 'One-Time')
-    .map(s => { const nd = toDate(nextCharge(s)); return {...s, nd, days: Math.round((nd - now) / 864e5)} })
-    .filter(s => s.days >= 0 && s.days <= maxDays)
-    .sort((a, b) => a.days - b.days)
-  if (!upcoming.length) { el.innerHTML=`<div class="empty" style="padding:20px"><div class="ei">${icon('check-open',36)}</div><p>${emptyMsg}</p></div>`; return }
-  el.innerHTML = upcoming.map(s => {
-    const cls = s.days <= 3 ? 'd-urg' : s.days <= 10 ? 'd-soon' : 'd-ok'
-    const dlbl = s.days === 0 ? 'Today' : s.days === 1 ? 'Tomorrow' : s.days < 365 ? `${s.days}d` : `${Math.round(s.days/30)}mo`
-    return `<div class="ren-item"><div><div class="ren-name">${esc(s.name)}</div><div class="ren-when">${fmtDate(toStr(s.nd))} · ${s.billingType}</div></div><div style="display:flex;align-items:center;gap:8px"><span class="ren-amt">${fmt(s.amount)}</span><span class="d-bdg ${cls}">${dlbl}</span></div></div>`
+  const items = []
+
+  // Renewals — active recurring subscriptions
+  if (_dashView !== 'shoots') {
+    loadP(K.sub)
+      .filter(s => s.status === 'Active' && s.billingType !== 'One-Time')
+      .map(s => { const nd = toDate(nextCharge(s)); return { type:'renewal', date: toStr(nd), nd, days: Math.round((nd - now) / 864e5), title: s.name, sub: s.billingType, amount: s.amount } })
+      .filter(s => s.days >= 0 && s.days <= maxDays)
+      .forEach(s => items.push(s))
+  }
+
+  // Shoots — income entries with a calendar event link and a future/today date
+  if (_dashView !== 'renewals') {
+    loadP(K.inc)
+      .filter(e => e.calendarEventId && e.date >= todayStr)
+      .map(e => { const nd = toDate(e.date); const days = Math.round((nd - now) / 864e5); return { type:'shoot', date: e.date, nd, days, title: e.client, sub: 'Shoot', amount: e.amount, calLink: e.calendarEventId } })
+      .filter(s => s.days >= 0 && s.days <= maxDays)
+      .forEach(s => items.push(s))
+  }
+
+  items.sort((a, b) => a.date.localeCompare(b.date))
+
+  if (!items.length) {
+    const emptyMsg = _dashView === 'shoots' ? 'No upcoming shoots with calendar events'
+      : _renewalFilter === '30d' ? 'No renewals in the next 30 days'
+      : _renewalFilter === '1y' ? 'No renewals in the next 12 months'
+      : 'No active recurring subscriptions'
+    el.innerHTML = `<div class="empty" style="padding:20px"><div class="ei">${icon('check-open',36)}</div><p>${emptyMsg}</p></div>`
+    return
+  }
+
+  el.innerHTML = items.map(item => {
+    const cls = item.days <= 3 ? 'd-urg' : item.days <= 10 ? 'd-soon' : 'd-ok'
+    const dlbl = item.days === 0 ? 'Today' : item.days === 1 ? 'Tomorrow' : item.days < 365 ? `${item.days}d` : `${Math.round(item.days/30)}mo`
+    const borderColor = item.type === 'shoot' ? 'var(--blue)' : '#ff9500'
+    const amtColor    = item.type === 'shoot' ? 'var(--green)' : 'var(--red)'
+    const calIcon = item.calLink ? `<a href="${esc(item.calLink)}" target="_blank" title="View in Calendar" style="color:var(--blue);margin-left:5px;vertical-align:middle">${icon('calendar',11)}</a>` : ''
+    return `<div class="ren-item" style="border-left:3px solid ${borderColor};padding-left:10px"><div><div class="ren-name">${esc(item.title)}${calIcon}</div><div class="ren-when">${fmtDate(item.date)} · ${item.sub}</div></div><div style="display:flex;align-items:center;gap:8px"><span class="ren-amt" style="color:${amtColor}">${fmt(item.amount)}</span><span class="d-bdg ${cls}">${dlbl}</span></div></div>`
   }).join('')
 }
 
@@ -1392,7 +1458,7 @@ function calcProfit() {
   el.textContent=fmt(p); el.style.color=p>=0?'var(--green)':'var(--red)'
 }
 
-function saveIncome() {
+async function saveIncome() {
   const id=document.getElementById('inc-edit-id').value
   const date=document.getElementById('inc-date').value
   const client=document.getElementById('inc-client').value.trim()
@@ -1405,10 +1471,19 @@ function saveIncome() {
   const profit=amount-travel
   const list=load(K.inc)
   const existing=id?list.find(e=>e.id===id):null
-  const entry={id:id||uid(),date,client,amount,pay,travel,profit,status,desc,invoiceNum:existing?.invoiceNum||'',agreementId:existing?.agreementId||''}
+  const entry={id:id||uid(),date,client,amount,pay,travel,profit,status,desc,invoiceNum:existing?.invoiceNum||'',agreementId:existing?.agreementId||'',calendarEventId:existing?.calendarEventId||''}
   if(!id && privacyMode()) entry._priv = true
   if(id){const i=list.findIndex(e=>e.id===id);if(i>=0)list[i]=entry}else list.push(entry)
   save(K.inc,list); cancelForm('inc'); renderIncTable(); renderDash(); toast(id?'Job updated!':'Job saved!')
+  // Auto-create a Google Calendar event for new jobs only
+  if (!id && gsGetToken()) {
+    const evLink = await gcCreateEvent(date, client, desc)
+    if (evLink) {
+      const updated = load(K.inc)
+      const idx = updated.findIndex(e => e.id === entry.id)
+      if (idx >= 0) { updated[idx].calendarEventId = evLink; save(K.inc, updated); renderIncTable(); renderDash() }
+    }
+  }
 }
 
 function editInc(id) {
@@ -1512,7 +1587,7 @@ function renderIncTable() {
         <td>${travel>0?`<span class="bdg bdg-o">${fmt(travel)}</span>`:'<span style="color:var(--text-2)">—</span>'}</td>
         <td><span class="${+e.profit>=0?'pos':'neg'}">${fmt(e.profit)}</span></td>
         <td style="min-width:140px;white-space:normal;word-break:break-word">${esc(desc||'—')}</td>
-        <td style="white-space:nowrap"><button class="btn btn-sm btn-s" style="${e.invoiceNum?'color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)':'opacity:0.45'}" title="${e.invoiceNum?'Invoice: '+e.invoiceNum:'Link Invoice'}" onclick="openInvLinkModal('${e.id}')">${icon('receipt',13)}</button> <button class="btn btn-sm btn-s" style="${attCount?'color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)':'opacity:0.45'}" title="${attCount?'Attachments: '+attCount:'Link Attachment'}" onclick="openAgrModal('${e.id}')">${icon('paperclip',13)}</button> <button class="btn btn-sm btn-s" onclick="editIncRow('${e.id}')">${icon('pencil',13)}</button> <button class="btn btn-sm btn-d" onclick="delInc('${e.id}')">${icon('trash',13)}</button></td>
+        <td style="white-space:nowrap"><button class="btn btn-sm btn-s" style="${e.invoiceNum?'color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)':'opacity:0.45'}" title="${e.invoiceNum?'Invoice: '+e.invoiceNum:'Link Invoice'}" onclick="openInvLinkModal('${e.id}')">${icon('receipt',13)}</button> <button class="btn btn-sm btn-s" style="${attCount?'color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)':'opacity:0.45'}" title="${attCount?'Attachments: '+attCount:'Link Attachment'}" onclick="openAgrModal('${e.id}')">${icon('paperclip',13)}</button>${e.calendarEventId&&e.date>=today()?` <button class="btn btn-sm btn-s" style="color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)" title="View in Google Calendar" data-href="${esc(e.calendarEventId)}" onclick="window.open(this.dataset.href,'_blank')">${icon('calendar',13)}</button>`:''} <button class="btn btn-sm btn-s" onclick="editIncRow('${e.id}')">${icon('pencil',13)}</button> <button class="btn btn-sm btn-d" onclick="delInc('${e.id}')">${icon('trash',13)}</button></td>
       </tr>`
     }).join('')}</tbody>
     <tfoot><tr><td colspan="2">Total (${list.length} jobs)</td><td><span class="pos">${fmt(totRev)}</span></td><td colspan="2"></td><td>${totTravel>0?`<span class="neg">${fmt(totTravel)}</span>`:''}</td><td><span class="${totProfit>=0?'pos':'neg'}">${fmt(totProfit)}</span></td><td colspan="2"></td></tr></tfoot>
@@ -1619,7 +1694,7 @@ function renderPurTable() {
 }
 
 // ── SUBSCRIPTIONS ─────────────────────────────────────────────
-function saveSub() {
+async function saveSub() {
   const id=document.getElementById('sub-edit-id').value
   const name=document.getElementById('sub-name').value.trim()
   const amount=parseFloat(document.getElementById('sub-amount').value)||0
@@ -1653,6 +1728,16 @@ function saveSub() {
   processSubs()
   cancelForm('sub'); renderSubTable(); renderDash()
   toast(id?'Subscription updated!':'Subscription added!')
+  // Auto-create a Google Calendar event for the next renewal date
+  if (gsGetToken() && status === 'Active' && billing !== 'One-Time') {
+    const renewDate = nextCharge(entry)
+    const evLink = await gcCreateEvent(renewDate, `Renewal: ${name} - ${fmt(amount)}`)
+    if (evLink) {
+      const list2 = load(K.sub)
+      const idx = list2.findIndex(e => e.id === entry.id)
+      if (idx >= 0) { list2[idx].calendarEventId = evLink; save(K.sub, list2) }
+    }
+  }
 }
 
 function editSub(id) {
@@ -1917,6 +2002,26 @@ function importJSON(input) {
 // ── GOOGLE SHEETS BACKUP ───────────────────────────────────────
 const GD_BACKUP_PATH = ['Files', 'Kore Aerials Tool', 'Data Backups']
 const GD_BACKUP_MAX  = 5
+
+// ── GOOGLE CALENDAR ───────────────────────────────────────────
+const GC_CAL_API = 'https://www.googleapis.com/calendar/v3'
+
+// Create an all-day event on the user's primary calendar.
+// Returns the event's htmlLink (direct URL to view it) or null on failure.
+async function gcCreateEvent(date, title, description) {
+  if (!gsGetToken()) return null
+  // Google Calendar end date is exclusive — add 1 day for a single all-day event
+  const d = new Date(date + 'T00:00:00')
+  d.setDate(d.getDate() + 1)
+  const endDate = d.toISOString().split('T')[0]
+  const resp = await gsReq(`${GC_CAL_API}/calendars/primary/events`, {
+    method: 'POST',
+    body: JSON.stringify({ summary: title, description: description || '', start: { date }, end: { date: endDate } })
+  })
+  if (!resp?.ok) return null
+  const ev = await resp.json()
+  return ev.htmlLink || null
+}
 
 // Like gsWriteTab but targets a different spreadsheet ID (for backups).
 async function gsWriteTabToSheet(spreadsheetId, tabName, cols, rows) {
@@ -3521,7 +3626,7 @@ async function attDownloadRow(btn) {
 
 // ── CLIENTS / CRM ─────────────────────────────────────────────
 const CLI_TAB = 'Clients'
-const CLI_COLS = ['id','name','company','clientType','notes','followUpDate','contacts']
+const CLI_COLS = ['id','name','company','clientType','notes','followUpDate','contacts','calendarEventId']
 const CLI_TYPES = {'Real Estate':'re','Wedding':'wed','Business':'biz','Personal':'per','Production Company':'prod','Other':'oth'}
 let _clients = null // null = not yet loaded
 let _cliDetailName = null
@@ -3586,7 +3691,7 @@ async function loadClientsFromSheets() {
       let contacts = []
       try { contacts = JSON.parse(r[6]||'[]') } catch(_) {}
       if (!Array.isArray(contacts)) contacts = []
-      return { id:r[0]||'', name:r[1]||'', company:r[2]||'', clientType:r[3]||'', notes:r[4]||'', followUpDate:r[5]||'', contacts }
+      return { id:r[0]||'', name:r[1]||'', company:r[2]||'', clientType:r[3]||'', notes:r[4]||'', followUpDate:r[5]||'', contacts, calendarEventId:r[7]||'' }
     })
   } catch(e) { _clients = [] }
 }
@@ -3594,7 +3699,7 @@ async function loadClientsFromSheets() {
 async function writeClientsToSheets() {
   if (!_clients) return
   await gsEnsureClientsTab()
-  const rows = _clients.map(c => [c.id, c.name, c.company||'', c.clientType||'', c.notes||'', c.followUpDate||'', JSON.stringify(c.contacts||[])])
+  const rows = _clients.map(c => [c.id, c.name, c.company||'', c.clientType||'', c.notes||'', c.followUpDate||'', JSON.stringify(c.contacts||[]), c.calendarEventId||''])
   await gsWriteTab(CLI_TAB, CLI_COLS, rows)
 }
 
@@ -3833,6 +3938,14 @@ async function saveClientDetail(name) {
     Object.assign(existing, { company, clientType, followUpDate, notes, contacts })
   } else {
     _clients.push({ id:uid(), name, company, contacts, clientType, notes, followUpDate })
+  }
+  // Auto-create a Google Calendar reminder event if a follow-up date is set
+  if (followUpDate && gsGetToken()) {
+    const evLink = await gcCreateEvent(followUpDate, `Follow up: ${name}`)
+    if (evLink) {
+      const rec = _clients.find(c => c.name === name)
+      if (rec) rec.calendarEventId = evLink
+    }
   }
   const statusEl = document.getElementById('cli-save-status')
   statusEl.style.color = 'var(--text-2)'
