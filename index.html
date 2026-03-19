@@ -662,6 +662,13 @@ body.privacy-mode #privacy-banner{display:block}
           <button class="btn btn-d" style="width:100%" onclick="clearStep1()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg> Clear All Data</button>
         </div>
       </div>
+      <div class="card exp-card">
+        <div class="exp-icon"><svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg></div>
+        <h3>Backup to Google Sheets</h3>
+        <p>Save a full snapshot to your Drive. Keeps the last 5 backups automatically.</p>
+        <button class="btn btn-p" id="backup-btn" style="width:100%" onclick="backupToSheets()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg> Backup to Sheets</button>
+        <button class="btn btn-s" style="width:100%;margin-top:8px" onclick="viewBackups()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg> View Backups</button>
+      </div>
     </div>
     <div class="card" style="margin-top:16px" id="data-summary"></div>
   </section>
@@ -1863,7 +1870,7 @@ function exportExcel() {
 
 function exportJSON() {
   const d=new Date().toISOString().split('T')[0]
-  const data={exportedAt:new Date().toISOString(),version:'1.0',income:load(K.inc),purchases:load(K.pur),subscriptions:load(K.sub),subExpenses:load(K.subx)}
+  const data={exportedAt:new Date().toISOString(),version:'1.0',income:load(K.inc),purchases:load(K.pur),subscriptions:load(K.sub),subExpenses:load(K.subx),links:load(K.links),clients:_clients||[]}
   dl(JSON.stringify(data,null,2), `kore-visuals-backup-${d}.json`, 'application/json')
   toast('Backup exported!')
 }
@@ -1871,7 +1878,7 @@ function exportJSON() {
 function importJSON(input) {
   const file=input.files[0]; if(!file)return
   const reader=new FileReader()
-  reader.onload=e=>{
+  reader.onload=async e=>{
     try {
       const data=JSON.parse(e.target.result)
       // Support both old key format (drone_*) and current export format
@@ -1879,20 +1886,127 @@ function importJSON(input) {
       const pur  = data.purchases     || data.drone_purchases     || []
       const sub  = data.subscriptions || data.drone_subscriptions || []
       const subx = data.subExpenses   || data.drone_sub_expenses  || []
+      const links= data.links || []
+      const clients=data.clients || []
       const mode=document.getElementById('import-mode').value
       if(mode==='replace'){
         if(!confirm('Replace ALL existing data with this backup?')){input.value='';return}
         save(K.inc,inc); save(K.pur,pur); save(K.sub,sub); save(K.subx,subx)
+        save(K.links,links)
+        if(clients.length){_clients=clients;try{await writeClientsToSheets()}catch(_){}}
       } else {
         const merge=(key,arr)=>{const ex=load(key);const ids=new Set(ex.map(e=>e.id));save(key,[...ex,...arr.filter(e=>!ids.has(e.id))])}
         merge(K.inc,inc); merge(K.pur,pur); merge(K.sub,sub); merge(K.subx,subx)
+        merge(K.links,links)
+        if(clients.length){
+          if(!_clients)_clients=[]
+          const ids=new Set(_clients.map(c=>c.id))
+          _clients=[..._clients,...clients.filter(c=>!ids.has(c.id))]
+          try{await writeClientsToSheets()}catch(_){}
+        }
       }
       input.value=''
       renderDash(); renderIncTable(); renderPurTable(); renderSubTable(); renderTaxes(); renderDataSummary()
+      renderLinks(); renderClientsTab()
       toast(`Imported (${mode} mode)!`)
     } catch { toast('Invalid JSON file'); input.value='' }
   }
   reader.readAsText(file)
+}
+
+// ── GOOGLE SHEETS BACKUP ───────────────────────────────────────
+const GD_BACKUP_PATH = ['Files', 'Kore Aerials Tool', 'Data Backups']
+const GD_BACKUP_MAX  = 5
+
+// Like gsWriteTab but targets a different spreadsheet ID (for backups).
+async function gsWriteTabToSheet(spreadsheetId, tabName, cols, rows) {
+  const base = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}`
+  await gsReq(`${base}/values/${encodeURIComponent(tabName + '!A2:Z')}:clear`, { method:'POST', body:'{}' })
+  const values = [cols, ...rows]
+  const resp = await gsReq(
+    `${base}/values/${encodeURIComponent(tabName + '!A1')}?valueInputOption=RAW`,
+    { method:'PUT', body:JSON.stringify({ range:`${tabName}!A1`, majorDimension:'ROWS', values }) }
+  )
+  return resp?.ok ?? false
+}
+
+async function backupToSheets() {
+  if (!gsGetToken()) { toast('Sign in with Google to create a backup'); return }
+  const btn = document.getElementById('backup-btn')
+  const origHTML = btn.innerHTML
+  btn.disabled = true
+  btn.textContent = 'Creating backup…'
+  try {
+    // 1. Find Data Backups folder
+    const folderId = await gdResolvePath(GD_BACKUP_PATH)
+    if (!folderId) { toast('Data Backups folder not found in Drive'); return }
+
+    // 2. List existing backups (oldest first)
+    const q = encodeURIComponent(`'${folderId}' in parents and name contains 'Kore Visuals Backup - ' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false`)
+    const listResp = await gsReq(`${GD_DRIVE_API}/files?q=${q}&orderBy=createdTime&fields=files(id,name)&spaces=drive`)
+    let backups = []
+    if (listResp?.ok) backups = (await listResp.json()).files || []
+
+    // 3. Delete oldest if already at limit
+    while (backups.length >= GD_BACKUP_MAX) {
+      const oldest = backups.shift()
+      await gsReq(`${GD_DRIVE_API}/files/${oldest.id}`, { method:'DELETE' })
+    }
+
+    // 4. Build timestamp name
+    const now = new Date()
+    const pad = n => String(n).padStart(2,'0')
+    const ts = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`
+    const sheetName = `Kore Visuals Backup - ${ts}`
+
+    // 5. Create new spreadsheet in the backup folder
+    const createResp = await gsReq(`${GD_DRIVE_API}/files`, {
+      method: 'POST',
+      body: JSON.stringify({ name:sheetName, mimeType:'application/vnd.google-apps.spreadsheet', parents:[folderId] })
+    })
+    if (!createResp?.ok) { toast('Failed to create backup sheet'); return }
+    const { id: newId } = await createResp.json()
+
+    // 6. Get Sheet1's sheetId so we can rename it
+    const metaResp = await gsReq(`https://sheets.googleapis.com/v4/spreadsheets/${newId}?fields=sheets.properties`)
+    const sheet1Id = metaResp?.ok ? ((await metaResp.json()).sheets?.[0]?.properties?.sheetId ?? 0) : 0
+
+    // 7. Rename Sheet1 → Income, add remaining tabs
+    const tabsToAdd = ['Purchases','Subscriptions','Settings','Links','Clients']
+    await gsReq(`https://sheets.googleapis.com/v4/spreadsheets/${newId}:batchUpdate`, {
+      method: 'POST',
+      body: JSON.stringify({ requests: [
+        { updateSheetProperties:{ properties:{ sheetId:sheet1Id, title:'Income' }, fields:'title' } },
+        ...tabsToAdd.map(t => ({ addSheet:{ properties:{ title:t } } }))
+      ]})
+    })
+
+    // 8. Write data to each tab
+    const schema = SHEET_SCHEMA
+    const incRows = gsObjsToRows(K.inc);   if(incRows.length)  await gsWriteTabToSheet(newId,'Income',      schema[K.inc].cols,  incRows)
+    const purRows = gsObjsToRows(K.pur);   if(purRows.length)  await gsWriteTabToSheet(newId,'Purchases',   schema[K.pur].cols,  purRows)
+    const subRows = gsObjsToRows(K.sub);   if(subRows.length)  await gsWriteTabToSheet(newId,'Subscriptions',schema[K.sub].cols, subRows)
+    const setRows = gsSettingsRows();       if(setRows.length)  await gsWriteTabToSheet(newId,'Settings',    schema[K.subx].cols, setRows)
+    const lnkRows = gsObjsToRows(K.links); if(lnkRows.length)  await gsWriteTabToSheet(newId,'Links',       schema[K.links].cols,lnkRows)
+    if (_clients?.length) {
+      const cliRows = _clients.map(c=>[c.id,c.name,c.company||'',c.clientType||'',c.notes||'',c.followUpDate||'',JSON.stringify(c.contacts||[])])
+      await gsWriteTabToSheet(newId,'Clients',CLI_COLS,cliRows)
+    }
+
+    toast(`Backup created: ${sheetName}`)
+  } catch(e) {
+    toast('Backup failed: ' + (e.message||String(e)))
+  } finally {
+    btn.disabled = false
+    btn.innerHTML = origHTML
+  }
+}
+
+async function viewBackups() {
+  if (!gsGetToken()) { toast('Sign in with Google to view backups'); return }
+  const folderId = await gdResolvePath(GD_BACKUP_PATH)
+  if (!folderId) { toast('Data Backups folder not found in Drive'); return }
+  window.open(`https://drive.google.com/drive/folders/${folderId}`, '_blank')
 }
 
 function renderDataSummary() {
@@ -2233,8 +2347,21 @@ function gsSignOut() {
   Object.values(K).forEach(k => localStorage.removeItem(k))
   localStorage.removeItem('dt_logo_dark')
   localStorage.removeItem('dt_logo_light')
+  localStorage.removeItem('dt_app_name')
+  // Clear staged logo files and cached clients
+  _pendingLogos.dark = null; _pendingLogos.light = null
+  _clients = null
+  _cliTabEnsured = false
+  // Cancel any pending debounced sync so it can't fire after localStorage is cleared
+  clearTimeout(_gsSyncTimer); _gsSyncQueue.clear()
+  // Reset header
   applyAppName('')
   applyLogoForTheme(document.documentElement.dataset.theme || 'light')
+  // Reset Settings modal to clean empty state (in case it's open)
+  const nameEl = document.getElementById('smod-name')
+  if (nameEl) nameEl.value = ''
+  refreshLogoPreview('dark')
+  refreshLogoPreview('light')
   setSyncStatus('idle')
   renderDash(); renderIncTable(); renderPurTable(); renderSubTable(); renderTaxes(); renderDataSummary(); renderLinks()
 }
@@ -2331,7 +2458,10 @@ async function gsLoadAll() {
           localStorage.setItem(K.links, JSON.stringify(DEFAULT_LINKS))
         }
         const writeRows = key === K.subx ? gsSettingsRows() : gsObjsToRows(key)
-        await gsWriteTab(schema.tab, schema.cols, writeRows)
+        // Safety: never overwrite Sheets with empty data during initialization
+        if (writeRows.length > 0) {
+          await gsWriteTab(schema.tab, schema.cols, writeRows)
+        }
       } else {
         // Sheet has data — it wins; overwrite local cache
         localStorage.setItem(key, JSON.stringify(objs))
