@@ -1988,9 +1988,12 @@ async function backupToSheets() {
     const subRows = gsObjsToRows(K.sub);   if(subRows.length)  await gsWriteTabToSheet(newId,'Subscriptions',schema[K.sub].cols, subRows)
     const setRows = gsSettingsRows();       if(setRows.length)  await gsWriteTabToSheet(newId,'Settings',    schema[K.subx].cols, setRows)
     const lnkRows = gsObjsToRows(K.links); if(lnkRows.length)  await gsWriteTabToSheet(newId,'Links',       schema[K.links].cols,lnkRows)
-    if (_clients?.length) {
-      const cliRows = _clients.map(c=>[c.id,c.name,c.company||'',c.clientType||'',c.notes||'',c.followUpDate||'',JSON.stringify(c.contacts||[])])
-      await gsWriteTabToSheet(newId,'Clients',CLI_COLS,cliRows)
+    // Read Clients directly from the main sheet so we get the live data regardless of in-memory state
+    const cliSheetRows = await gsReadTab(CLI_TAB)
+    if (cliSheetRows && cliSheetRows.length > 1) {
+      // cliSheetRows[0] is the header; copy data rows as-is
+      const cliDataRows = cliSheetRows.slice(1).filter(r => r && r[0])
+      if (cliDataRows.length) await gsWriteTabToSheet(newId,'Clients',CLI_COLS,cliDataRows)
     }
 
     toast(`Backup created: ${sheetName}`)
