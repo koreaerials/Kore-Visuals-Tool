@@ -2613,6 +2613,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 // ── INVOICE GENERATOR ─────────────────────────────────────────
 const INV_TEMPLATE_NAME_STD = 'Invoice Template no Deposit.docx'
 const INV_TEMPLATE_NAME_DEP = 'Invoice Template with Deposit.docx'
+const INV_TEMPLATE_NAME_DEP_UNPAID = 'Invoice Template with Deposit Not-Paid.docx'
 
 /**
  * fillDocxTemplate(zip, data)
@@ -2656,34 +2657,28 @@ function processLoops(xml, data) {
     if (openPos === -1) return
     const closePos = xml.indexOf(closeTag)
     if (closePos === -1) return
-
-    // Find the <w:tr> that CONTAINS the open tag.
-    // IMPORTANT: lastIndexOf('<w:tr', pos) also matches <w:trPr>, <w:trHeight>, etc.
-    // We must ensure we find the actual <w:tr> or <w:tr > element tag.
-    let trStart = findElementBackwards(xml, 'w:tr', openPos)
+    let trStart = xml.lastIndexOf('<w:tr', openPos)
     if (trStart === -1) {
-      // Not inside a table row — fall back to paragraph-level
-      let pStart = findElementBackwards(xml, 'w:p', openPos)
-      if (pStart === -1) return
+      trStart = xml.lastIndexOf('<w:p', openPos)
+      if (trStart === -1) return
       const pEnd = xml.indexOf('</w:p>', closePos)
       if (pEnd === -1) return
       const blockEnd = pEnd + 6
-      const cleanTemplate = xml.substring(pStart, blockEnd).replace(openTag, '').replace(closeTag, '')
+      const cleanTemplate = xml.substring(trStart, blockEnd).replace(openTag, '').replace(closeTag, '')
       let expanded = ''
       items.forEach(item => {
         let row = cleanTemplate
         Object.keys(item).forEach(k => { row = row.split('{{' + k + '}}').join(escapeXml(String(item[k]))) })
         expanded += row
       })
-      xml = xml.substring(0, pStart) + expanded + xml.substring(blockEnd)
+      xml = xml.substring(0, trStart) + expanded + xml.substring(blockEnd)
       return
     }
-
     const trEndSearch = xml.indexOf('</w:tr>', closePos)
     if (trEndSearch === -1) return
     const blockEnd = trEndSearch + 7
     const template = xml.substring(trStart, blockEnd)
-    console.log('[fillDocx] Loop "' + name + '": found row template (' + template.length + ' chars, starts at ' + trStart + ')')
+    console.log('[fillDocx] Loop "' + name + '": found row template (' + template.length + ' chars)')
     const cleanTemplate = template.replace(openTag, '').replace(closeTag, '')
     let expanded = ''
     items.forEach(item => {
@@ -2695,28 +2690,6 @@ function processLoops(xml, data) {
     xml = xml.substring(0, trStart) + expanded + xml.substring(blockEnd)
   })
   return xml
-}
-
-/**
- * Search backwards from `fromPos` for an XML element with the given local name.
- * Unlike lastIndexOf('<w:tr', pos), this ensures we match the ELEMENT itself
- * (e.g. <w:tr> or <w:tr ..attrs..>) and NOT child elements that start with
- * the same prefix (e.g. <w:trPr>, <w:trHeight>).
- */
-function findElementBackwards(xml, tagName, fromPos) {
-  const needle = '<' + tagName
-  let pos = fromPos
-  while (pos >= 0) {
-    pos = xml.lastIndexOf(needle, pos)
-    if (pos === -1) return -1
-    // Check the character right after the tag name
-    var afterTag = xml.charAt(pos + needle.length)
-    if (afterTag === '>' || afterTag === ' ' || afterTag === '\t' || afterTag === '\n' || afterTag === '\r' || afterTag === '/') {
-      return pos  // It's the actual element, not a prefix match like <w:trPr>
-    }
-    pos--  // It was <w:trPr> or similar — keep searching
-  }
-  return -1
 }
 
 function processConditionals(xml, data) {
@@ -2843,50 +2816,15 @@ async function invUploadToDrive(content, srcMime, name, dstMime, folderId, token
   const metaObj = { name, mimeType: dstMime }
   if (folderId) metaObj.parents = [folderId]
 
-  // Google Drive requires multipart/related (not multipart/form-data).
-  // We must build the body with proper binary handling using ArrayBuffers
-  // to avoid corrupting the .docx zip data at larger sizes.
-  const boundary = '----KoreInvoiceBoundary' + Date.now()
-  const metaJson = JSON.stringify(metaObj)
-
-  const headerStr = '--' + boundary + '\r\n' +
-    'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
-    metaJson + '\r\n' +
-    '--' + boundary + '\r\n' +
-    'Content-Type: ' + srcMime + '\r\n' +
-    'Content-Transfer-Encoding: binary\r\n\r\n'
-  const footerStr = '\r\n--' + boundary + '--'
-
-  // Encode text parts as UTF-8 ArrayBuffers
-  const enc = new TextEncoder()
-  const headerBuf = enc.encode(headerStr)
-  const footerBuf = enc.encode(footerStr)
-
-  // Get binary content as ArrayBuffer
-  let contentBuf
-  if (content instanceof Blob) {
-    contentBuf = new Uint8Array(await content.arrayBuffer())
-  } else if (content instanceof ArrayBuffer) {
-    contentBuf = new Uint8Array(content)
-  } else {
-    contentBuf = new Uint8Array(content)
-  }
-
-  // Concatenate: header + binary content + footer
-  const combined = new Uint8Array(headerBuf.length + contentBuf.length + footerBuf.length)
-  combined.set(headerBuf, 0)
-  combined.set(contentBuf, headerBuf.length)
-  combined.set(footerBuf, headerBuf.length + contentBuf.length)
-
-  console.log('[upload] Total body size: ' + combined.length + ' bytes (header=' + headerBuf.length + ', content=' + contentBuf.length + ', footer=' + footerBuf.length + ')')
+  // Use FormData — more reliable than manual multipart boundary for binary data
+  const form = new FormData()
+  form.append('metadata', new Blob([JSON.stringify(metaObj)], { type: 'application/json' }))
+  form.append('file', content instanceof Blob ? content : new Blob([content], { type: srcMime }))
 
   const resp = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
     method: 'POST',
-    headers: {
-      'Authorization': 'Bearer ' + token,
-      'Content-Type': 'multipart/related; boundary=' + boundary
-    },
-    body: combined.buffer
+    headers: { 'Authorization': `Bearer ${token}` },
+    body: form
   })
   if (!resp.ok) {
     const errText = await resp.text().catch(() => '(no body)')
@@ -2923,7 +2861,9 @@ async function generateInvoice() {
 
     btn.disabled = true; btn.textContent = 'Generating…'
     successEl.style.display = 'none'
-    const templateName = withDep ? INV_TEMPLATE_NAME_DEP : INV_TEMPLATE_NAME_STD
+    const templateName = !withDep ? INV_TEMPLATE_NAME_STD
+      : document.getElementById('inv-deposit-paid').checked ? INV_TEMPLATE_NAME_DEP
+      : INV_TEMPLATE_NAME_DEP_UNPAID
 
     // Read lastInvoiceNumber from Sheets Settings tab
     console.log('Reading from Sheets...')
