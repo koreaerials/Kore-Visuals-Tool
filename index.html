@@ -1464,7 +1464,7 @@ function renderIncTable() {
       }
       const rowCls=status==='Pending'?'row-pending':status==='Unpaid'?'row-unpaid':''
       return `<tr class="${rowCls}">
-        <td>${fmtDate(e.date)}</td>
+        <td style="white-space:nowrap">${fmtDate(e.date)}</td>
         <td><strong>${esc(e.client)}</strong></td>
         <td><span class="pos">${fmt(e.amount)}</span></td>
         <td><select class="isel" onchange="updateIncField('${e.id}','pay',this.value)">${opt('Zelle',pay)}${opt('Cash',pay)}${opt('Check',pay)}${opt('Other',pay)}</select></td>
