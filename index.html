@@ -2615,60 +2615,121 @@ const INV_TEMPLATE_NAME_STD = 'Invoice Template no Deposit.docx'
 const INV_TEMPLATE_NAME_DEP = 'Invoice Template with Deposit.docx'
 
 function preprocessDocx(zip) {
-  const filesToProcess = ['word/document.xml']
-  filesToProcess.forEach(filename => {
-    if (!zip.files[filename]) return
-    let xml = zip.files[filename].asText()
+  // Process every XML part that could contain template tags
+  zip.forEach(function(relativePath) {
+    if (!relativePath.startsWith('word/') || !relativePath.endsWith('.xml')) return
+    const f = zip.file(relativePath)
+    if (!f) return
+    let xml = f.asText()
 
-    // Phase 1: Strip inline cruft elements that Google Docs injects
-    xml = xml.replace(/<w:proofErr[^/]\/>/g, '')
-    xml = xml.replace(/<w:proofErr[^>]*\/>/g, '')
-    xml = xml.replace(/<w:bookmarkStart[^>]*\/>/g, '')
+    // ── Phase 1: Strip ALL inline cruft that Google Docs injects ──
+    // These elements land BETWEEN and INSIDE <w:r> runs, splitting template
+    // tags like {{DATE}} across multiple runs and preventing docxtemplater
+    // from recognizing them.
+    xml = xml.replace(/<w:proofErr[^>]*\/>/g, '')               // spelling/grammar squiggles
+    xml = xml.replace(/<w:bookmarkStart[^>]*\/>/g, '')           // cursor/link bookmarks
     xml = xml.replace(/<w:bookmarkEnd[^>]*\/>/g, '')
-    xml = xml.replace(/<w:commentRangeStart[^>]*\/>/g, '')
+    // Handle non-self-closing bookmarks too (some Google exports)
+    xml = xml.replace(/<w:bookmarkStart[^>]*>[\s\S]*?<\/w:bookmarkStart>/g, '')
+    xml = xml.replace(/<w:bookmarkEnd[^>]*>[\s\S]*?<\/w:bookmarkEnd>/g, '')
+    xml = xml.replace(/<w:commentRangeStart[^>]*\/>/g, '')       // comment anchors
     xml = xml.replace(/<w:commentRangeEnd[^>]*\/>/g, '')
-    xml = xml.replace(/<w:lastRenderedPageBreak[^>]*\/>/g, '')
+    xml = xml.replace(/<w:lastRenderedPageBreak[^>]*\/>/g, '')   // page-break layout hints
 
-    // Phase 2: Merge split runs within paragraphs that contain template tags
-    xml = xml.replace(/<w:p[ >][\s\S]*?<\/w:p>/g, para => {
-      if (!para.includes('{')) return para
-      // Extract all runs
+    // ── Phase 2: Merge split <w:r> runs within each paragraph ──
+    // After Phase 1 strips cruft, adjacent runs that held pieces of a single
+    // template tag can now be merged.  We use POSITIONAL replacement (not
+    // string matching) because whitespace/other elements may still sit
+    // between runs in the raw XML.
+    xml = xml.replace(/<w:p\b[^>]*>[\s\S]*?<\/w:p>/g, function(para) {
+      if (para.indexOf('{') === -1) return para
+
+      // ── Step A: Parse out every <w:r>…</w:r> with its position ──
       const runs = []
-      const runRegex = /<w:r[ >][\s\S]*?<\/w:r>/g
-      let match
-      while ((match = runRegex.exec(para)) !== null) {
-        const textMatch = match[0].match(/<w:t[^>]*>([\s\S]*?)<\/w:t>/)
-        runs.push({ full: match[0], text: textMatch ? textMatch[1] : '', index: match.index })
+      const runRe = /<w:r\b[^>]*>[\s\S]*?<\/w:r>/g
+      let m
+      while ((m = runRe.exec(para)) !== null) {
+        const tMatch = m[0].match(/<w:t\b[^>]*>([\s\S]*?)<\/w:t>/)
+        const rPrMatch = m[0].match(/<w:rPr>[\s\S]*?<\/w:rPr>/)
+        runs.push({
+          xml:   m[0],
+          text:  tMatch ? tMatch[1] : '',
+          rPr:   rPrMatch ? rPrMatch[0] : '',
+          start: m.index,                        // position within `para`
+          end:   m.index + m[0].length
+        })
       }
-      const fullText = runs.map(r => r.text).join('')
-      if (!fullText.includes('{{')) return para
-      // Find tag boundaries and merge runs that span a tag
-      const tagRegex = /\{\{[^}]*\}\}/g
+      if (runs.length < 2) return para
+
+      // ── Step B: Build a character→run index map ──
+      let fullText = ''
+      const charToRun = []
+      for (let i = 0; i < runs.length; i++) {
+        for (let c = 0; c < runs[i].text.length; c++) charToRun.push(i)
+        fullText += runs[i].text
+      }
+      if (fullText.indexOf('{{') === -1) return para
+
+      // ── Step C: Find every {{…}} tag and check if it spans runs ──
+      //   Matches: {{TAG}}, {{#loop}}, {{/loop}}, {{{raw}}}
+      const tagRe = /\{{2,3}[#/]?[^}]*\}{2,3}/g
+      const mergeRanges = []
+      while ((m = tagRe.exec(fullText)) !== null) {
+        const sChar = m.index
+        const eChar = m.index + m[0].length - 1
+        if (sChar >= charToRun.length || eChar >= charToRun.length) continue
+        const sRun = charToRun[sChar]
+        const eRun = charToRun[eChar]
+        if (sRun !== eRun) {
+          mergeRanges.push({ sRun, eRun, tag: m[0] })
+        }
+      }
+      if (mergeRanges.length === 0) return para
+
+      // ── Step D: Consolidate overlapping / adjacent ranges ──
+      mergeRanges.sort((a, b) => a.sRun - b.sRun)
+      const consolidated = [{ sRun: mergeRanges[0].sRun, eRun: mergeRanges[0].eRun }]
+      for (let i = 1; i < mergeRanges.length; i++) {
+        const last = consolidated[consolidated.length - 1]
+        if (mergeRanges[i].sRun <= last.eRun + 1) {
+          last.eRun = Math.max(last.eRun, mergeRanges[i].eRun)
+        } else {
+          consolidated.push({ sRun: mergeRanges[i].sRun, eRun: mergeRanges[i].eRun })
+        }
+      }
+
+      // ── Step E: Rebuild paragraph, BACKWARDS so positions stay valid ──
       let result = para
-      let tagMatch
-      while ((tagMatch = tagRegex.exec(fullText)) !== null) {
-        const tagStart = tagMatch.index
-        const tagEnd = tagMatch.index + tagMatch[0].length
-        let charCount = 0
-        const spannedRuns = []
-        for (const run of runs) {
-          const runStart = charCount
-          const runEnd = charCount + run.text.length
-          if (runEnd > tagStart && runStart < tagEnd) spannedRuns.push(run)
-          charCount += run.text.length
-        }
-        if (spannedRuns.length > 1) {
-          const mergedText = spannedRuns.map(r => r.text).join('')
-          const firstRun = spannedRuns[0].full
-          const mergedRun = firstRun.replace(/<w:t[^>]*>[\s\S]*?<\/w:t>/, `<w:t>${mergedText}</w:t>`)
-          const allRunsText = spannedRuns.map(r => r.full).join('')
-          result = result.replace(allRunsText, mergedRun)
-        }
+      for (let g = consolidated.length - 1; g >= 0; g--) {
+        const range = consolidated[g]
+
+        // Combine text from all runs in range
+        let combinedText = ''
+        for (let r = range.sRun; r <= range.eRun; r++) combinedText += runs[r].text
+
+        // Keep formatting (<w:rPr>) from the first run
+        const rPr = runs[range.sRun].rPr
+
+        // Build a single replacement run
+        const newRun = '<w:r>' +
+          (rPr ? rPr : '') +
+          '<w:t xml:space="preserve">' + combinedText + '</w:t>' +
+          '</w:r>'
+
+        // Replace from first run's START to last run's END in the paragraph.
+        // This catches everything between the runs (whitespace, remnant nodes).
+        const replaceStart = runs[range.sRun].start
+        const replaceEnd   = runs[range.eRun].end
+
+        console.log('[preprocessDocx] Merged runs ' + range.sRun + '–' + range.eRun +
+                     ': "' + combinedText + '"')
+
+        result = result.substring(0, replaceStart) + newRun + result.substring(replaceEnd)
       }
       return result
     })
 
-    zip.file(filename, xml)
+    zip.file(relativePath, xml)
   })
 }
 
