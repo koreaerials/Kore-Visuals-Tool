@@ -702,18 +702,20 @@ const GS_SCOPE          = 'https://www.googleapis.com/auth/spreadsheets https://
 const SHEET_SCHEMA = {
   [K.inc]: {
     tab:  'Income',
-    cols: ['id','date','client','amount','paymentType','travelExpenses','profit','paymentStatus','description'],
+    cols: ['id','date','client','amount','paymentType','travelExpenses','profit','paymentStatus','description','invoiceNumber'],
     toRow: o => [
       o.id, o.date, o.client, o.amount,
       o.pay||o.paymentType||'Other',
       o.travel||o.travelExpenses||0,
       o.profit||0,
       o.status||o.paymentStatus||'Paid',
-      o.desc||o.description||''
+      o.desc||o.description||'',
+      o.invoiceNum||o.invoiceNumber||''
     ],
     toObj: r => ({
       id: r[0], date: r[1], client: r[2], amount: r[3],
-      pay: r[4], travel: r[5], profit: r[6], status: r[7], desc: r[8]
+      pay: r[4], travel: r[5], profit: r[6], status: r[7], desc: r[8],
+      invoiceNum: r[9]||''
     }),
   },
   [K.pur]: {
@@ -1353,7 +1355,8 @@ function saveIncome() {
   if(!date||!client||amount<=0){toast('Please fill in date, client, and amount');return}
   const profit=amount-travel
   const list=load(K.inc)
-  const entry={id:id||uid(),date,client,amount,pay,travel,profit,status,desc}
+  const existing=id?list.find(e=>e.id===id):null
+  const entry={id:id||uid(),date,client,amount,pay,travel,profit,status,desc,invoiceNum:existing?.invoiceNum||''}
   if(!id && privacyMode()) entry._priv = true
   if(id){const i=list.findIndex(e=>e.id===id);if(i>=0)list[i]=entry}else list.push(entry)
   save(K.inc,list); cancelForm('inc'); renderIncTable(); renderDash(); toast(id?'Job updated!':'Job saved!')
@@ -1459,7 +1462,7 @@ function renderIncTable() {
         <td>${travel>0?`<span class="bdg bdg-o">${fmt(travel)}</span>`:'<span style="color:var(--text-2)">—</span>'}</td>
         <td><span class="${+e.profit>=0?'pos':'neg'}">${fmt(e.profit)}</span></td>
         <td style="min-width:140px;white-space:normal;word-break:break-word">${esc(desc||'—')}</td>
-        <td style="white-space:nowrap"><button class="btn btn-sm btn-s" onclick="editIncRow('${e.id}')">${icon('pencil',13)}</button> <button class="btn btn-sm btn-d" onclick="delInc('${e.id}')">${icon('trash',13)}</button></td>
+        <td style="white-space:nowrap"><button class="btn btn-sm" style="color:${e.invoiceNum?'var(--blue)':'var(--text-2)'};opacity:${e.invoiceNum?'1':'0.45'};background:transparent;border-color:transparent" title="${e.invoiceNum?'Invoice: '+e.invoiceNum:'Link Invoice'}" onclick="openInvLinkModal('${e.id}')">${icon('receipt',13)}</button> <button class="btn btn-sm btn-s" onclick="editIncRow('${e.id}')">${icon('pencil',13)}</button> <button class="btn btn-sm btn-d" onclick="delInc('${e.id}')">${icon('trash',13)}</button></td>
       </tr>`
     }).join('')}</tbody>
     <tfoot><tr><td colspan="2">Total (${list.length} jobs)</td><td><span class="pos">${fmt(totRev)}</span></td><td colspan="2"></td><td>${totTravel>0?`<span class="neg">${fmt(totTravel)}</span>`:''}</td><td><span class="${totProfit>=0?'pos':'neg'}">${fmt(totProfit)}</span></td><td colspan="2"></td></tr></tfoot>
@@ -3016,6 +3019,9 @@ async function generateInvoice() {
     successEl.style.display = 'block'
     toast('Invoice saved to Drive!', 4000)
 
+    // Auto-link invoice number to matching income entry
+    await autoLinkInvoiceToJob(invNum, client)
+
   } catch(err) {
     console.log('Invoice error: ' + String(err))
     console.log('Invoice error message: ' + err.message)
@@ -3026,6 +3032,119 @@ async function generateInvoice() {
       btn.disabled = false
       btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Generate'
     }
+  }
+}
+
+// ── INVOICE LINK MODAL ────────────────────────────────────────
+let _invLinkId = null
+
+function openInvLinkModal(id) {
+  _invLinkId = id
+  const e = load(K.inc).find(e=>e.id===id); if(!e) return
+  const has = !!(e.invoiceNum)
+  document.getElementById('inv-link-input').value = e.invoiceNum||''
+  document.getElementById('inv-link-client').textContent = e.client||''
+  document.getElementById('inv-link-current').style.display = has ? 'flex' : 'none'
+  document.getElementById('inv-link-current-num').textContent = has ? e.invoiceNum : ''
+  document.getElementById('inv-link-status').textContent = ''
+  document.getElementById('inv-link-overlay').classList.add('open')
+}
+
+function closeInvLinkModal() {
+  document.getElementById('inv-link-overlay').classList.remove('open')
+  _invLinkId = null
+}
+
+function saveInvLink() {
+  if(!_invLinkId) return
+  const num = document.getElementById('inv-link-input').value.trim()
+  if(!num){ toast('Enter an invoice number'); return }
+  const list = load(K.inc)
+  const i = list.findIndex(e=>e.id===_invLinkId); if(i<0) return
+  list[i].invoiceNum = num
+  save(K.inc, list); renderIncTable()
+  toast('Invoice linked!')
+  closeInvLinkModal()
+}
+
+function removeInvLink() {
+  if(!_invLinkId) return
+  if(!confirm('Remove the invoice link from this job?')) return
+  const list = load(K.inc)
+  const i = list.findIndex(e=>e.id===_invLinkId); if(i<0) return
+  list[i].invoiceNum = ''
+  save(K.inc, list); renderIncTable()
+  toast('Invoice link removed')
+  closeInvLinkModal()
+}
+
+async function downloadLinkedInvoice() {
+  if(!_invLinkId) return
+  const e = load(K.inc).find(e=>e.id===_invLinkId); if(!e||!e.invoiceNum) return
+  const token = gsGetToken()
+  if(!token){ toast('Sign in with Google to access Drive'); return }
+  const statusEl = document.getElementById('inv-link-status')
+  statusEl.textContent = 'Searching Drive…'
+  statusEl.style.color = 'var(--text-2)'
+  try {
+    const q = encodeURIComponent(`name contains '${e.invoiceNum}' and trashed=false`)
+    const resp = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&spaces=drive&fields=files(id,name,mimeType)`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    if(!resp.ok) throw new Error('Drive search failed')
+    const data = await resp.json()
+    if(!data.files||!data.files.length){
+      statusEl.textContent = 'No invoice found for this number'
+      statusEl.style.color = 'var(--red)'
+      return
+    }
+    const file = data.files[0]
+    statusEl.textContent = `Downloading ${file.name}…`
+    statusEl.style.color = 'var(--text-2)'
+    // Download the file
+    const dlResp = await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    if(!dlResp.ok) throw new Error('Download failed')
+    const blob = await dlResp.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a'); a.href=url; a.download=file.name; a.click()
+    setTimeout(()=>URL.revokeObjectURL(url), 5000)
+    statusEl.textContent = `Downloaded: ${file.name}`
+    statusEl.style.color = 'var(--green)'
+  } catch(err) {
+    statusEl.textContent = 'Error: ' + (err.message||String(err))
+    statusEl.style.color = 'var(--red)'
+  }
+}
+
+async function autoLinkInvoiceToJob(invNum, clientName) {
+  try {
+    const list = load(K.inc)
+    const norm = s => (s||'').toLowerCase().trim()
+    const matches = list.filter(e => norm(e.client) === norm(clientName) && !e.invoiceNum)
+    if(!matches.length) return // no matching unlinked job — skip silently
+    if(matches.length === 1) {
+      // Single match — auto-link
+      const i = list.findIndex(e=>e.id===matches[0].id)
+      list[i].invoiceNum = invNum
+      save(K.inc, list); renderIncTable()
+      toast(`Invoice ${invNum} linked to job for ${clientName}`, 4000)
+    } else {
+      // Multiple matches — prompt user to pick
+      const opts = matches.map((e,idx) => `${idx+1}. ${fmtDate(e.date)} — ${fmt(e.amount)}${e.desc?' ('+e.desc+')':''}`)
+      const choice = prompt(
+        `Multiple unlinked jobs found for "${clientName}".\nEnter the number of the job to link invoice ${invNum} to:\n\n${opts.join('\n')}`
+      )
+      const idx = parseInt(choice)-1
+      if(isNaN(idx)||idx<0||idx>=matches.length) return
+      const i = list.findIndex(e=>e.id===matches[idx].id)
+      list[i].invoiceNum = invNum
+      save(K.inc, list); renderIncTable()
+      toast(`Invoice ${invNum} linked!`)
+    }
+  } catch(err) {
+    console.log('autoLinkInvoiceToJob error:', err)
   }
 }
 </script>
@@ -3154,6 +3273,32 @@ async function generateInvoice() {
         Generate
       </button>
       <button class="btn btn-s" onclick="closeInvoiceModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- INVOICE LINK MODAL -->
+<div class="smod-overlay" id="inv-link-overlay" onclick="if(event.target===this)closeInvLinkModal()">
+  <div class="smod" style="max-width:380px">
+    <div class="smod-hdr">
+      <span class="smod-ttl">Link Invoice</span>
+      <button class="smod-close" onclick="closeInvLinkModal()">&#x2715;</button>
+    </div>
+    <div style="font-size:12px;color:var(--text-2);margin-bottom:14px">Job: <strong id="inv-link-client"></strong></div>
+    <div id="inv-link-current" style="display:none;align-items:center;gap:10px;background:var(--card-2,rgba(0,0,0,0.06));border-radius:8px;padding:10px 12px;margin-bottom:14px">
+      <span style="font-size:12px;color:var(--text-2);flex-shrink:0">Linked invoice:</span>
+      <span id="inv-link-current-num" style="font-size:14px;font-weight:700;color:var(--blue);flex:1"></span>
+      <button class="btn btn-sm" style="flex-shrink:0" onclick="downloadLinkedInvoice()"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:3px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download</button>
+    </div>
+    <div class="smod-row" style="margin-bottom:4px">
+      <div class="smod-lbl">Invoice Number</div>
+      <input type="text" id="inv-link-input" class="isel" style="width:100%;box-sizing:border-box" placeholder="e.g. TO20260318" onkeydown="if(event.key==='Enter')saveInvLink()">
+    </div>
+    <div id="inv-link-status" style="font-size:12px;min-height:18px;margin-bottom:10px"></div>
+    <div class="smod-footer">
+      <button class="btn btn-p" onclick="saveInvLink()" style="flex:1"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:4px"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>Link Invoice</button>
+      <button class="btn btn-d btn-sm" onclick="removeInvLink()" id="inv-link-remove-btn">Remove Link</button>
+      <button class="btn btn-s" onclick="closeInvLinkModal()">Cancel</button>
     </div>
   </div>
 </div>
