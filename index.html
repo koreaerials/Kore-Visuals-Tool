@@ -454,7 +454,7 @@ body.privacy-mode #privacy-banner{display:block}
                 <option>Zelle</option><option>Cash</option><option>Check</option><option>Other</option>
               </select>
             </div>
-            <div class="ff"><label>Travel Expenses ($)</label><input type="number" id="inc-travel" placeholder="0.00" min="0" step="0.01" value="0" oninput="calcProfit()"></div>
+            <div class="ff"><label>Job Expenses ($)</label><input type="number" id="inc-travel" placeholder="0.00" min="0" step="0.01" value="0" oninput="calcProfit()"></div>
             <div class="ff"><label>Payment Status</label>
               <select id="inc-status"><option value="Paid">Paid</option><option value="Pending">Pending</option><option value="Unpaid">Unpaid</option></select>
             </div>
@@ -757,7 +757,7 @@ const GS_SCOPE          = 'https://www.googleapis.com/auth/spreadsheets https://
 const SHEET_SCHEMA = {
   [K.inc]: {
     tab:  'Income',
-    cols: ['id','date','client','amount','paymentType','travelExpenses','profit','paymentStatus','description','invoiceNumber','agreementId','calendarEventId','jobTime'],
+    cols: ['id','date','client','amount','paymentType','jobExpenses','profit','paymentStatus','description','invoiceNumber','agreementId','calendarEventId','jobTime'],
     toRow: o => [
       o.id, o.date, o.client, o.amount,
       o.pay||o.paymentType||'Other',
@@ -896,7 +896,7 @@ function loadP(k) {
   if (!privacyMode()) return data
   return data.map(e => {
     if (e._priv) return e
-    if (k === K.inc)  return {...e, amount:0, travel:0, travelExpenses:0, travel_expenses:0, profit:0}
+    if (k === K.inc)  return {...e, amount:0, travel:0, travelExpenses:0, jobExpenses:0, travel_expenses:0, profit:0}
     if (k === K.pur)  return {...e, price:0}
     if (k === K.sub)  return {...e, amount:0, totalSpent:0}
     if (k === K.subx) return {...e, amount:0}
@@ -1043,7 +1043,7 @@ function renderDash() {
   const subCards = [
     `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('bag',11)} Purchases</div><div class="val r">${fmt(purAmt)}</div>`,
     `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('repeat',11)} Subscription Charges</div><div class="val r">${fmt(subAmt)}</div>`,
-    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('plane',11)} Travel Expenses</div><div class="val r">${fmt(trav)}</div>`,
+    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('plane',11)} Job Expenses</div><div class="val r">${fmt(trav)}</div>`,
   ]
   // Widget catalogue: 0-2 main cards, 3-5 sub-cards, 6 chart, 7 renewals, 8 quick links
   const WIDGET_SPANS = [2,2,2, 2,2,2, 4,2, 6]
@@ -1387,7 +1387,7 @@ function exportYearXLS(yr) {
 <?mso-application progid="Excel.Sheet"?>
 <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
-${smlSheet('Income',  ['Date','Client','Amount','Payment Type','Travel Expenses','Profit','Status','Description'], incRows)}
+${smlSheet('Income',  ['Date','Client','Amount','Payment Type','Job Expenses','Profit','Status','Description'], incRows)}
 ${smlSheet('Expenses',['Date','Store / Service','Category','Amount','Description'], expRows)}
 </Workbook>`
 
@@ -1539,7 +1539,7 @@ function renderIncSummary(list) {
   const incMain = [
     `<div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('dollar',13)} Total Revenue</div><div class="val pos">${fmt(totRev)}</div><div class="sub">${list.length} job${list.length!==1?'s':''}</div>`,
     `<div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('trending-up',13)} Total Profit</div><div class="val ${totProfit>=0?'pos':'neg'}">${fmt(totProfit)}</div><div class="sub">after travel expenses</div>`,
-    `<div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('upload',13)} Travel Expenses</div><div class="val r">${fmt(totTravel)}</div><div class="sub">total reimbursable</div>`,
+    `<div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('upload',13)} Job Expenses</div><div class="val r">${fmt(totTravel)}</div><div class="sub">travel, insurance & misc</div>`,
   ]
   const incSub = [
     `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('check-circle',11)} Paid</div><div class="val pos">${fmt(paidAmt)}</div><div style="font-size:11px;color:var(--text-2);margin-top:3px">${paidCnt} job${paidCnt!==1?'s':''}</div>`,
