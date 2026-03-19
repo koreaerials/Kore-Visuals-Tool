@@ -2617,146 +2617,88 @@ const INV_TEMPLATE_NAME_DEP = 'Invoice Template with Deposit.docx'
 /**
  * fillDocxTemplate(zip, data)
  * Directly replaces template tags in the .docx XML — no docxtemplater needed.
- *
- * Supports:
- *   {{TAG}}                        → simple value replacement
- *   {{#loopName}}...{{/loopName}}  → row duplication (in tables)
- *   {{#condName}}...{{/condName}}  → conditional sections (show/hide)
- *
- * Works because the XML dump confirmed all tags sit in single <w:t> nodes.
  */
 function fillDocxTemplate(zip, data) {
   const xmlFiles = Object.keys(zip.files).filter(f =>
     f.startsWith('word/') && f.endsWith('.xml') && !zip.files[f].dir
   )
-
   xmlFiles.forEach(filename => {
     let xml = zip.files[filename].asText()
-
-    // ── 1. Handle {{#section}}…{{/section}} LOOPS inside table rows ──
-    // Find <w:tr> rows that contain {{#name}}, duplicate per item
     xml = processLoops(xml, data)
-
-    // ── 2. Handle {{#conditional}}…{{/conditional}} sections ──
-    // If the data key is truthy, strip the tags and keep content.
-    // If falsy, remove everything between the tags.
     xml = processConditionals(xml, data)
-
-    // ── 3. Replace all remaining {{TAG}} simple values ──
     xml = xml.replace(/\{\{([^#/}][^}]*?)\}\}/g, (match, key) => {
       const k = key.trim()
       const val = data[k]
       if (val !== undefined && val !== null) return escapeXml(String(val))
-      return ''  // unknown tags → empty (same as nullGetter)
+      return ''
     })
-
     zip.file(filename, xml)
   })
 }
 
 function escapeXml(str) {
-  return str.replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&apos;')
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;')
 }
 
 function processLoops(xml, data) {
-  // Find all loop names: {{#name}}
   const loopNames = []
   const loopNameRe = /\{\{#(\w+)\}\}/g
   let m
   while ((m = loopNameRe.exec(xml)) !== null) {
     if (loopNames.indexOf(m[1]) === -1) loopNames.push(m[1])
   }
-
   loopNames.forEach(name => {
     const items = data[name]
     if (!Array.isArray(items)) return
-
     const openTag = '{{#' + name + '}}'
     const closeTag = '{{/' + name + '}}'
-
-    // Strategy: find the <w:tr> row that contains the open tag,
-    // and the <w:tr> row that contains the close tag.
-    // If they're the SAME row, duplicate that row per item.
-    // If different rows, grab everything between (inclusive).
-
-    // Find the <w:tr> containing the open tag
     const openPos = xml.indexOf(openTag)
     if (openPos === -1) return
     const closePos = xml.indexOf(closeTag)
     if (closePos === -1) return
-
-    // Search backwards from openTag for <w:tr
-    const trStartSearchFrom = openPos
-    let trStart = xml.lastIndexOf('<w:tr', trStartSearchFrom)
+    let trStart = xml.lastIndexOf('<w:tr', openPos)
     if (trStart === -1) {
-      // Not inside a table row — fall back to paragraph-level
-      trStart = xml.lastIndexOf('<w:p', trStartSearchFrom)
+      trStart = xml.lastIndexOf('<w:p', openPos)
       if (trStart === -1) return
       const pEnd = xml.indexOf('</w:p>', closePos)
       if (pEnd === -1) return
       const blockEnd = pEnd + 6
-
-      const template = xml.substring(trStart, blockEnd)
-      const cleanTemplate = template.replace(openTag, '').replace(closeTag, '')
-
+      const cleanTemplate = xml.substring(trStart, blockEnd).replace(openTag, '').replace(closeTag, '')
       let expanded = ''
       items.forEach(item => {
         let row = cleanTemplate
-        Object.keys(item).forEach(k => {
-          row = row.split('{{' + k + '}}').join(escapeXml(String(item[k])))
-        })
+        Object.keys(item).forEach(k => { row = row.split('{{' + k + '}}').join(escapeXml(String(item[k]))) })
         expanded += row
       })
-
       xml = xml.substring(0, trStart) + expanded + xml.substring(blockEnd)
       return
     }
-
-    // Search forward from closeTag for </w:tr>
     const trEndSearch = xml.indexOf('</w:tr>', closePos)
     if (trEndSearch === -1) return
     const blockEnd = trEndSearch + 7
-
     const template = xml.substring(trStart, blockEnd)
     console.log('[fillDocx] Loop "' + name + '": found row template (' + template.length + ' chars)')
-
-    // Remove the loop tags from the template
     const cleanTemplate = template.replace(openTag, '').replace(closeTag, '')
-
-    // Duplicate for each item, replacing item-level tags
     let expanded = ''
     items.forEach(item => {
       let row = cleanTemplate
-      Object.keys(item).forEach(k => {
-        // Replace all instances of {{key}} in this row
-        row = row.split('{{' + k + '}}').join(escapeXml(String(item[k])))
-      })
+      Object.keys(item).forEach(k => { row = row.split('{{' + k + '}}').join(escapeXml(String(item[k]))) })
       expanded += row
     })
-
     console.log('[fillDocx] Loop "' + name + '": expanded to ' + items.length + ' rows')
     xml = xml.substring(0, trStart) + expanded + xml.substring(blockEnd)
   })
-
   return xml
 }
 
 function processConditionals(xml, data) {
-  // Find all conditional names: {{#name}} where name is NOT an array in data
   const condRe = /\{\{#(\w+)\}\}/g
   let m
   const names = []
   while ((m = condRe.exec(xml)) !== null) {
     const name = m[1]
-    if (names.indexOf(name) === -1 && !Array.isArray(data[name])) {
-      names.push(name)
-    }
+    if (names.indexOf(name) === -1 && !Array.isArray(data[name])) names.push(name)
   }
-
   names.forEach(name => {
     const openTag = '{{#' + name + '}}'
     const closeTag = '{{/' + name + '}}'
@@ -2764,16 +2706,12 @@ function processConditionals(xml, data) {
     if (openPos === -1) return
     const closePos = xml.indexOf(closeTag, openPos)
     if (closePos === -1) return
-
     if (data[name]) {
-      // Truthy: keep content, strip tags
       xml = xml.replace(openTag, '').replace(closeTag, '')
     } else {
-      // Falsy: remove everything from openTag to end of closeTag
       xml = xml.substring(0, openPos) + xml.substring(closePos + closeTag.length)
     }
   })
-
   return xml
 }
 
@@ -2846,18 +2784,24 @@ function invUpdateRemaining() {
 }
 
 async function invUploadToDrive(content, srcMime, name, dstMime, folderId, token) {
-  const boundary = 'kore_inv_mp'
   const metaObj = { name, mimeType: dstMime }
   if (folderId) metaObj.parents = [folderId]
-  const header = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metaObj)}\r\n--${boundary}\r\nContent-Type: ${srcMime}\r\n\r\n`
-  const footer = `\r\n--${boundary}--`
-  const body = new Blob([header, content instanceof Blob ? content : new Blob([content]), footer])
+
+  // Use FormData — more reliable than manual multipart boundary for binary data
+  const form = new FormData()
+  form.append('metadata', new Blob([JSON.stringify(metaObj)], { type: 'application/json' }))
+  form.append('file', content instanceof Blob ? content : new Blob([content], { type: srcMime }))
+
   const resp = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
     method: 'POST',
-    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': `multipart/related; boundary=${boundary}` },
-    body
+    headers: { 'Authorization': `Bearer ${token}` },
+    body: form
   })
-  if (!resp.ok) throw new Error('Drive upload failed: ' + resp.status)
+  if (!resp.ok) {
+    const errText = await resp.text().catch(() => '(no body)')
+    console.error('Drive upload error detail:', errText)
+    throw new Error('Drive upload failed: ' + resp.status)
+  }
   return resp.json()
 }
 
@@ -2931,10 +2875,9 @@ async function generateInvoice() {
       }
     }
 
-    // Fill template — direct XML replacement (bypasses docxtemplater)
+    // Fill template — direct XML replacement (no docxtemplater)
     console.log('Filling template...')
     const zip = new PizZip(tBuf)
-
     const tplData = {
       INVOICE_NUMBER: invNum,
       DATE: dateStr,
@@ -2950,10 +2893,8 @@ async function generateInvoice() {
       tplData.remaining = fmt(paid ? total-dep : total)
       tplData.showDeposit = true
     }
-
     fillDocxTemplate(zip, tplData)
     console.log('Template filled successfully')
-
     const filledBuf = zip.generate({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' })
 
     // Upload filled docx → convert to Google Doc (placed in Invoices folder temporarily)
