@@ -861,6 +861,13 @@ function fmtDate(s) {
   const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
   return `${mo[+m-1]} ${+d}, ${y}`
 }
+function fmtTime(t) {
+  if(!t) return ''
+  const [h,m]=t.split(':').map(Number)
+  const ampm=h>=12?'PM':'AM'
+  const h12=h%12||12
+  return `${h12}:${String(m).padStart(2,'0')} ${ampm}`
+}
 // ── PRIVACY MODE ──────────────────────────────────────────────
 const privacyMode = () => localStorage.getItem('dt_privacy') === '1'
 function applyPrivacyMode(on) {
@@ -1175,7 +1182,7 @@ function renderRenewals() {
   if (_dashView !== 'renewals') {
     loadP(K.inc)
       .filter(e => e.calendarEventId && e.date >= todayStr)
-      .map(e => { const nd = toDate(e.date); const days = Math.round((nd - now) / 864e5); return { type:'shoot', date: e.date, nd, days, title: e.client, sub: 'Shoot', amount: e.amount, calLink: gcEventLink(e.calendarEventId) } })
+      .map(e => { const nd = toDate(e.date); const days = Math.round((nd - now) / 864e5); return { type:'shoot', date: e.date, nd, days, title: e.client, sub: 'Shoot', amount: e.amount, calLink: gcEventLink(e.calendarEventId), jobTime: e.jobTime||'' } })
       .filter(s => s.days >= 0 && s.days <= maxDays)
       .forEach(s => items.push(s))
   }
@@ -1197,7 +1204,8 @@ function renderRenewals() {
     const borderColor = item.type === 'shoot' ? 'var(--blue)' : '#ff9500'
     const amtColor    = item.type === 'shoot' ? 'var(--green)' : 'var(--red)'
     const calIcon = item.calLink ? `<a href="${esc(item.calLink)}" target="_blank" title="View in Calendar" style="color:var(--blue);margin-left:5px;vertical-align:middle">${icon('calendar',11)}</a>` : ''
-    return `<div class="ren-item" style="border-left:3px solid ${borderColor};padding-left:10px"><div><div class="ren-name">${esc(item.title)}${calIcon}</div><div class="ren-when">${fmtDate(item.date)} · ${item.sub}</div></div><div style="display:flex;align-items:center;gap:8px"><span class="ren-amt" style="color:${amtColor}">${fmt(item.amount)}</span><span class="d-bdg ${cls}">${dlbl}</span></div></div>`
+    const timeStr = item.jobTime ? ' · ' + fmtTime(item.jobTime) : ''
+    return `<div class="ren-item" style="border-left:3px solid ${borderColor};padding-left:10px"><div><div class="ren-name">${esc(item.title)}${calIcon}</div><div class="ren-when">${fmtDate(item.date)}${timeStr} · ${item.sub}</div></div><div style="display:flex;align-items:center;gap:8px"><span class="ren-amt" style="color:${amtColor}">${fmt(item.amount)}</span><span class="d-bdg ${cls}">${dlbl}</span></div></div>`
   }).join('')
 }
 
