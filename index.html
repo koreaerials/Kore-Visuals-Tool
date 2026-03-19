@@ -2657,28 +2657,31 @@ function processLoops(xml, data) {
     if (openPos === -1) return
     const closePos = xml.indexOf(closeTag)
     if (closePos === -1) return
-    let trStart = xml.lastIndexOf('<w:tr', openPos)
+
+    // Find the <w:tr> that CONTAINS the open tag.
+    // Uses findElementBackwards to avoid matching <w:trPr>, <w:trHeight>, etc.
+    let trStart = findElementBackwards(xml, 'w:tr', openPos)
     if (trStart === -1) {
-      trStart = xml.lastIndexOf('<w:p', openPos)
-      if (trStart === -1) return
+      let pStart = findElementBackwards(xml, 'w:p', openPos)
+      if (pStart === -1) return
       const pEnd = xml.indexOf('</w:p>', closePos)
       if (pEnd === -1) return
       const blockEnd = pEnd + 6
-      const cleanTemplate = xml.substring(trStart, blockEnd).replace(openTag, '').replace(closeTag, '')
+      const cleanTemplate = xml.substring(pStart, blockEnd).replace(openTag, '').replace(closeTag, '')
       let expanded = ''
       items.forEach(item => {
         let row = cleanTemplate
         Object.keys(item).forEach(k => { row = row.split('{{' + k + '}}').join(escapeXml(String(item[k]))) })
         expanded += row
       })
-      xml = xml.substring(0, trStart) + expanded + xml.substring(blockEnd)
+      xml = xml.substring(0, pStart) + expanded + xml.substring(blockEnd)
       return
     }
     const trEndSearch = xml.indexOf('</w:tr>', closePos)
     if (trEndSearch === -1) return
     const blockEnd = trEndSearch + 7
     const template = xml.substring(trStart, blockEnd)
-    console.log('[fillDocx] Loop "' + name + '": found row template (' + template.length + ' chars)')
+    console.log('[fillDocx] Loop "' + name + '": found row template (' + template.length + ' chars, starts at ' + trStart + ')')
     const cleanTemplate = template.replace(openTag, '').replace(closeTag, '')
     let expanded = ''
     items.forEach(item => {
@@ -2690,6 +2693,25 @@ function processLoops(xml, data) {
     xml = xml.substring(0, trStart) + expanded + xml.substring(blockEnd)
   })
   return xml
+}
+
+/**
+ * Search backwards from `fromPos` for an XML element with the exact local name.
+ * Unlike lastIndexOf('<w:tr', pos), this won't match <w:trPr>, <w:trHeight>, etc.
+ */
+function findElementBackwards(xml, tagName, fromPos) {
+  const needle = '<' + tagName
+  let pos = fromPos
+  while (pos >= 0) {
+    pos = xml.lastIndexOf(needle, pos)
+    if (pos === -1) return -1
+    var afterTag = xml.charAt(pos + needle.length)
+    if (afterTag === '>' || afterTag === ' ' || afterTag === '\t' || afterTag === '\n' || afterTag === '\r' || afterTag === '/') {
+      return pos
+    }
+    pos--
+  }
+  return -1
 }
 
 function processConditionals(xml, data) {
@@ -2816,15 +2838,44 @@ async function invUploadToDrive(content, srcMime, name, dstMime, folderId, token
   const metaObj = { name, mimeType: dstMime }
   if (folderId) metaObj.parents = [folderId]
 
-  // Use FormData — more reliable than manual multipart boundary for binary data
-  const form = new FormData()
-  form.append('metadata', new Blob([JSON.stringify(metaObj)], { type: 'application/json' }))
-  form.append('file', content instanceof Blob ? content : new Blob([content], { type: srcMime }))
+  // Google Drive requires multipart/related (not multipart/form-data).
+  // Build the body with ArrayBuffer concatenation for binary safety.
+  const boundary = '----KoreInvoiceBoundary' + Date.now()
+  const headerStr = '--' + boundary + '\r\n' +
+    'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
+    JSON.stringify(metaObj) + '\r\n' +
+    '--' + boundary + '\r\n' +
+    'Content-Type: ' + srcMime + '\r\n' +
+    'Content-Transfer-Encoding: binary\r\n\r\n'
+  const footerStr = '\r\n--' + boundary + '--'
+
+  const enc = new TextEncoder()
+  const headerBuf = enc.encode(headerStr)
+  const footerBuf = enc.encode(footerStr)
+
+  let contentBuf
+  if (content instanceof Blob) {
+    contentBuf = new Uint8Array(await content.arrayBuffer())
+  } else if (content instanceof ArrayBuffer) {
+    contentBuf = new Uint8Array(content)
+  } else {
+    contentBuf = new Uint8Array(content)
+  }
+
+  const combined = new Uint8Array(headerBuf.length + contentBuf.length + footerBuf.length)
+  combined.set(headerBuf, 0)
+  combined.set(contentBuf, headerBuf.length)
+  combined.set(footerBuf, headerBuf.length + contentBuf.length)
+
+  console.log('[upload] Total body size: ' + combined.length + ' bytes (header=' + headerBuf.length + ', content=' + contentBuf.length + ', footer=' + footerBuf.length + ')')
 
   const resp = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
     method: 'POST',
-    headers: { 'Authorization': `Bearer ${token}` },
-    body: form
+    headers: {
+      'Authorization': 'Bearer ' + token,
+      'Content-Type': 'multipart/related; boundary=' + boundary
+    },
+    body: combined.buffer
   })
   if (!resp.ok) {
     const errText = await resp.text().catch(() => '(no body)')
