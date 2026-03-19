@@ -1476,8 +1476,11 @@ async function saveIncome() {
   if(id){const i=list.findIndex(e=>e.id===id);if(i>=0)list[i]=entry}else list.push(entry)
   save(K.inc,list); cancelForm('inc'); renderIncTable(); renderDash(); toast(id?'Job updated!':'Job saved!')
   // Auto-create a Google Calendar event for new jobs only
+  console.log('[Calendar] saveIncome: id=', id, '| token present=', !!gsGetToken())
   if (!id && gsGetToken()) {
+    console.log('[Calendar] Calling gcCreateEvent with:', { date, client, desc })
     const evLink = await gcCreateEvent(date, client, desc)
+    console.log('[Calendar] gcCreateEvent returned:', evLink)
     if (evLink) {
       const updated = load(K.inc)
       const idx = updated.findIndex(e => e.id === entry.id)
@@ -2009,18 +2012,26 @@ const GC_CAL_API = 'https://www.googleapis.com/calendar/v3'
 // Create an all-day event on the user's primary calendar.
 // Returns the event's htmlLink (direct URL to view it) or null on failure.
 async function gcCreateEvent(date, title, description) {
-  if (!gsGetToken()) return null
+  const token = gsGetToken()
+  console.log('[Calendar] gcCreateEvent called — token present:', !!token, '| date:', date, '| title:', title)
+  if (!token) { console.warn('[Calendar] No token — aborting'); return null }
   // Google Calendar end date is exclusive — add 1 day for a single all-day event
   const d = new Date(date + 'T00:00:00')
   d.setDate(d.getDate() + 1)
   const endDate = d.toISOString().split('T')[0]
-  const resp = await gsReq(`${GC_CAL_API}/calendars/primary/events`, {
-    method: 'POST',
-    body: JSON.stringify({ summary: title, description: description || '', start: { date }, end: { date: endDate } })
-  })
-  if (!resp?.ok) return null
-  const ev = await resp.json()
-  return ev.htmlLink || null
+  const body = { summary: title, description: description || '', start: { date }, end: { date: endDate } }
+  console.log('[Calendar] POST', `${GC_CAL_API}/calendars/primary/events`)
+  console.log('[Calendar] Request body:', JSON.stringify(body, null, 2))
+  const resp = await gsReq(`${GC_CAL_API}/calendars/primary/events`, { method: 'POST', body: JSON.stringify(body) })
+  console.log('[Calendar] Response:', resp ? `status ${resp.status}` : 'null (gsReq returned null)')
+  if (!resp) return null
+  const respText = await resp.text()
+  console.log('[Calendar] Response body:', respText)
+  if (!resp.ok) return null
+  try {
+    const ev = JSON.parse(respText)
+    return ev.htmlLink || null
+  } catch { return null }
 }
 
 // Like gsWriteTab but targets a different spreadsheet ID (for backups).
