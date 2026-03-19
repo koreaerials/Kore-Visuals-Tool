@@ -2344,6 +2344,7 @@ async function gsLoadAll() {
         }
       }
     }
+    await gsEnsureClientsTab()
     setSyncStatus('synced')
     renderDash(); renderIncTable(); renderPurTable(); renderSubTable(); renderTaxes(); renderDataSummary(); renderLinks()
     return true
@@ -3391,6 +3392,7 @@ const CLI_COLS = ['id','name','company','clientType','notes','followUpDate','con
 const CLI_TYPES = {'Real Estate':'re','Wedding':'wed','Business':'biz','Personal':'per','Production Company':'prod','Other':'oth'}
 let _clients = null // null = not yet loaded
 let _cliDetailName = null
+let _cliTabEnsured = false
 let _cliSort = 'recent-desc'
 
 function cliTypeSlug(t) { return CLI_TYPES[t] || 'oth' }
@@ -3422,6 +3424,21 @@ function getClientList() {
   }))
 }
 
+async function gsEnsureClientsTab() {
+  if (_cliTabEnsured || !gsGetToken()) return
+  const rows = await gsReadTab(CLI_TAB)
+  if (rows === null) {
+    // Tab doesn't exist — create it then write the header row
+    const base = `https://sheets.googleapis.com/v4/spreadsheets/${GS_SPREADSHEET_ID}`
+    const r = await gsReq(`${base}:batchUpdate`, {
+      method: 'POST',
+      body: JSON.stringify({ requests: [{ addSheet: { properties: { title: CLI_TAB } } }] })
+    })
+    if (r?.ok) await gsWriteTab(CLI_TAB, CLI_COLS, [])
+  }
+  _cliTabEnsured = true
+}
+
 async function loadClientsFromSheets() {
   try {
     const rows = await gsReadTab(CLI_TAB)
@@ -3443,6 +3460,7 @@ async function loadClientsFromSheets() {
 
 async function writeClientsToSheets() {
   if (!_clients) return
+  await gsEnsureClientsTab()
   const rows = _clients.map(c => [c.id, c.name, c.company||'', c.clientType||'', c.notes||'', c.followUpDate||'', JSON.stringify(c.contacts||[])])
   await gsWriteTab(CLI_TAB, CLI_COLS, rows)
 }
