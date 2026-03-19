@@ -2612,7 +2612,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
 // ── INVOICE GENERATOR ─────────────────────────────────────────
 const INV_TEMPLATE_NAME_STD = 'Invoice Template no Deposit.docx'
-const INV_TEMPLATE_NAME_DEP = 'Invoice Template with Deposit.docx'
+const INV_TEMPLATE_NAME_DEP_PAID = 'Invoice Template with Deposit Paid.docx'
 const INV_TEMPLATE_NAME_DEP_UNPAID = 'Invoice Template with Deposit Not-Paid.docx'
 
 /**
@@ -2657,9 +2657,6 @@ function processLoops(xml, data) {
     if (openPos === -1) return
     const closePos = xml.indexOf(closeTag)
     if (closePos === -1) return
-
-    // Find the <w:tr> that CONTAINS the open tag.
-    // Uses findElementBackwards to avoid matching <w:trPr>, <w:trHeight>, etc.
     let trStart = findElementBackwards(xml, 'w:tr', openPos)
     if (trStart === -1) {
       let pStart = findElementBackwards(xml, 'w:p', openPos)
@@ -2695,10 +2692,6 @@ function processLoops(xml, data) {
   return xml
 }
 
-/**
- * Search backwards from `fromPos` for an XML element with the exact local name.
- * Unlike lastIndexOf('<w:tr', pos), this won't match <w:trPr>, <w:trHeight>, etc.
- */
 function findElementBackwards(xml, tagName, fromPos) {
   const needle = '<' + tagName
   let pos = fromPos
@@ -2725,14 +2718,20 @@ function processConditionals(xml, data) {
   names.forEach(name => {
     const openTag = '{{#' + name + '}}'
     const closeTag = '{{/' + name + '}}'
-    const openPos = xml.indexOf(openTag)
-    if (openPos === -1) return
-    const closePos = xml.indexOf(closeTag, openPos)
-    if (closePos === -1) return
     if (data[name]) {
-      xml = xml.replace(openTag, '').replace(closeTag, '')
+      xml = xml.split(openTag).join('').split(closeTag).join('')
     } else {
-      xml = xml.substring(0, openPos) + xml.substring(closePos + closeTag.length)
+      let safety = 0
+      while (xml.indexOf(openTag) !== -1 && safety < 50) {
+        const openPos = xml.indexOf(openTag)
+        const closePos = xml.indexOf(closeTag, openPos)
+        if (closePos === -1) {
+          xml = xml.substring(0, openPos) + xml.substring(openPos + openTag.length)
+        } else {
+          xml = xml.substring(0, openPos) + xml.substring(closePos + closeTag.length)
+        }
+        safety++
+      }
     }
   })
   return xml
@@ -2837,44 +2836,25 @@ function invUpdateRemaining() {
 async function invUploadToDrive(content, srcMime, name, dstMime, folderId, token) {
   const metaObj = { name, mimeType: dstMime }
   if (folderId) metaObj.parents = [folderId]
-
-  // Google Drive requires multipart/related (not multipart/form-data).
-  // Build the body with ArrayBuffer concatenation for binary safety.
   const boundary = '----KoreInvoiceBoundary' + Date.now()
-  const headerStr = '--' + boundary + '\r\n' +
-    'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
-    JSON.stringify(metaObj) + '\r\n' +
-    '--' + boundary + '\r\n' +
-    'Content-Type: ' + srcMime + '\r\n' +
-    'Content-Transfer-Encoding: binary\r\n\r\n'
+  const headerStr = '--' + boundary + '\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n' +
+    JSON.stringify(metaObj) + '\r\n--' + boundary + '\r\nContent-Type: ' + srcMime + '\r\nContent-Transfer-Encoding: binary\r\n\r\n'
   const footerStr = '\r\n--' + boundary + '--'
-
   const enc = new TextEncoder()
   const headerBuf = enc.encode(headerStr)
   const footerBuf = enc.encode(footerStr)
-
   let contentBuf
-  if (content instanceof Blob) {
-    contentBuf = new Uint8Array(await content.arrayBuffer())
-  } else if (content instanceof ArrayBuffer) {
-    contentBuf = new Uint8Array(content)
-  } else {
-    contentBuf = new Uint8Array(content)
-  }
-
+  if (content instanceof Blob) contentBuf = new Uint8Array(await content.arrayBuffer())
+  else if (content instanceof ArrayBuffer) contentBuf = new Uint8Array(content)
+  else contentBuf = new Uint8Array(content)
   const combined = new Uint8Array(headerBuf.length + contentBuf.length + footerBuf.length)
   combined.set(headerBuf, 0)
   combined.set(contentBuf, headerBuf.length)
   combined.set(footerBuf, headerBuf.length + contentBuf.length)
-
   console.log('[upload] Total body size: ' + combined.length + ' bytes (header=' + headerBuf.length + ', content=' + contentBuf.length + ', footer=' + footerBuf.length + ')')
-
   const resp = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
     method: 'POST',
-    headers: {
-      'Authorization': 'Bearer ' + token,
-      'Content-Type': 'multipart/related; boundary=' + boundary
-    },
+    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'multipart/related; boundary=' + boundary },
     body: combined.buffer
   })
   if (!resp.ok) {
@@ -2913,7 +2893,7 @@ async function generateInvoice() {
     btn.disabled = true; btn.textContent = 'Generating…'
     successEl.style.display = 'none'
     const templateName = !withDep ? INV_TEMPLATE_NAME_STD
-      : document.getElementById('inv-deposit-paid').checked ? INV_TEMPLATE_NAME_DEP
+      : document.getElementById('inv-deposit-paid').checked ? INV_TEMPLATE_NAME_DEP_PAID
       : INV_TEMPLATE_NAME_DEP_UNPAID
 
     // Read lastInvoiceNumber from Sheets Settings tab
