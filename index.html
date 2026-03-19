@@ -2815,15 +2815,50 @@ async function invUploadToDrive(content, srcMime, name, dstMime, folderId, token
   const metaObj = { name, mimeType: dstMime }
   if (folderId) metaObj.parents = [folderId]
 
-  // Use FormData — more reliable than manual multipart boundary for binary data
-  const form = new FormData()
-  form.append('metadata', new Blob([JSON.stringify(metaObj)], { type: 'application/json' }))
-  form.append('file', content instanceof Blob ? content : new Blob([content], { type: srcMime }))
+  // Google Drive requires multipart/related (not multipart/form-data).
+  // We must build the body with proper binary handling using ArrayBuffers
+  // to avoid corrupting the .docx zip data at larger sizes.
+  const boundary = '----KoreInvoiceBoundary' + Date.now()
+  const metaJson = JSON.stringify(metaObj)
+
+  const headerStr = '--' + boundary + '\r\n' +
+    'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
+    metaJson + '\r\n' +
+    '--' + boundary + '\r\n' +
+    'Content-Type: ' + srcMime + '\r\n' +
+    'Content-Transfer-Encoding: binary\r\n\r\n'
+  const footerStr = '\r\n--' + boundary + '--'
+
+  // Encode text parts as UTF-8 ArrayBuffers
+  const enc = new TextEncoder()
+  const headerBuf = enc.encode(headerStr)
+  const footerBuf = enc.encode(footerStr)
+
+  // Get binary content as ArrayBuffer
+  let contentBuf
+  if (content instanceof Blob) {
+    contentBuf = new Uint8Array(await content.arrayBuffer())
+  } else if (content instanceof ArrayBuffer) {
+    contentBuf = new Uint8Array(content)
+  } else {
+    contentBuf = new Uint8Array(content)
+  }
+
+  // Concatenate: header + binary content + footer
+  const combined = new Uint8Array(headerBuf.length + contentBuf.length + footerBuf.length)
+  combined.set(headerBuf, 0)
+  combined.set(contentBuf, headerBuf.length)
+  combined.set(footerBuf, headerBuf.length + contentBuf.length)
+
+  console.log('[upload] Total body size: ' + combined.length + ' bytes (header=' + headerBuf.length + ', content=' + contentBuf.length + ', footer=' + footerBuf.length + ')')
 
   const resp = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
     method: 'POST',
-    headers: { 'Authorization': `Bearer ${token}` },
-    body: form
+    headers: {
+      'Authorization': 'Bearer ' + token,
+      'Content-Type': 'multipart/related; boundary=' + boundary
+    },
+    body: combined.buffer
   })
   if (!resp.ok) {
     const errText = await resp.text().catch(() => '(no body)')
