@@ -329,6 +329,11 @@ body.privacy-mode #privacy-banner{display:block}
 [data-theme=dark] .inv-deposit-box{background:rgba(0,122,255,0.1);border-color:rgba(0,122,255,0.2)}
 .inv-chk-row{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;margin-bottom:14px}
 .inv-chk-row input[type=checkbox]{width:16px;height:16px;margin:0;accent-color:var(--blue);cursor:pointer}
+.inv-job-opt{padding:9px 12px;font-size:13px;cursor:pointer;border-bottom:1px solid rgba(0,0,0,0.05);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inv-job-opt:last-child{border-bottom:none}
+.inv-job-opt:hover{background:rgba(0,122,255,0.07)}
+[data-theme=dark] .inv-job-opt:hover{background:rgba(0,122,255,0.12)}
+[data-theme=dark] .inv-job-opt{border-bottom-color:rgba(255,255,255,0.06)}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.7/dist/pizzip.js"></script>
 <script>
@@ -2740,6 +2745,35 @@ function processConditionals(xml, data) {
   return xml
 }
 
+let _invJobs = []
+
+function invFilterJobSelect(q) {
+  const dd = document.getElementById('inv-job-dropdown')
+  const norm = s => (s||'').toLowerCase()
+  const filtered = q.trim()
+    ? _invJobs.filter(e => norm(e.client).includes(norm(q)) || norm(e.desc||e.description||'').includes(norm(q)))
+    : _invJobs
+  if(!filtered.length){ dd.style.display='none'; return }
+  dd.innerHTML = filtered.slice(0,40).map(e => {
+    const d = fmtDate(e.date)
+    const desc = (e.desc||e.description||'').substring(0,50)
+    const label = `${d} · ${esc(e.client)}${desc?' · '+esc(desc):''}`
+    return `<div class="inv-job-opt" onmousedown="invSelectJob('${e.id}')">${label}</div>`
+  }).join('')
+  dd.style.display = 'block'
+}
+
+function invSelectJob(id) {
+  const e = _invJobs.find(e=>e.id===id); if(!e) return
+  document.getElementById('inv-job-id').value = id
+  const d = fmtDate(e.date)
+  const desc = (e.desc||e.description||'').substring(0,50)
+  document.getElementById('inv-job-search').value = `${d} · ${e.client}${desc?' · '+desc:''}`
+  document.getElementById('inv-job-dropdown').style.display = 'none'
+  document.getElementById('inv-client').value = e.client||''
+  invUpdateNumber()
+}
+
 function openInvoiceModal() {
   const now = new Date()
   const mm = String(now.getMonth()+1).padStart(2,'0')
@@ -2748,6 +2782,11 @@ function openInvoiceModal() {
   document.getElementById('inv-date').value = `${mm}/${dd}/${yyyy}`
   document.getElementById('inv-due').value = 'Due on receipt'
   document.getElementById('inv-client').value = ''
+  // Reset job picker
+  _invJobs = load(K.inc).sort((a,b)=>b.date.localeCompare(a.date))
+  document.getElementById('inv-job-search').value = ''
+  document.getElementById('inv-job-id').value = ''
+  document.getElementById('inv-job-dropdown').style.display = 'none'
   document.getElementById('inv-include-deposit').checked = false
   document.getElementById('inv-deposit-box').style.display = 'none'
   document.getElementById('inv-deposit-paid').checked = false
@@ -2766,6 +2805,7 @@ function openInvoiceModal() {
 
 function closeInvoiceModal() {
   document.getElementById('inv-modal-overlay').classList.remove('open')
+  document.getElementById('inv-job-dropdown').style.display = 'none'
 }
 
 function invUpdateNumber() {
@@ -3019,8 +3059,18 @@ async function generateInvoice() {
     successEl.style.display = 'block'
     toast('Invoice saved to Drive!', 4000)
 
-    // Auto-link invoice number to matching income entry
-    await autoLinkInvoiceToJob(invNum, client)
+    // Link invoice number to explicitly selected job (if any)
+    const linkedJobId = document.getElementById('inv-job-id').value
+    if(linkedJobId) {
+      const incList = load(K.inc)
+      const incIdx = incList.findIndex(e=>e.id===linkedJobId)
+      if(incIdx>=0) {
+        incList[incIdx].invoiceNum = invNum
+        save(K.inc, incList)
+        if(typeof renderIncTable === 'function') renderIncTable()
+        toast(`Invoice ${invNum} linked to job!`, 4000)
+      }
+    }
 
   } catch(err) {
     console.log('Invoice error: ' + String(err))
@@ -3215,6 +3265,13 @@ async function autoLinkInvoiceToJob(invNum, clientName) {
     <div class="inv-number-pill">
       <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-2)">Invoice #</span>
       <span id="inv-number-preview" style="font-size:17px;font-weight:700;color:var(--blue);letter-spacing:-.4px">—</span>
+    </div>
+
+    <div style="margin-bottom:16px;position:relative" id="inv-job-picker">
+      <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-2);display:block;margin-bottom:6px">Link to Job <span style="font-weight:400;text-transform:none;letter-spacing:0">— optional</span></label>
+      <input type="text" id="inv-job-search" class="isel" style="width:100%;box-sizing:border-box" placeholder="Search by client or description…" oninput="invFilterJobSelect(this.value)" onfocus="invFilterJobSelect(this.value)" onblur="setTimeout(()=>{const d=document.getElementById('inv-job-dropdown');if(d)d.style.display='none'},160)" autocomplete="off">
+      <div id="inv-job-dropdown" style="display:none;position:absolute;left:0;right:0;top:calc(100% + 2px);z-index:300;background:var(--card,#fff);border:1px solid var(--border,rgba(0,0,0,0.12));border-radius:8px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,0.15);max-height:200px;overflow-y:auto"></div>
+      <input type="hidden" id="inv-job-id" value="">
     </div>
 
     <div class="fg" style="margin-bottom:16px">
