@@ -1,0 +1,3014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kore Visuals Tracker</title>
+<style>
+:root {
+  --blue: #007AFF;
+  --green: #34C759;
+  --red: #FF3B30;
+  --orange: #FF9500;
+  --purple: #AF52DE;
+  --text: #1c1c1e;
+  --text-2: #6e6e73;
+  --card: rgba(255,255,255,0.58);
+  --card-border: rgba(255,255,255,0.78);
+  --blur: blur(24px) saturate(180%);
+  --shadow: 0 8px 32px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
+  --r: 20px;
+  --r-sm: 12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;background:linear-gradient(135deg,#dce8f5 0%,#ead5f5 50%,#d5f0e8 100%);background-attachment:fixed;min-height:100vh;color:var(--text);font-size:14px;line-height:1.5}
+
+/* HEADER */
+.hdr{position:sticky;top:0;z-index:100;padding:10px 20px;background:rgba(255,255,255,0.35);backdrop-filter:blur(30px) saturate(200%);-webkit-backdrop-filter:blur(30px) saturate(200%);border-bottom:1px solid rgba(255,255,255,0.5)}
+.hdr-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:nowrap}
+.logo{font-size:17px;font-weight:700;letter-spacing:-.3px;white-space:nowrap}
+
+/* TAB NAV */
+.nav{display:flex;gap:3px;background:rgba(255,255,255,0.4);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:14px;border:1px solid rgba(255,255,255,0.65);padding:4px;flex-wrap:nowrap;flex-shrink:1;min-width:0;overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.tab{padding:7px 10px;border:none;background:transparent;border-radius:10px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text-2);transition:all .2s;white-space:nowrap;font-family:inherit}
+.tab:hover{background:rgba(255,255,255,0.6);color:var(--text)}
+.tab.on{background:rgba(255,255,255,0.9);color:var(--blue);box-shadow:0 2px 12px rgba(0,0,0,0.1);font-weight:600}
+
+/* MAIN */
+.main{max-width:1200px;margin:0 auto;padding:24px 20px}
+.panel{display:none}.panel.on{display:block}
+
+/* CARD */
+.card{background:var(--card);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--card-border);border-radius:var(--r);box-shadow:var(--shadow);padding:20px}
+
+/* SUMMARY CARDS — shared by dashboard widgets and tab summary rows */
+.sum-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:10px}
+.sum-sub-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:18px}
+.sum-card{background:var(--card);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--card-border);border-radius:var(--r);box-shadow:var(--shadow);padding:20px 22px}
+.sum-card .lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text-2);margin-bottom:8px}
+.sum-card .val{font-size:30px;font-weight:700;letter-spacing:-1px}
+.sum-card .sub{font-size:12px;color:var(--text-2);margin-top:5px}
+.sum-sub-card{background:var(--card);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--card-border);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 16px}
+.sum-sub-card .lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-2);margin-bottom:5px}
+.sum-sub-card .val{font-size:20px;font-weight:700;letter-spacing:-.5px}
+.g{color:var(--green)}.r{color:var(--red)}.b{color:var(--blue)}.o{color:var(--orange)}
+
+/* DASHBOARD WIDGET GRID */
+#dash-widgets{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:16px}
+.dw[data-span="2"]{grid-column:span 2}
+.dw[data-span="4"]{grid-column:span 4}
+.dw[data-span="6"]{grid-column:span 6}
+@media(max-width:880px){#dash-widgets .dw{grid-column:1/-1!important}}
+.dw{cursor:grab;user-select:none;min-width:0}
+.dw.dw-drag{opacity:.4;cursor:grabbing}
+.dw-ph{background:rgba(0,122,255,.07);border:2px dashed rgba(0,122,255,.28);border-radius:var(--r)}
+
+/* FILTER BAR */
+.fbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.fbar .lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2)}
+.fbtn{padding:5px 14px;border:1px solid rgba(0,0,0,0.1);background:rgba(255,255,255,0.6);border-radius:20px;cursor:pointer;font-size:12px;font-weight:500;color:var(--text-2);transition:all .2s;font-family:inherit}
+.fbtn.on,.fbtn:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+.fbtn.cat-on{background:var(--purple);color:#fff;border-color:var(--purple)}
+.dr-inputs{display:none;align-items:center;gap:6px}
+.dr-inputs.show{display:flex}
+.dr-inputs input{width:135px;padding:5px 10px;border:1px solid rgba(0,0,0,0.12);border-radius:8px;background:rgba(255,255,255,0.8);font-size:12px;font-family:inherit;color:var(--text)}
+
+/* SECTION HEADER */
+.sec-hdr{margin-bottom:20px}
+.sec-hdr h2{font-size:22px;font-weight:700;letter-spacing:-.5px;margin-bottom:3px}
+.sec-hdr p{font-size:13px;color:var(--text-2)}
+
+/* FORM TOGGLE */
+.form-toggle-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.form-ttl{font-size:16px;font-weight:700}
+.form-wrap{overflow:hidden;max-height:0;transition:max-height .3s ease}
+.form-wrap.open{max-height:900px}
+.form-inner{padding:18px;background:rgba(255,255,255,0.45);border-radius:14px;border:1px solid rgba(255,255,255,0.75);margin-bottom:18px}
+
+/* FORM GRID */
+.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:14px}
+.ff{display:flex;flex-direction:column;gap:4px}
+.ff label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2)}
+.ff.wide{grid-column:1/-1}
+input,select,textarea{width:100%;padding:9px 13px;border:1px solid rgba(0,0,0,0.11);border-radius:var(--r-sm);background:rgba(255,255,255,0.75);font-family:inherit;font-size:14px;color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,122,255,0.14);background:rgba(255,255,255,0.95)}
+.profit-preview{padding:9px 13px;border-radius:var(--r-sm);border:1px solid rgba(52,199,89,0.25);background:rgba(52,199,89,0.08);font-size:15px;font-weight:700;color:var(--green)}
+
+/* BUTTONS */
+.btn{padding:9px 20px;border:none;border-radius:var(--r-sm);cursor:pointer;font-family:inherit;font-size:14px;font-weight:600;transition:all .2s;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn-p{background:var(--blue);color:#fff;box-shadow:0 4px 14px rgba(0,122,255,0.28)}
+.btn-p:hover{background:#0066d6;transform:translateY(-1px)}
+.btn-g{background:var(--green);color:#fff;box-shadow:0 4px 14px rgba(52,199,89,0.28)}
+.btn-g:hover{background:#28a748}
+.btn-o{background:var(--orange);color:#fff}
+.btn-v{background:var(--purple);color:#fff;box-shadow:0 4px 14px rgba(175,82,222,0.25)}
+.btn-s{background:rgba(255,255,255,0.7);color:var(--text);border:1px solid rgba(0,0,0,0.1)}
+.btn-s:hover{background:rgba(255,255,255,0.95)}
+.btn-d{background:var(--red);color:#fff}
+.btn-d:hover{background:#d62c21}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:8px}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;border-radius:14px;border:1px solid rgba(255,255,255,0.72)}
+table{width:100%;border-collapse:collapse;min-width:580px}
+thead{background:rgba(255,255,255,0.55)}
+th{padding:11px 14px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text-2);white-space:nowrap}
+td{padding:11px 14px;border-top:1px solid rgba(0,0,0,0.05);font-size:13px;vertical-align:middle}
+tr:hover td{background:rgba(255,255,255,0.32)}
+tfoot td{font-weight:700;background:rgba(255,255,255,0.45);border-top:2px solid rgba(0,0,0,0.08)}
+
+/* BADGES */
+.bdg{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.bdg-g{background:rgba(52,199,89,0.15);color:#1a7a33}
+.bdg-r{background:rgba(255,59,48,0.15);color:#c0392b}
+.bdg-b{background:rgba(0,122,255,0.12);color:#005ecb}
+.bdg-o{background:rgba(255,149,0,0.15);color:#c47200}
+.bdg-v{background:rgba(175,82,222,0.15);color:#7b35ad}
+.bdg-gr{background:rgba(0,0,0,0.08);color:var(--text-2)}
+
+/* AMOUNTS */
+.pos{color:var(--green);font-weight:600}.neg{color:var(--red);font-weight:600}
+
+/* INLINE SELECT */
+.isel{padding:4px 8px;border-radius:8px;font-size:12px;font-weight:500;border:1px solid rgba(0,0,0,0.1);background:rgba(255,255,255,0.75);cursor:pointer;width:auto;font-family:inherit}
+.isel-status-paid{background:rgba(52,199,89,0.15);color:#1a7a33;border-color:rgba(52,199,89,0.3);font-weight:600}
+.isel-status-pending{background:rgba(255,159,10,0.15);color:#c47200;border-color:rgba(255,159,10,0.3);font-weight:600}
+.isel-status-unpaid{background:rgba(255,69,58,0.15);color:#c0392b;border-color:rgba(255,69,58,0.3);font-weight:600}
+
+/* MULTI-SELECT DROPDOWN */
+.ms-wrap{position:relative;display:inline-block;vertical-align:middle}
+.ms-btn{padding:5px 12px;border-radius:8px;font-size:12px;font-weight:500;border:1px solid rgba(0,0,0,0.12);background:rgba(255,255,255,0.75);cursor:pointer;font-family:inherit;white-space:nowrap;color:var(--text);transition:all .15s}
+.ms-btn:hover{background:rgba(255,255,255,0.95)}
+.ms-btn.ms-active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.ms-panel{position:absolute;top:calc(100% + 6px);z-index:400;background:rgba(255,255,255,0.97);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(255,255,255,0.8);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,0.14);padding:8px;min-width:300px;width:max-content;max-width:420px;max-height:260px;overflow-y:auto;display:none}
+.ms-panel.open{display:block}
+.ms-actions{display:flex;gap:6px;padding-bottom:7px;border-bottom:1px solid rgba(0,0,0,0.07);margin-bottom:6px}
+.ms-action{font-size:11px;font-weight:600;color:var(--blue);cursor:pointer;background:none;border:none;padding:1px 4px;font-family:inherit;border-radius:4px}
+.ms-action:hover{background:rgba(0,122,255,0.1)}
+.ms-items{display:flex;flex-direction:column}
+.ms-item{display:flex;align-items:center;gap:8px;padding:4px 6px;border-radius:6px;cursor:pointer;font-size:12px;color:var(--text);user-select:none;white-space:nowrap}
+.ms-item span{white-space:nowrap}
+.ms-item:hover{background:rgba(0,0,0,0.04)}
+.ms-item input[type=checkbox]{width:16px;height:16px;flex-shrink:0;margin:0;padding:0;cursor:pointer;accent-color:var(--blue)}
+[data-theme=dark] .ms-btn{background:rgba(255,255,255,0.09);border-color:rgba(255,255,255,0.13);color:var(--text)}
+[data-theme=dark] .ms-btn:hover{background:rgba(255,255,255,0.15)}
+[data-theme=dark] .ms-panel{background:rgba(30,30,42,0.98);border-color:rgba(255,255,255,0.1);box-shadow:0 8px 28px rgba(0,0,0,0.45)}
+[data-theme=dark] .ms-actions{border-color:rgba(255,255,255,0.08)}
+[data-theme=dark] .ms-item:hover{background:rgba(255,255,255,0.07)}
+
+/* RENEWALS */
+.ren-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.06)}
+.ren-item:last-child{border-bottom:none}
+.ren-name{font-weight:600;font-size:13px}
+.ren-when{font-size:11px;color:var(--text-2);margin-top:2px}
+.ren-amt{font-weight:700;font-size:13px;color:var(--red)}
+.d-bdg{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600}
+.d-urg{background:rgba(255,59,48,0.15);color:#c0392b}
+.d-soon{background:rgba(255,149,0,0.15);color:#c47200}
+.d-ok{background:rgba(52,199,89,0.12);color:#1a7a33}
+
+/* EMPTY */
+.empty{text-align:center;padding:36px 20px;color:var(--text-2)}
+.empty .ei{font-size:36px;margin-bottom:10px}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:rgba(28,28,30,0.92);color:#fff;padding:11px 24px;border-radius:50px;font-size:13px;font-weight:500;backdrop-filter:blur(20px);z-index:1000;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
+/* EXPORT */
+.exp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+.exp-card{padding:22px;text-align:center}
+.exp-icon{font-size:34px;margin-bottom:12px}
+.exp-card h3{font-size:15px;font-weight:700;margin-bottom:8px}
+.exp-card p{font-size:12px;color:var(--text-2);margin-bottom:16px;line-height:1.5}
+.exp-card select{margin-bottom:12px}
+
+/* CHART */
+.chart-wrap{width:100%;overflow:hidden}
+.chart-wrap svg{width:100%;height:auto}
+#chart-tip{position:fixed;pointer-events:none;display:none;background:rgba(255,255,255,0.92);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(255,255,255,0.8);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12),inset 0 1px 0 rgba(255,255,255,0.9);padding:10px 14px;font-family:inherit;z-index:9999;white-space:nowrap;min-width:160px}
+[data-theme=dark] #chart-tip{background:rgba(30,30,42,0.95);border-color:rgba(255,255,255,0.1);box-shadow:0 8px 24px rgba(0,0,0,0.35)}
+
+/* SECTION TITLE INSIDE CARD */
+.card-ttl{font-size:15px;font-weight:700;margin-bottom:16px}
+
+/* ICON ALIGNMENT */
+.tab{display:inline-flex;align-items:center;gap:5px}
+.empty .ei{display:flex;justify-content:center;margin-bottom:12px;opacity:0.35}
+svg{flex-shrink:0}
+
+/* THEME TOGGLE */
+.hdr-right{display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0;flex-wrap:nowrap}
+.theme-toggle{padding:6px 14px;border:1px solid rgba(255,255,255,0.55);background:rgba(255,255,255,0.42);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:20px;cursor:pointer;font-size:14px;line-height:1;transition:all .2s;white-space:nowrap;font-family:inherit;flex-shrink:0}
+.theme-toggle:hover{background:rgba(255,255,255,0.7);transform:scale(1.05)}
+.settings-btn{padding:6px 10px;border:1px solid rgba(255,255,255,0.55);background:rgba(255,255,255,0.42);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:20px;cursor:pointer;line-height:1;transition:all .2s;font-family:inherit;flex-shrink:0;display:flex;align-items:center;color:var(--text)}
+.settings-btn:hover{background:rgba(255,255,255,0.7);transform:scale(1.05)}
+/* SETTINGS MODAL */
+.smod-overlay{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.38);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px}
+.smod-overlay.open{display:flex}
+.smod{background:var(--card);border:1px solid var(--card-border);border-radius:24px;box-shadow:0 24px 60px rgba(0,0,0,0.18);padding:28px 30px;width:100%;max-width:440px;position:relative}
+.smod-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.smod-ttl{font-size:18px;font-weight:700;letter-spacing:-.3px}
+.smod-close{background:none;border:none;cursor:pointer;padding:4px 7px;border-radius:8px;color:var(--text-2);font-size:20px;line-height:1;font-family:inherit}
+.smod-close:hover{color:var(--text);background:rgba(0,0,0,0.07)}
+.smod-row{margin-bottom:20px}
+.smod-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-2);margin-bottom:7px}
+.smod-logo-row{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(0,0,0,0.04);border-radius:12px;margin-bottom:10px}
+.smod-logo-row img{height:44px;width:auto;max-width:80px;border-radius:8px;object-fit:contain}
+.smod-footer{display:flex;gap:8px;margin-top:24px;padding-top:20px;border-top:1px solid var(--card-border)}
+
+/* ── DARK MODE ─────────────────────────────────────────────── */
+[data-theme="dark"]{
+  --text: #f2f2f7;
+  --text-2: #8e8e93;
+  --card: rgba(28,28,34,0.75);
+  --card-border: rgba(255,255,255,0.09);
+  --shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+  --blur: blur(24px) saturate(160%);
+}
+[data-theme="dark"] body{background:linear-gradient(135deg,#0d0d10 0%,#170e1e 50%,#0c1710 100%)}
+[data-theme="dark"] .hdr{background:rgba(16,16,20,0.78);border-color:rgba(255,255,255,0.08)}
+[data-theme="dark"] .nav{background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.1)}
+[data-theme="dark"] .tab{color:var(--text-2)}
+[data-theme="dark"] .tab:hover{background:rgba(255,255,255,0.1);color:var(--text)}
+[data-theme="dark"] .tab.on{background:rgba(255,255,255,0.15);color:#60b4ff;box-shadow:0 2px 12px rgba(0,0,0,0.4)}
+[data-theme="dark"] .theme-toggle{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.15);color:var(--text)}
+[data-theme="dark"] .theme-toggle:hover{background:rgba(255,255,255,0.18)}
+[data-theme="dark"] .settings-btn{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.15);color:var(--text)}
+[data-theme="dark"] .settings-btn:hover{background:rgba(255,255,255,0.18)}
+[data-theme="dark"] .smod{background:rgba(22,22,30,0.98)}
+[data-theme="dark"] .smod-logo-row{background:rgba(255,255,255,0.06)}
+[data-theme="dark"] .smod-close:hover{background:rgba(255,255,255,0.1)}
+[data-theme="dark"] input,[data-theme="dark"] select,[data-theme="dark"] textarea{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.12);color:var(--text)}
+[data-theme="dark"] input:focus,[data-theme="dark"] select:focus,[data-theme="dark"] textarea:focus{background:rgba(255,255,255,0.13);border-color:var(--blue)}
+[data-theme="dark"] .form-inner{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.09)}
+[data-theme="dark"] .profit-preview{background:rgba(52,199,89,0.15);border-color:rgba(52,199,89,0.22)}
+[data-theme="dark"] .btn-s{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.14);color:var(--text)}
+[data-theme="dark"] .btn-s:hover{background:rgba(255,255,255,0.18)}
+[data-theme="dark"] .fbtn{background:rgba(255,255,255,0.09);border-color:rgba(255,255,255,0.13);color:var(--text-2)}
+[data-theme="dark"] .fbtn.on,[data-theme="dark"] .fbtn:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+[data-theme="dark"] .fbtn.cat-on{background:var(--purple);color:#fff;border-color:var(--purple)}
+[data-theme="dark"] .isel{background:rgba(255,255,255,0.09);border-color:rgba(255,255,255,0.13);color:var(--text)}
+[data-theme="dark"] .isel-status-paid{background:rgba(52,199,89,0.2);color:#4cd964;border-color:rgba(52,199,89,0.35)}
+[data-theme="dark"] .isel-status-pending{background:rgba(255,159,10,0.2);color:#ffa827;border-color:rgba(255,159,10,0.35)}
+[data-theme="dark"] .isel-status-unpaid{background:rgba(255,69,58,0.2);color:#ff6b6b;border-color:rgba(255,69,58,0.35)}
+[data-theme="dark"] .tbl-wrap{border-color:rgba(255,255,255,0.08)}
+[data-theme="dark"] thead{background:rgba(255,255,255,0.06)}
+[data-theme="dark"] td{border-color:rgba(255,255,255,0.05)}
+[data-theme="dark"] tr:hover td{background:rgba(255,255,255,0.05)}
+[data-theme="dark"] tfoot td{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.1)}
+[data-theme="dark"] .link-form-area{background:transparent}
+[data-theme="dark"] .row-pending td{background:rgba(255,149,0,0.1)!important}
+[data-theme="dark"] .row-pending:hover td{background:rgba(255,149,0,0.16)!important}
+[data-theme="dark"] .row-unpaid td{background:rgba(255,69,58,0.1)!important}
+[data-theme="dark"] .row-unpaid:hover td{background:rgba(255,69,58,0.16)!important}
+[data-theme="dark"] .dr-inputs input{background:rgba(255,255,255,0.09);border-color:rgba(255,255,255,0.13);color:var(--text)}
+
+/* BACKUP BANNER */
+
+/* PENDING / UNPAID INCOME ROWS */
+.row-pending td{background:rgba(255,149,0,0.07)!important}
+.row-pending:hover td{background:rgba(255,149,0,0.13)!important}
+.row-unpaid td{background:rgba(255,69,58,0.07)!important}
+.row-unpaid:hover td{background:rgba(255,69,58,0.13)!important}
+
+/* INLINE EDITING ROW */
+.editing-row td{background:rgba(0,122,255,0.06)!important;padding:6px 6px}
+[data-theme=dark] .editing-row td{background:rgba(0,122,255,0.12)!important}
+
+/* QUICK LINKS */
+.link-item{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(0,0,0,0.06)}
+.link-item:last-child{border-bottom:none}
+.link-item a{font-weight:600;font-size:13px;color:var(--blue);text-decoration:none}
+.link-item a:hover{text-decoration:underline}
+.link-form-area{overflow:hidden;max-height:0;transition:max-height .3s ease;margin-top:12px}
+.link-form-area.open{max-height:200px}
+
+/* SYNC INDICATOR */
+.sync-pill{display:inline-flex;align-items:center;font-size:12px;padding:5px 10px;border:1px solid rgba(255,255,255,0.45);background:rgba(255,255,255,0.35);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:20px;white-space:nowrap;cursor:default;flex-shrink:0;color:var(--text-2);transition:opacity .3s,color .3s}
+.sync-pill.clickable{cursor:pointer}
+.sync-pill.clickable:hover{background:rgba(255,255,255,0.6)}
+@keyframes syncPulse{0%,100%{opacity:1}50%{opacity:.35}}
+[data-theme="dark"] .sync-pill{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.12)}
+
+/* GOOGLE SIGN-IN OVERLAY */
+.gs-overlay{position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.42);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.gs-card{background:var(--card);border:1px solid var(--card-border);border-radius:24px;padding:40px 36px;max-width:400px;width:90%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,0.18)}
+.gs-card h2{font-size:22px;font-weight:700;margin:12px 0 8px}
+.gs-card p{color:var(--text-2);font-size:13.5px;line-height:1.55;margin-bottom:28px}
+.gs-btn-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px 24px;border-radius:14px;border:1.5px solid rgba(0,0,0,0.12);background:#fff;color:#3c4043;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:12px;transition:box-shadow .15s;font-family:inherit}
+.gs-btn-google:hover{box-shadow:0 2px 14px rgba(0,0,0,0.15)}
+.gs-btn-skip{background:none;border:none;color:var(--text-2);font-size:13px;cursor:pointer;padding:6px 12px;border-radius:8px;font-family:inherit}
+.gs-btn-skip:hover{color:var(--text);background:rgba(0,0,0,0.05)}
+
+/* PRIVACY MODE */
+#privacy-banner{display:none;position:sticky;top:61px;z-index:99;padding:7px 20px;background:rgba(175,82,222,0.14);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid rgba(175,82,222,0.2);text-align:center;font-size:12px;font-weight:600;color:#7935b8;letter-spacing:.1px}
+[data-theme=dark] #privacy-banner{background:rgba(175,82,222,0.2);color:#c17fee;border-color:rgba(175,82,222,0.28)}
+body.privacy-mode #privacy-banner{display:block}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.toggle-switch{position:relative;width:44px;height:26px;flex-shrink:0}
+.toggle-switch input{opacity:0;width:0;height:0;position:absolute}
+.toggle-slider{position:absolute;inset:0;background:rgba(0,0,0,0.18);border-radius:26px;cursor:pointer;transition:background .2s}
+.toggle-slider:before{content:'';position:absolute;width:20px;height:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,0.22)}
+.toggle-switch input:checked+.toggle-slider{background:var(--purple)}
+.toggle-switch input:checked+.toggle-slider:before{transform:translateX(18px)}
+[data-theme=dark] .toggle-slider{background:rgba(255,255,255,0.2)}
+
+/* INVOICE MODAL */
+.inv-item-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.inv-item-row .inv-item-desc{flex:1;min-width:0}
+.inv-item-row .inv-item-amt{width:110px;flex-shrink:0}
+.inv-item-row .btn{flex-shrink:0;padding:6px 10px}
+.inv-modal{max-width:600px;max-height:92vh;overflow-y:auto}
+.inv-number-pill{background:rgba(0,122,255,0.08);border:1px solid rgba(0,122,255,0.18);border-radius:10px;padding:10px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.inv-success{padding:11px 16px;background:rgba(52,199,89,0.12);border-radius:10px;border:1px solid rgba(52,199,89,0.25);margin-bottom:14px;font-size:13px;font-weight:600;color:#1a7a33;text-align:center;display:none}
+[data-theme=dark] .inv-success{color:#4cd964;background:rgba(52,199,89,0.18);border-color:rgba(52,199,89,0.3)}
+.inv-total-bar{text-align:right;padding:12px 16px;background:rgba(52,199,89,0.08);border-radius:10px;border:1px solid rgba(52,199,89,0.2);margin-bottom:18px}
+.inv-deposit-box{margin-top:12px;padding:14px;background:rgba(0,122,255,0.06);border-radius:10px;border:1px solid rgba(0,122,255,0.12);display:none}
+[data-theme=dark] .inv-deposit-box{background:rgba(0,122,255,0.1);border-color:rgba(0,122,255,0.2)}
+.inv-chk-row{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;margin-bottom:14px}
+.inv-chk-row input[type=checkbox]{width:16px;height:16px;margin:0;accent-color:var(--blue);cursor:pointer}
+</style>
+<script src="https://accounts.google.com/gsi/client" defer onload="gsOnLibraryLoad()" onerror="gsOnLibraryError()"></script>
+</head>
+<body>
+<div id="chart-tip"></div>
+
+<header class="hdr">
+  <div class="hdr-inner">
+    <span class="logo"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAIAAAD/gAIDAAAARGVYSWZNTQAqAAAACAABh2kABAAAAAEAAAAaAAAAAAADoAEAAwAAAAEAAQAAoAIABAAAAAEAAABkoAMABAAAAAEAAABkAAAAAC+73kEAABOsSURBVHic7V17bFTF95+5u20ppUqrBaFAI9Ri5FFKq1AexdKALQWsoTFSBeUhSXklqBGjojEYlUQjQUOC1aBNrEgkwRdQCFSwQKEiDyvyqkYolFJoty197t473z+Oe35nZ+5ut8s+yC/9/LG5vXfuzJnPPefMzJlHGetFL3rRi170ohe96EUgwH1/k3PGmBBC0zTDMDjnQgjGGPw5evTorKys9PT0uLg4m81WVVX1ww8/nDhxAl+HZPSC5gxZMcYsFouu66ZlwU3G2NixY8eOHTto0KCwsDC73X7jxo0zZ86cPHkS00OenHPDMOgdFFgIgSX6GVarFQVF1rBuEydO/P7779vb24UQuq4bhiGEsNvtQojy8vKCggJN05Av/OWc4wV9ShNgEZqmWa3Wl176aceOHVevXoUisBQhhGEYZ8+e3bZt27JlyzBneFeqCxU+IMAC4HPRmwsXLmxqaurs7GxraxOucDgcUI3169dDYloNd0Vg9eAO/Ll06dKrV69CbpB5bW3tlStXGhoa6E1AeXn59OnT1cyh6PDwcEY+jJ/hTqcYY0899ZTNZmtsbGxvb29vb8fvDNB1Ha9ff/11SR9pPiB6WFiYdAeSfffdd5DbyZMn33nnnVmzZiUlJcGj6OjocePGLViw4JNPPmlpaQHW4Hf9+vUWi8X081itVn+RIwOVguqUpmlxcXF1dXW3bt26fft2R0cHGqBhGPipqfQ5OTkgJVUZtSxat8TExPPnz+u6XlRUNGvWLHhdMlIAyLNo0aKysjLDMECpi4uLoRSaJ61IoEA9C1yvXr0amGpra2tvbwf5qDahWwGy9uzZw1wtGi6gPlgrrMzAgQMhw9zcXOaqa3ihKo7FYtm0aRO6s4qKCpoGMw+UGSI7tDCLxXL06NHGxkabzdbV1YXeHRVK8iO6rjc2Nvbr1w/zZGauHW4CEc3NzUKIpKQk2iwgR+6EhN+lS5eiADt27GCutAZDuRhpzoYMGWKz2VpaWjo6Ojo7Ox0OB1ocpUzStblz51Ka6C9zNcy33npLCDF8+HCsHk2g0qcKOW/ePJQhIyPDQ/voT5hWbMqUKTabDbwVGlq3WLFihWqGNHPoJYwcOVIIMXr0aEwguR6qiZR9atGMsbfffhvKvX79emC4UWBK1uTJk5ubm9va2rq6utC1d4vCwkKVLNXvnDhx4sCBA3BfdeTUeAE0Q6p9Fovl0qVLoN3z58/HZAG0QYkmwKRJk1pbWzs7O1WP7g6GYSxbtsxDKUBEampqTU1NbGyslEAiTmqjJfeHnYNx48ZB6SdPnvTBqfuhFeCc67oOJtMjCXRdd5ch+pc1a9aUlJQ0NDTAI9QUeArXMF4BpuAm/ML4hnPucDhAsFOnTv3444+MseTk5JSUFNraegMf+2PCdSQFw7ceMYU1EcqgjN6x2+3bt2/HsSEM7oAa0JGBAwfm5+cPHz68o6Nj3759Bw8eZGQUabVaHQ4HYwzL2rhx45w5czjnGRkZJ06cMBUgsEhJScEW0Hs8//zzqlFTgxowYMBrr72Gj6BPT19ZsmTJ7du3ITfwAJs3b5aGrpIXi4qKunHjhhCiqKhITeMZvpshFUjXdXQi3n8oqJ5phpDPvffeW1lZiXdAR1CtPvjggy1btkRGRjLGQON0XS8sLDx+/DjNB3QK/2xtba2trRVCJCQkcCe8lNk/PVdJIIQHIcCm1GTU6bS2tlZXV8N9TsIynPP8/Py1a9eCo2Sk7TMMIyUlZfny5fAnfj/6OihjWFgYNWdvqukLWSgBCmq327Gq+KHcMYiZdHZ20jsoMb7V0tLS0NCgjv6eeeaZ7du30xfhKSg4Y6ygoACaHSSX0tHc3AweE4X00sf7QhYWjBcwEmSER6aYlQop5vefQJomnDG51tZWGOUwZ600TVu6dGlxcbHq5phTswzD6N+/PzAIRWAbClmBxrW3t8O1977jjswQi4GAjPTUM1lCCPBBElQGUXE0TUtJSSkqKoLKQ88DZMBeCHRfbt68iY0m+DIqEsSwamtrQfvw83SLHpMlUQAa3tbW1tHRodqRZyFM+1n4LugIVdW0tLTy8nJGFIQ5uyBwjcV9+eWXGDuGNhq0SQhhtVpjYmIYY7/99pvpYMufUMlijPXt2/fWrVvSmFkoQUsJM2fONC2CBv+wuNzcXGl44G60AEbKOZf6EJBzREQEvBgXFwc3AzuWpgBpIiMjIaTrDUeIrKwsdYBCs8WbgwYNgmztdjtUlcYRhTNmDT1YKTcpMJ2bmyuE+Pnnn7HfEAyC6LVElpeYNm2aaZ40fsI5HzJkyLVr16ge4SQIDQEJIQ4dOuRuSgJ/y8vLDcNITU11VyM/Q+3v9u3bt76+Xg3yeYBhGFOnTvUgLlR74sSJTU1NaiyMXoNa/fTTTzhglhQWOx9ZWVlCiC+++IJWJODKRQEtTk1NjVD8iGfu0tPTMQc1T8ZYVFQUzBJRsqhDxOu9e/dK9VctkXPe3NxsGEZERAS9H6iYsimArMuXL6tkeYCu6xMnTqRfHnNjzh5AZWUlJd3dlzhz5oxphalyWSyWzz//XAixePFi7gxVI4LN1z///NOtKkmYMGECc/28aEcJCQkwpazruocP4HA4Kioq7r//fsoOc2oWUhAWFrZ8+XKHw7Fy5UqJnaDShIAgpPcwDCM5ORlfp5+ac15fX0+pR77APeGjI0eOUBnUvoLFYrFYLB9++KEQYsGCBarYvIeRJf/g/PnzlAhv+JKaJIxb7N+/H7q44JWQKemiqqrKdHYHDZlzPnDgwCNHjui6/vTTT2MpTOmaeOnj/TYZK3oeQrPb7XSZhmEYMTExO3fuzMjIwDyhbsI5WmTO0XJ1dXVGRoY6BoBoH+c8JycnLy8vJiamsrLyiSeeuH37NnMuM2GucQjvJfc/WV6WDZFoHB5DhODYsWMw39XV1RUWFqZ+eYfDYbVaL1y4kJ6ebrPZmHMRDpKenJw8evTooUOHxsXFnTt3rri4+ObNm8I5PMKRoESTlzL3mCzpU9CxmwpBFgZJsFgsMPYWzsDW1q1bExMTIf/w8HBBolf/J67VWlNTM23aNIjKc2dsmoabr1+/fvjw4b///hvCyigb6BRVZPoxfLAM3/Hnn356760AY8aMwdehXceuE/ziwht8pb6+/uGHH0YSg9qf9KMZ9hQYiuGcl5WVwdAHK6/rutVqBf+NQYW6urrx48dDQ8l88pJ3C6qqqnqqWY888oimadCu01U3NA3qms1mGzp0KHbEQjBS8SP++OOPnpIVHx9vsVhu3LihdtBh0Qvm1tHRIS0JAQSZrFD0XxljjBmGERkZqet6Q0MDOl14BE0ealZbW9tjjz1WXV0NyUJofSEjS9O0rq4uGucEQBPGnLNbQohp06acOXMG2jJstqTQaHDgZwfvvV0I1+kp5trzFELAVEJmZiascZbGfdAvCzJZIdMsyhH4JhigUJOcPn364cOHBZndA+CLQR7W+U2zJJ0S7rujKkzrPGPGDFi4wBRzw26H6WRa4BCyfpY7AHGzZs06cOBACH25KUJmhu6g63peXt7u3btprzW0IiECZYY+13Du3Lm7du1CNy+EsFqt6gxuSHDXaVZ+fn54eDh03OGO3W6/S5TLz2TduZdZtGjRuXPnYmNj6aKHu8R5+Y0sP388hISE06dPDx48mDljKf7K+Q5x15kh9J7i4+NPnz49atSoUIvjAj+TRfXLe9vBlLQFjI2NraqqgvUQmK00lpYuTLWbTrjeofqH2AxpoFXqxDPGDMPYs2fPnDlzJDZh2ChdMLLXh/ICTSrvyQo/dwiZGQoSBceIMCOrQ5lz0fjOnTtfeOEFeEv9JMgXc/JCSeHO9fR0+O0zQqZZQARTlglCxejaEE3Ttm7dumbNGqaYNqwcgWi61WpF/aIrlHF9FnO/8t5LhFKzYAYUwn54H41IkHWOQoiPPvpo/fr1zKkdQBDEC4EaWEfIyYYD5hqnZsFciuUZdJIV43YewqRCiISEBMZYc3MzzjPjhXDdgYe/W7ZsYcrAm04Cqb68p/s+goGekmUYRlJSEmPss88+A2q6urqE2RoQaR3h119/zVynnRnRoAcffPChhx6SZMPEd1jHAEYdPHsxzjms9y8sLIyLi8vLy8Pmn/osCDEz0iAUFBTExcVlZ2ejt6L+OyYmJjU1df78+X379t2/f/+BAwdgNhc2gAQ/XvhfVaU/L1y4oFqNZ+AWQs55UVGR6ZJRQ9neCaZ69OhRVRic+xkxYsS6deuOHTtWWVk5ZcoU5tqABJqc7nHx4sUekaXrekpKCiPWsW7dOnwqbbGmueH1vn377rvvPniXux4LAeqmadp777175cqVb7/9dtiwYZgSZVZnvIOES5cuea9TkIzOSDPGNE1buXIlPpUW19KbeAhCbW1tYmIirbC0rYkxNmDAAFhoOWbMGGRHmk8LVAugfhkArC3whiYEmCF6X9xJgj5ecu0ItFDDMBoaGkaOHKkKJg2Azp49K1wXDDCz9iEYZHHO//333x6RZRjGuHHjmNmHzcnJMV3tJ52qgcTV1dU9+uijmJWUG7IGeaappWmDxACaoamnhAW46sy7Z76Sk5PVY0HgYvLkyWA7qETUi5lSmZ+frxJExZ4wYYLD4bDb7dg1xbNVAt4Ro6yFhYXV1tb2lCxY+UfdDXculmWMjRgxAnZRugM9pgfYnDt3rsoR1aOSkhKHw/HKK68wJYARPLLCw8Pr6uokB98tWePHj1eFpkoxePDgmpoatYOqLpzER08++aRpuAb+vOeee+CtqKgoqZcfcJqYUwuioqJggV2PNAsdjbvMOeexsbG//PKL9A1Mc8b7b775Js0QPwbkXFxcLITYsGGDlCAY4M6NTqbHMXkGLO1W/StXjnDYu3evpEpqi0kTrFmzhjsXu0vs5+TkCCGamprwUTDIomVERUU1NjYKN2M6d5g0aZKH/KWWpLS0FN7Cbhf6LF3XYTRDt2DgNgoJ/fv3h6XQjz/+OOthHML3/YaCxEBoGI+mFB4HYp4PrhJkTyZjLCcnZ/Pmzbixl74OSiR1QZ999llsainvTU1N165dY4zNnDkTF/56WXcfNRCJ4M64MJ2D8cwRgvYbUGJ6gIwgIS3DMFasWLFhwwbujBoy51EY+C5uz2eMZWVl4dQs+nIhhKZpbW1tjLERI0bAaqcAkiVcV3wgLx52z7iDqWaB7ui6DlSCoaH+vvHGG59++inGnTFmD6zR48eg94SRQhQGHUX//v3xTy/dlo8bylGt4KJPnz7gI4RrfNIz1N0jzBkI1jQN9IJuGoDf1atXr1q1ivoa4IVmZRjGrl27wIvRTCBNZGSkEAJ6pLDEMFBTk1LHHe4MGzYM/K466PUAOOZEzRYg7UCVEsyfPx+aQnW8DQAuJP8N/WfY0V9aWmpaKQ/wxQwxd1zJGB4eTjd3UdvxgD59+lANlbryhmH069cvNjZWOMN+1Fi2bdu2atUqKhXyouv6u+++29XVhf6bkzmexMTE6OhoIQRs0KCV6hY+OnhBZq6Y01WjsYBw3UoAK90hJT1fAacbNE2bPXt2RESEIMezou/fvHlzZmbmqVOnML0Q4vr1688995y6deuGjeqOi8XHx2dnZ69evRom7vFrlZWV4fEPiJAxxRizWCwzZ87Eg4jozBW1wVdffRXSUzPsNnPqyD/++GNq8hcuXCgtLS0tLb148SKsLqG4du3aiy++qJYSSqaw7FGjRh0/fhwrQ9vH2tpamIDB2Sd3fSJT0KZz5MiRxcXFameFNizV1dUbN26Mjo5WRfWNKX+yi8MUxlheXt7UqVMTEhLg0Ma6urqKioqSkhLpUERODlfgHiOrGvm/IJgyPj4+MzMzLS3tgQce0DQNdhs0NzfX1dX9+uuuu3fvpoMYzeyQAknsYEPTNPwXAprZ4fFM0SNv9Is6JqqYWISmHFNNY4HuWsDQ+HjT2TqA6SwLU+rvTSk0E7XXzghl0myA+rq7O73oRS968f8E/wP5KBzi4d+84wAAAABJRU5ErkJggg==" id="hdr-logo" style="height:32px;width:auto;border-radius:7px;object-fit:contain;display:inline-block;vertical-align:middle;margin-right:8px;flex-shrink:0"><span id="hdr-title">Kore Visuals Tracker</span></span>
+    <nav class="nav" id="nav">
+      <button class="tab on" data-tab="dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg> Dashboard</button>
+      <button class="tab" data-tab="income"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg> Income</button>
+      <button class="tab" data-tab="purchases"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Purchases</button>
+      <button class="tab" data-tab="subscriptions"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg> Subscriptions</button>
+      <button class="tab" data-tab="taxes"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/><line x1="16" y1="8" x2="8" y2="8"/><line x1="16" y1="12" x2="8" y2="12"/><line x1="13" y1="16" x2="8" y2="16"/></svg> Tax Summary</button>
+      <button class="tab" data-tab="export"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Export</button>
+    </nav>
+    <div class="hdr-right">
+      <div class="sync-pill" id="sync-indicator" title="Google Sheets sync status"></div>
+      <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg> Dark</button>
+      <button class="settings-btn" onclick="openSettings()" title="Settings"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>
+    </div>
+  </div>
+</header>
+<div id="privacy-banner"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px;margin-top:-1px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Privacy Mode — monetary values are hidden &nbsp;·&nbsp; new entries are temporary and will be discarded when disabled</div>
+
+<main class="main">
+
+  <!-- DASHBOARD -->
+  <section class="panel on" id="panel-dashboard">
+    <div class="sec-hdr">
+      <h2>Business Overview</h2>
+      <p>Your drone videography business at a glance</p>
+    </div>
+
+    <div class="fbar" id="dash-filter">
+      <span class="lbl">Filter:</span>
+      <button class="fbtn on" data-r="all">All Time</button>
+      <button class="fbtn" data-r="month">This Month</button>
+      <button class="fbtn" data-r="year">This Year</button>
+      <button class="fbtn" data-r="custom">Custom</button>
+      <div class="dr-inputs" id="custom-range">
+        <input type="date" id="r-from">
+        <span style="color:var(--text-2);font-size:12px">to</span>
+        <input type="date" id="r-to">
+        <button class="btn btn-p btn-sm" onclick="applyCustom()">Apply</button>
+      </div>
+    </div>
+    <div id="dash-widgets"></div>
+  </section>
+
+  <!-- INCOME -->
+  <section class="panel" id="panel-income">
+    <div class="sec-hdr"><h2>Income</h2><p>Track client jobs and revenue</p></div>
+    <div class="card">
+      <div class="form-toggle-hdr">
+        <span class="form-ttl" id="inc-form-ttl">Add New Job</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-v" onclick="openInvoiceModal()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Generate Invoice</button>
+          <button class="btn btn-g" id="inc-toggle-btn" onclick="toggleForm('inc')">+ Add Job</button>
+        </div>
+      </div>
+      <div class="form-wrap" id="inc-form-wrap">
+        <div class="form-inner">
+          <input type="hidden" id="inc-edit-id">
+          <div class="fg">
+            <div class="ff"><label>Date</label><input type="date" id="inc-date"></div>
+            <div class="ff"><label>Client Name</label><input type="text" id="inc-client" placeholder="Client or company"></div>
+            <div class="ff"><label>Amount Earned ($)</label><input type="number" id="inc-amount" placeholder="0.00" min="0" step="0.01" oninput="calcProfit()"></div>
+            <div class="ff"><label>Payment Type</label>
+              <select id="inc-pay">
+                <option>Zelle</option><option>Cash</option><option>Check</option><option>Other</option>
+              </select>
+            </div>
+            <div class="ff"><label>Travel Expenses ($)</label><input type="number" id="inc-travel" placeholder="0.00" min="0" step="0.01" value="0" oninput="calcProfit()"></div>
+            <div class="ff"><label>Payment Status</label>
+              <select id="inc-status"><option value="Paid">Paid</option><option value="Pending">Pending</option><option value="Unpaid">Unpaid</option></select>
+            </div>
+            <div class="ff"><label>Job Profit (auto)</label><div class="profit-preview" id="profit-preview">$0.00</div></div>
+            <div class="ff wide"><label>Description</label><input type="text" id="inc-desc" placeholder="Project details, location, deliverables..."></div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-g" onclick="saveIncome()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Job</button>
+            <button class="btn btn-s" onclick="cancelForm('inc')">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <div class="fbar" id="inc-filter">
+        <span class="lbl">View:</span>
+        <button class="fbtn on" data-r="all">All Time</button>
+        <button class="fbtn" data-r="month">This Month</button>
+        <button class="fbtn" data-r="year">This Year</button>
+        <button class="fbtn" data-r="custom">Custom</button>
+        <div class="dr-inputs">
+          <input type="date" id="inc-r-from">
+          <span style="color:var(--text-2);font-size:12px">to</span>
+          <input type="date" id="inc-r-to">
+          <button class="btn btn-p btn-sm" onclick="applyCustomInc()">Apply</button>
+        </div>
+        <span class="lbl" style="margin-left:8px">Client:</span>
+        <div class="ms-wrap" id="inc-client-ms">
+          <button class="ms-btn" onclick="toggleMs('inc-client-ms')">All Clients</button>
+          <div class="ms-panel">
+            <div class="ms-actions">
+              <button class="ms-action" onclick="msAction('inc-client-ms','all')">Select All</button>
+              <button class="ms-action" onclick="msAction('inc-client-ms','none')">Clear All</button>
+            </div>
+            <div class="ms-items"></div>
+          </div>
+        </div>
+      </div>
+      <div id="inc-summary" style="margin-bottom:14px"></div>
+      <div class="tbl-wrap" id="inc-table"></div>
+    </div>
+  </section>
+
+  <!-- PURCHASES -->
+  <section class="panel" id="panel-purchases">
+    <div class="sec-hdr"><h2>Purchases</h2><p>Drone equipment, camera gear, and misc expenses</p></div>
+    <div class="card">
+      <div class="form-toggle-hdr">
+        <span class="form-ttl" id="pur-form-ttl">Add New Purchase</span>
+        <button class="btn btn-p" id="pur-toggle-btn" onclick="toggleForm('pur')">+ Add Purchase</button>
+      </div>
+      <div class="form-wrap" id="pur-form-wrap">
+        <div class="form-inner">
+          <input type="hidden" id="pur-edit-id">
+          <div class="fg">
+            <div class="ff"><label>Date</label><input type="date" id="pur-date"></div>
+            <div class="ff"><label>Store / Vendor</label><input type="text" id="pur-store" placeholder="Amazon, B&H, Best Buy..."></div>
+            <div class="ff"><label>Category</label>
+              <select id="pur-cat">
+                <option>Drone Equipment</option><option>Camera Equipment</option><option>Misc</option>
+              </select>
+            </div>
+            <div class="ff"><label>Price ($)</label><input type="number" id="pur-price" placeholder="0.00" min="0" step="0.01"></div>
+            <div class="ff wide"><label>Description</label><input type="text" id="pur-desc" placeholder="What did you buy?"></div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-p" onclick="savePurchase()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Purchase</button>
+            <button class="btn btn-s" onclick="cancelForm('pur')">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <div class="fbar" id="pur-filter">
+        <span class="lbl">View:</span>
+        <button class="fbtn on" data-r="all">All Time</button>
+        <button class="fbtn" data-r="month">This Month</button>
+        <button class="fbtn" data-r="year">This Year</button>
+        <button class="fbtn" data-r="custom">Custom</button>
+        <div class="dr-inputs">
+          <input type="date" id="pur-r-from">
+          <span style="color:var(--text-2);font-size:12px">to</span>
+          <input type="date" id="pur-r-to">
+          <button class="btn btn-p btn-sm" onclick="applyCustomPur()">Apply</button>
+        </div>
+        <span class="lbl" style="margin-left:8px">Category:</span>
+        <button class="fbtn cat-on" data-cat="all">All</button>
+        <button class="fbtn" data-cat="Drone Equipment">Drone</button>
+        <button class="fbtn" data-cat="Camera Equipment">Camera</button>
+        <button class="fbtn" data-cat="Misc">Misc</button>
+        <span class="lbl" style="margin-left:8px">Vendor:</span>
+        <div class="ms-wrap" id="pur-vendor-ms">
+          <button class="ms-btn" onclick="toggleMs('pur-vendor-ms')">All Vendors</button>
+          <div class="ms-panel">
+            <div class="ms-actions">
+              <button class="ms-action" onclick="msAction('pur-vendor-ms','all')">Select All</button>
+              <button class="ms-action" onclick="msAction('pur-vendor-ms','none')">Clear All</button>
+            </div>
+            <div class="ms-items"></div>
+          </div>
+        </div>
+      </div>
+      <div id="pur-summary" style="margin-bottom:14px"></div>
+      <div class="tbl-wrap" id="pur-table"></div>
+    </div>
+  </section>
+
+  <!-- SUBSCRIPTIONS -->
+  <section class="panel" id="panel-subscriptions">
+    <div class="sec-hdr"><h2>Subscriptions</h2><p>Recurring costs — active ones auto-log to expenses on open</p></div>
+    <div class="card">
+      <div class="form-toggle-hdr">
+        <span class="form-ttl" id="sub-form-ttl">Add Subscription</span>
+        <button class="btn btn-v" id="sub-toggle-btn" onclick="toggleForm('sub')">+ Add Subscription</button>
+      </div>
+      <div class="form-wrap" id="sub-form-wrap">
+        <div class="form-inner">
+          <input type="hidden" id="sub-edit-id">
+          <div class="fg">
+            <div class="ff"><label>Service Name</label><input type="text" id="sub-name" placeholder="Adobe CC, DJI Care..."></div>
+            <div class="ff"><label>Amount ($)</label><input type="number" id="sub-amount" placeholder="0.00" min="0" step="0.01"></div>
+            <div class="ff"><label>Billing Type</label>
+              <select id="sub-billing">
+                <option>Monthly</option><option>Annual</option><option>Every 3 Years</option><option>One-Time</option>
+              </select>
+            </div>
+            <div class="ff"><label>Status</label>
+              <select id="sub-status"><option>Active</option><option>Inactive</option></select>
+            </div>
+            <div class="ff"><label>Start Date (first charge)</label><input type="date" id="sub-start"></div>
+            <div class="ff"><label>Deactivation Date</label><input type="date" id="sub-end"></div>
+            <div class="ff wide"><label>Description / Notes</label><input type="text" id="sub-desc" placeholder="Account, plan tier, notes..."></div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-v" onclick="saveSub()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Subscription</button>
+            <button class="btn btn-s" onclick="cancelForm('sub')">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <div class="fbar" id="sub-filter">
+        <span class="lbl">Status:</span>
+        <button class="fbtn on" data-s="all">All</button>
+        <button class="fbtn" data-s="Active">Active</button>
+        <button class="fbtn" data-s="Inactive">Inactive</button>
+        <span class="lbl" style="margin-left:8px">Billing:</span>
+        <button class="fbtn cat-on" data-bt="all">All</button>
+        <button class="fbtn" data-bt="Monthly">Monthly</button>
+        <button class="fbtn" data-bt="Annual">Annual</button>
+        <button class="fbtn" data-bt="Every 3 Years">Every 3 Years</button>
+        <button class="fbtn" data-bt="One-Time">One-Time</button>
+        <span class="lbl" style="margin-left:8px">Service:</span>
+        <div class="ms-wrap" id="sub-svc-ms">
+          <button class="ms-btn" onclick="toggleMs('sub-svc-ms')">All Services</button>
+          <div class="ms-panel">
+            <div class="ms-actions">
+              <button class="ms-action" onclick="msAction('sub-svc-ms','all')">Select All</button>
+              <button class="ms-action" onclick="msAction('sub-svc-ms','none')">Clear All</button>
+            </div>
+            <div class="ms-items"></div>
+          </div>
+        </div>
+      </div>
+      <div id="sub-summary" style="margin-bottom:14px"></div>
+      <div class="tbl-wrap" id="sub-table"></div>
+    </div>
+  </section>
+
+  <!-- TAX SUMMARY -->
+  <section class="panel" id="panel-taxes">
+    <div class="sec-hdr"><h2>Tax Summary</h2><p>Annual breakdown of revenue, expenses, and net profit — one year per card</p></div>
+    <div id="tax-content"></div>
+  </section>
+
+  <!-- EXPORT -->
+  <section class="panel" id="panel-export">
+    <div class="sec-hdr"><h2>Export & Backup</h2><p>Download your data or restore from a backup</p></div>
+    <div class="exp-grid">
+      <div class="card exp-card">
+        <div class="exp-icon"><svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+        <h3>Export CSV</h3>
+        <p>Comma-separated file that opens in Excel, Numbers, or Google Sheets.</p>
+        <select id="csv-type">
+          <option value="all">All Data</option>
+          <option value="income">Income Only</option>
+          <option value="purchases">Purchases Only</option>
+          <option value="subs">Subscription Charges Only</option>
+        </select>
+        <button class="btn btn-p" style="width:100%" onclick="exportCSV()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download CSV</button>
+      </div>
+      <div class="card exp-card">
+        <div class="exp-icon"><svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg></div>
+        <h3>Export Excel</h3>
+        <p>Excel-compatible file with all sections. Opens directly in Microsoft Excel or Numbers.</p>
+        <button class="btn btn-g" style="width:100%;margin-top:auto" onclick="exportExcel()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download .xls</button>
+      </div>
+      <div class="card exp-card">
+        <div class="exp-icon"><svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
+        <h3>Backup JSON</h3>
+        <p>Full data backup as a JSON file. Use to transfer data between browsers or computers.</p>
+        <button class="btn btn-o" style="width:100%" onclick="exportJSON()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download Backup</button>
+      </div>
+      <div class="card exp-card">
+        <div class="exp-icon"><svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg></div>
+        <h3>Import JSON</h3>
+        <p>Restore from a previously saved JSON backup. Choose merge or replace mode.</p>
+        <select id="import-mode" style="margin-bottom:12px">
+          <option value="merge">Merge with existing data</option>
+          <option value="replace">Replace all data</option>
+        </select>
+        <label class="btn btn-s" style="width:100%;cursor:pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg> Choose Backup File
+          <input type="file" accept=".json" style="display:none" onchange="importJSON(this)">
+        </label>
+        <div id="clear-confirm-area" style="margin-top:8px">
+          <button class="btn btn-d" style="width:100%" onclick="clearStep1()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg> Clear All Data</button>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px" id="data-summary"></div>
+  </section>
+
+</main>
+
+<div id="toast"></div>
+
+<script>
+// ── ICON LIBRARY ──────────────────────────────────────────────
+const ICONS = {
+  drone:       '<circle cx="12" cy="12" r="2"/><line x1="10.6" y1="10.6" x2="5.5" y2="5.5"/><line x1="13.4" y1="10.6" x2="18.5" y2="5.5"/><line x1="10.6" y1="13.4" x2="5.5" y2="18.5"/><line x1="13.4" y1="13.4" x2="18.5" y2="18.5"/><circle cx="5" cy="5" r="2.5"/><circle cx="19" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="19" r="2.5"/>',
+  grid:        '<rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/>',
+  dollar:      '<line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>',
+  bag:         '<path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>',
+  repeat:      '<polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/>',
+  receipt:     '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/><line x1="16" y1="8" x2="8" y2="8"/><line x1="16" y1="12" x2="8" y2="12"/><line x1="13" y1="16" x2="8" y2="16"/>',
+  upload:      '<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
+  moon:        '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>',
+  sun:         '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>',
+  save:        '<path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>',
+  bell:        '<path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>',
+  link:        '<path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>',
+  'bar-chart': '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+  table:       '<rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/>',
+  database:    '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>',
+  download:    '<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+  folder:      '<path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>',
+  'arrow-down':'<line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>',
+  pencil:      '<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>',
+  trash:       '<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/>',
+  'check-circle':'<path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
+  lock:        '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>',
+  clock:       '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  briefcase:   '<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>',
+  cart:        '<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.97-1.67l1.38-7.33H6"/>',
+  refresh:     '<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>',
+  copy:        '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>',
+  alert:       '<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+  x:           '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  plane:       '<path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 00-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>',
+  'trending-up':'<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
+  box:         '<path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>',
+  document:    '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
+  'check-open':'<circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/>',
+  'eye-off':   '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>',
+}
+function icon(name, size=16) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;flex-shrink:0">${ICONS[name]||''}</svg>`
+}
+
+// ── STORAGE ──────────────────────────────────────────────────
+const K = { inc:'dt_income', pur:'dt_purchases', sub:'dt_subs', subx:'dt_subx', links:'dt_links' }
+const DEFAULT_LINKS = [
+  {id:'l1', name:'Kore Aerials Website', url:'https://www.koreaerials.com'},
+  {id:'l2', name:'FAA DroneZone', url:'https://faadronezone-operator.faa.gov/#/part107'}
+]
+const load = k => { try { return JSON.parse(localStorage.getItem(k)||'[]') } catch { return [] } }
+const save = (k,v) => { localStorage.setItem(k, JSON.stringify(v)); gsQueueSync(k) }
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2)
+
+// ── GOOGLE SHEETS CONFIG ──────────────────────────────────────
+const GS_CLIENT_ID      = '767039224660-kjc6t9ue5c3ickdosd2kqkhbn9dqa2n2.apps.googleusercontent.com'
+const GS_CLIENT_SECRET  = 'YOUR_CLIENT_SECRET_HEGOCSPX-8xIcsMz8VeprkFUiufdxBCdNRrZV'  // for reference
+const GS_SPREADSHEET_ID = '16Qq8ggagfDl1fnGe2bnVQvLLlhtQAyNphYoDxSofpiM'
+const GS_SCOPE          = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.readonly'
+// Maps each localStorage data key → its Sheets tab name + column order
+// SHEET_SCHEMA — cols must exactly match the header row in each Google Sheet tab.
+// toRow: converts an in-memory app object → sheet row array (for writing)
+// toObj: converts a sheet row array → in-memory app object (for reading)
+const SHEET_SCHEMA = {
+  [K.inc]: {
+    tab:  'Income',
+    cols: ['id','date','client','amount','paymentType','travelExpenses','profit','paymentStatus','description'],
+    toRow: o => [
+      o.id, o.date, o.client, o.amount,
+      o.pay||o.paymentType||'Other',
+      o.travel||o.travelExpenses||0,
+      o.profit||0,
+      o.status||o.paymentStatus||'Paid',
+      o.desc||o.description||''
+    ],
+    toObj: r => ({
+      id: r[0], date: r[1], client: r[2], amount: r[3],
+      pay: r[4], travel: r[5], profit: r[6], status: r[7], desc: r[8]
+    }),
+  },
+  [K.pur]: {
+    tab:  'Purchases',
+    cols: ['id','date','store','price','category','description'],
+    toRow: o => [
+      o.id, o.date, o.store||o.name||'', o.price,
+      o.cat||o.category||'Misc',
+      o.desc||o.description||''
+    ],
+    toObj: r => ({
+      id: r[0], date: r[1], store: r[2], price: r[3], cat: r[4], desc: r[5]
+    }),
+  },
+  [K.sub]: {
+    tab:  'Subscriptions',
+    cols: ['id','name','amount','billingType','status','startDate','lastProcessed','totalSpent','description'],
+    toRow: o => [
+      o.id, o.name, o.amount, o.billingType, o.status, o.startDate,
+      o.lastProcessed||'',
+      o.totalSpent||'',
+      o.desc||o.description||''
+    ],
+    toObj: r => ({
+      id: r[0], name: r[1], amount: r[2], billingType: r[3], status: r[4],
+      startDate: r[5], lastProcessed: r[6]||null, totalSpent: r[7], desc: r[8]
+    }),
+  },
+  [K.subx]: {
+    tab:  'Settings',
+    cols: ['key','value'],
+    toRow: o => [o.id, JSON.stringify({subId:o.subId, date:o.date, name:o.name, amount:o.amount})],
+    toObj: r => { try { const v=JSON.parse(r[1]||'{}'); return {id:r[0],...v} } catch { return null } },
+  },
+  [K.links]: {
+    tab:  'Links',
+    cols: ['id','name','url'],
+    toRow: o => [o.id, o.name, o.url],
+    toObj: r => ({ id: r[0], name: r[1], url: r[2] }),
+  },
+}
+const today = () => toStr(new Date())
+
+// ── CHART TOOLTIP ─────────────────────────────────────────────
+function showChartTip(e, lbl, r, x) {
+  if (privacyMode()) return
+  const tip=document.getElementById('chart-tip')
+  const dot=(c)=>`<span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${c};flex-shrink:0"></span>`
+  const row=(c,label,val,col)=>`<div style="display:flex;align-items:center;gap:7px;margin-top:4px">${dot(c)}<span style="color:var(--text-2);font-size:12px">${label}</span><span style="margin-left:auto;padding-left:16px;font-size:12px;font-weight:600;color:${col}">${fmt(val)}</span></div>`
+  tip.innerHTML=`<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px">${lbl}</div>${row('rgba(0,122,255,0.8)','Revenue',r,'var(--green)')}${row('rgba(255,59,48,0.8)','Expenses',x,'var(--red)')}`
+  tip.style.display='block'
+  posChartTip(e)
+}
+function posChartTip(e) {
+  const tip=document.getElementById('chart-tip')
+  const tw=tip.offsetWidth, th=tip.offsetHeight
+  let left=e.clientX+16, top=e.clientY-th/2
+  if(left+tw>window.innerWidth-8) left=e.clientX-tw-16
+  if(top<8) top=8
+  if(top+th>window.innerHeight-8) top=window.innerHeight-th-8
+  tip.style.left=left+'px'; tip.style.top=top+'px'
+}
+function hideChartTip() { document.getElementById('chart-tip').style.display='none' }
+
+// ── DATE UTILS ────────────────────────────────────────────────
+function toDate(s) { const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d) }
+function toStr(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` }
+function addM(date,n) { const d=new Date(date),day=d.getDate(); d.setMonth(d.getMonth()+n); if(d.getDate()!==day)d.setDate(0); return d }
+function addY(date,n) { const d=new Date(date); d.setFullYear(d.getFullYear()+n); return d }
+function advance(date, type) {
+  if(type==='Monthly') return addM(date,1)
+  if(type==='Annual') return addY(date,1)
+  if(type==='Every 3 Years') return addY(date,3)
+  return date
+}
+function nextCharge(sub) {
+  const base = sub.lastProcessed || sub.startDate
+  return toStr(advance(toDate(base), sub.billingType))
+}
+function fmtDate(s) {
+  if(!s) return '—'
+  const [y,m,d]=s.split('-')
+  const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  return `${mo[+m-1]} ${+d}, ${y}`
+}
+// ── PRIVACY MODE ──────────────────────────────────────────────
+const privacyMode = () => localStorage.getItem('dt_privacy') === '1'
+function applyPrivacyMode(on) {
+  localStorage.setItem('dt_privacy', on ? '1' : '0')
+  document.body.classList.toggle('privacy-mode', on)
+  const cb = document.getElementById('smod-privacy')
+  if (cb) cb.checked = on
+  if (!on) {
+    // Discard all entries that were created while in privacy mode
+    ;[K.inc, K.pur, K.sub, K.subx, K.links].forEach(k => {
+      const filtered = load(k).filter(e => !e._priv)
+      localStorage.setItem(k, JSON.stringify(filtered))
+    })
+    // Resume sync now that mode is off
+    if (gsGetToken()) [K.inc, K.pur, K.sub, K.subx, K.links].forEach(k => gsQueueSync(k))
+  }
+  renderDash(); renderIncTable(); renderPurTable(); renderSubTable(); renderTaxes(); renderDataSummary(); renderLinks()
+}
+
+function fmt(n) { const v=parseFloat(n)||0; return '$'+v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',') }
+
+// Returns a view of data with financial fields zeroed for real (non-temp) entries
+// when Privacy Mode is active, so temp (_priv) entries show their actual values.
+function loadP(k) {
+  const data = load(k)
+  if (!privacyMode()) return data
+  return data.map(e => {
+    if (e._priv) return e
+    if (k === K.inc)  return {...e, amount:0, travel:0, travelExpenses:0, travel_expenses:0, profit:0}
+    if (k === K.pur)  return {...e, price:0}
+    if (k === K.sub)  return {...e, amount:0, totalSpent:0}
+    if (k === K.subx) return {...e, amount:0}
+    return e
+  })
+}
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
+function statusSlug(s){ return s==='Paid'?'paid':s==='Unpaid'?'unpaid':'pending' }
+
+// ── TOAST ─────────────────────────────────────────────────────
+function toast(msg, ms=2600) {
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show')
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),ms)
+}
+
+// ── SUBSCRIPTION AUTO-PROCESSING ─────────────────────────────
+function processSubs() {
+  const subs=load(K.sub), subx=load(K.subx)
+  const now=toDate(today())
+  let sc=false, xc=false
+  for(const s of subs) {
+    if(s._priv||s.status==='Inactive'||s.billingType==='One-Time') continue
+    let cur=toDate(s.startDate)
+    if(s.lastProcessed) {
+      const last=toDate(s.lastProcessed)
+      while(cur<=last) cur=advance(cur,s.billingType)
+    }
+    while(cur<=now) {
+      const ds=toStr(cur)
+      if(!subx.some(e=>e.subId===s.id&&e.date===ds)) {
+        subx.push({id:uid(),subId:s.id,date:ds,name:s.name,amount:s.amount}); xc=true
+      }
+      if(!s.lastProcessed||ds>s.lastProcessed){s.lastProcessed=ds;sc=true}
+      cur=advance(cur,s.billingType)
+    }
+  }
+  if(sc) save(K.sub,subs)
+  if(xc) save(K.subx,subx)
+}
+
+// ── INLINE EDIT STATE ─────────────────────────────────────────
+const editing = {inc:null, pur:null, sub:null}
+
+// ── RENEWAL FILTER STATE ──────────────────────────────────────
+let _renewalFilter = '30d'  // '30d' | '1y' | 'all'
+
+// ── FILTER STATE ──────────────────────────────────────────────
+const FS = {
+  dash:  {r:'all', from:null, to:null},
+  inc:   {r:'all', clients:[]},
+  pur:   {r:'all', cat:'all', vendors:[]},
+  sub:   {status:'all', bt:'all', svcs:[]}
+}
+function range(state) {
+  const now=new Date()
+  if(state.r==='month'){
+    return {from:toStr(new Date(now.getFullYear(),now.getMonth(),1)),to:toStr(new Date(now.getFullYear(),now.getMonth()+1,0))}
+  }
+  if(state.r==='year') return {from:`${now.getFullYear()}-01-01`,to:`${now.getFullYear()}-12-31`}
+  if(state.r==='custom'&&state.from&&state.to) return {from:state.from,to:state.to}
+  return {from:null,to:null}
+}
+function inRange(ds, from, to) {
+  if(from&&ds<from) return false
+  if(to&&ds>to) return false
+  return true
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────
+// ── DASHBOARD CARD DRAG-AND-DROP ──────────────────────────────
+// ── Generic grid drag — shared by dashboard and all tab summary grids ──────
+// Container items must have class="dw" and data-wi="N".
+// Placeholder-based: the live node never moves during the drag, eliminating oscillation.
+// Order is persisted to localStorage[key] on every drop.
+function loadGridOrder(key, n) {
+  try {
+    const o = JSON.parse(localStorage.getItem(key) || 'null')
+    if (Array.isArray(o) && o.length === n && new Set(o).size === n) return o
+  } catch {}
+  return Array.from({length:n}, (_, i) => i)
+}
+function initGridDrag(container, key) {
+  if (!container) return
+  let dragging = null, placeholder = null
+
+  container.addEventListener('dragstart', e => {
+    const w = e.target.closest('.dw:not(.dw-ph)')
+    if (!w || !container.contains(w)) return
+    dragging = w
+    e.dataTransfer.effectAllowed = 'move'
+    placeholder = document.createElement('div')
+    placeholder.className = 'dw dw-ph'
+    if (w.dataset.span) placeholder.style.gridColumn = `span ${w.dataset.span}`
+    placeholder.style.minHeight = w.offsetHeight + 'px'
+    requestAnimationFrame(() => { w.classList.add('dw-drag'); w.after(placeholder) })
+  })
+
+  container.addEventListener('dragover', e => {
+    e.preventDefault()
+    if (!dragging || !placeholder) return
+    const target = document.elementFromPoint(e.clientX, e.clientY)
+      ?.closest?.('.dw:not(.dw-ph):not(.dw-drag)')
+    if (!target || !container.contains(target)) return
+    const rect = target.getBoundingClientRect()
+    const dx = (e.clientX - (rect.left + rect.width  / 2)) / rect.width
+    const dy = (e.clientY - (rect.top  + rect.height / 2)) / rect.height
+    if (Math.abs(dx) > Math.abs(dy) ? dx > 0 : dy > 0) target.after(placeholder)
+    else target.before(placeholder)
+  })
+
+  container.addEventListener('dragend', () => {
+    if (!dragging) return
+    dragging.classList.remove('dw-drag')
+    if (placeholder?.parentNode) { placeholder.parentNode.insertBefore(dragging, placeholder); placeholder.remove() }
+    const order = [...container.querySelectorAll('.dw:not(.dw-ph)')].map(c => +c.dataset.wi)
+    try { localStorage.setItem(key, JSON.stringify(order)) } catch {}
+    dragging = null; placeholder = null
+  })
+
+  container.addEventListener('drop', e => e.preventDefault())
+}
+function initDashDrag() { initGridDrag(document.getElementById('dash-widgets'), 'dt_dash_order') }
+
+function renderDash() {
+  const {from,to}=range(FS.dash)
+  const inc=loadP(K.inc).filter(e=>inRange(e.date,from,to))
+  const pur=loadP(K.pur).filter(e=>inRange(e.date,from,to))
+  const rev=inc.reduce((s,e)=>s+(+e.amount||0),0)
+  const trav=inc.reduce((s,e)=>s+(+(e.travel||e.travelExpenses||e.travel_expenses||0)),0)
+  const purAmt=pur.reduce((s,e)=>s+(+e.price||0),0)
+  const subAmt=FS.dash.r==='all'
+    ? loadP(K.sub).reduce((s,e)=>s+(e.totalSpent!==undefined?+e.totalSpent:(+e.amount||0)),0)
+    : loadP(K.subx).filter(e=>inRange(e.date,from,to)).reduce((s,e)=>s+(+e.amount||0),0)
+  const exp=purAmt+subAmt+trav
+  const net=rev-exp
+
+  // Card inner HTML indexed by position — order is read from localStorage
+  const mainCards = [
+    `<div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('dollar',13)} Total Revenue</div><div class="val g">${fmt(rev)}</div><div class="sub">${inc.length} job${inc.length!==1?'s':''}</div>`,
+    `<div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('upload',13)} Total Expenses</div><div class="val r">${fmt(exp)}</div><div class="sub">Purchases · Subscriptions · Travel</div>`,
+    `<div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('trending-up',13)} Net Profit</div><div class="val ${net>=0?'g':'r'}">${fmt(net)}</div><div class="sub">${net>=0?'Positive':'Negative'} cash flow</div>`,
+  ]
+  const subCards = [
+    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('bag',11)} Purchases</div><div class="val r">${fmt(purAmt)}</div>`,
+    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('repeat',11)} Subscription Charges</div><div class="val r">${fmt(subAmt)}</div>`,
+    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('plane',11)} Travel Expenses</div><div class="val r">${fmt(trav)}</div>`,
+  ]
+  // Widget catalogue: 0-2 main cards, 3-5 sub-cards, 6 chart, 7 renewals, 8 quick links
+  const WIDGET_SPANS = [2,2,2, 2,2,2, 4,2, 6]
+  const WIDGET_CLS   = ['sum-card','sum-card','sum-card','sum-sub-card','sum-sub-card','sum-sub-card','card','card','card']
+  const WIDGET_HTML  = [
+    ...mainCards,
+    ...subCards,
+    `<div class="card-ttl">Monthly Revenue vs Expenses (Last 12 Months)</div><div class="chart-wrap" id="chart"></div>`,
+    `<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px"><div class="card-ttl" style="margin-bottom:0;display:flex;align-items:center;gap:7px">${icon('bell',16)} Upcoming Renewals</div><div style="display:flex;gap:5px"><button id="ren-f-30d" class="fbtn" onclick="setRenewalFilter('30d')">30 Days</button><button id="ren-f-1y" class="fbtn" onclick="setRenewalFilter('1y')">1 Year</button><button id="ren-f-all" class="fbtn" onclick="setRenewalFilter('all')">All Active</button></div></div><div id="renewals-list"></div>`,
+    `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="card-ttl" style="margin-bottom:0;display:flex;align-items:center;gap:7px">${icon('link',16)} Quick Links</div><button class="btn btn-sm btn-p" id="link-add-btn" onclick="toggleLinkForm()">+ Add Link</button></div><div class="link-form-area" id="link-form-area"><div class="form-inner" style="margin-bottom:0"><input type="hidden" id="link-edit-id"><div class="fg" style="grid-template-columns:1fr 1fr;margin-bottom:10px"><div class="ff"><label>Name</label><input type="text" id="link-name" placeholder="e.g. FAA DroneZone"></div><div class="ff"><label>URL</label><input type="text" id="link-url" placeholder="https://..."></div></div><div style="display:flex;gap:8px"><button class="btn btn-p btn-sm" onclick="saveLink()">${icon('save',13)} Save</button><button class="btn btn-s btn-sm" onclick="cancelLinkForm()">Cancel</button></div></div></div><div id="links-list"></div>`,
+  ]
+  const order = loadGridOrder('dt_dash_order', 9)
+  document.getElementById('dash-widgets').innerHTML = order
+    .map(i => `<div class="dw ${WIDGET_CLS[i]}" draggable="true" data-wi="${i}" data-span="${WIDGET_SPANS[i]}">${WIDGET_HTML[i]}</div>`)
+    .join('')
+  initDashDrag()
+  renderChart()
+  renderRenewals()
+  renderLinks()
+}
+
+function renderChart() {
+  const el=document.getElementById('chart')
+  if (privacyMode()) {
+    el.innerHTML=`<div class="empty" style="padding:28px 20px"><div class="ei" style="opacity:.4">${icon('eye-off',36)}</div><p>Values hidden in Privacy Mode</p></div>`
+    return
+  }
+  const months=[]
+  const now=new Date()
+  for(let i=11;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1)
+    months.push({lbl:d.toLocaleString('default',{month:'short'})+"'"+String(d.getFullYear()).slice(2),y:d.getFullYear(),m:d.getMonth()})
+  }
+  const inc=load(K.inc), pur=load(K.pur), subx=load(K.subx)
+  const rev=months.map(mo=>inc.filter(e=>{const d=toDate(e.date);return d.getFullYear()===mo.y&&d.getMonth()===mo.m}).reduce((s,e)=>s+(+e.amount||0),0))
+  const exp=months.map(mo=>{
+    const p=pur.filter(e=>{const d=toDate(e.date);return d.getFullYear()===mo.y&&d.getMonth()===mo.m}).reduce((s,e)=>s+(+e.price||0),0)
+    const x=subx.filter(e=>{const d=toDate(e.date);return d.getFullYear()===mo.y&&d.getMonth()===mo.m}).reduce((s,e)=>s+(+e.amount||0),0)
+    const t=inc.filter(e=>{const d=toDate(e.date);return d.getFullYear()===mo.y&&d.getMonth()===mo.m}).reduce((s,e)=>s+(+e.travel||0),0)
+    return p+x+t
+  })
+  const hasData=rev.some(v=>v>0)||exp.some(v=>v>0)
+  if(!hasData){el.innerHTML=`<div class="empty"><div class="ei">${icon('bar-chart',40)}</div><p>Add income and expenses to see your chart</p></div>`;return}
+
+  const W=680,H=280,pad={t:20,r:20,b:50,l:62}
+  const cW=W-pad.l-pad.r, cH=H-pad.t-pad.b
+  const mx=Math.max(...rev,...exp,1)
+  const mW=cW/12, bW=mW*.3
+
+  let grid='',ylab='',bars='',xlab=''
+  for(let i=0;i<=4;i++){
+    const y=pad.t+cH*(1-i/4), v=mx*i/4
+    grid+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="rgba(0,0,0,0.07)" stroke-width="1"/>`
+    const lv=v>=1000?'$'+(v/1000).toFixed(1)+'k':'$'+v.toFixed(0)
+    ylab+=`<text x="${pad.l-5}" y="${y+4}" text-anchor="end" font-size="10" fill="#6e6e73">${lv}</text>`
+  }
+  months.forEach((mo,i)=>{
+    const cx=pad.l+i*mW+mW/2
+    const rH=Math.max(rev[i]>0?2:0,(rev[i]/mx)*cH), rY=pad.t+cH-rH
+    const eH=Math.max(exp[i]>0?2:0,(exp[i]/mx)*cH), eY=pad.t+cH-eH
+    bars+=`<rect x="${cx-bW-1}" y="${rY}" width="${bW}" height="${rH}" rx="3" fill="rgba(0,122,255,0.78)"/>`
+    bars+=`<rect x="${cx+1}" y="${eY}" width="${bW}" height="${eH}" rx="3" fill="rgba(255,59,48,0.78)"/>`
+    bars+=`<rect class="chart-col" x="${cx-mW/2+1}" y="${pad.t}" width="${mW-2}" height="${cH}" rx="4" fill="rgba(0,0,0,0)" pointer-events="all" data-lbl="${mo.lbl}" data-rev="${rev[i]}" data-exp="${exp[i]}" style="cursor:default"/>`
+    xlab+=`<text x="${cx}" y="${H-8}" text-anchor="middle" font-size="9" fill="#6e6e73">${mo.lbl}</text>`
+  })
+  const leg=`<rect x="${W-148}" y="${pad.t}" width="9" height="9" rx="2" fill="rgba(0,122,255,0.78)"/><text x="${W-135}" y="${pad.t+8}" font-size="11" fill="#6e6e73">Revenue</text><rect x="${W-72}" y="${pad.t}" width="9" height="9" rx="2" fill="rgba(255,59,48,0.78)"/><text x="${W-59}" y="${pad.t+8}" font-size="11" fill="#6e6e73">Expenses</text>`
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${grid}${ylab}${bars}${xlab}${leg}<line x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${pad.t+cH}" stroke="rgba(0,0,0,0.15)" stroke-width="1"/><line x1="${pad.l}" y1="${pad.t+cH}" x2="${W-pad.r}" y2="${pad.t+cH}" stroke="rgba(0,0,0,0.15)" stroke-width="1"/></svg>`
+  el.querySelectorAll('.chart-col').forEach(r=>{
+    r.addEventListener('mouseenter', e=>{
+      r.setAttribute('fill','rgba(0,0,0,0.04)')
+      showChartTip(e, r.dataset.lbl, +r.dataset.rev, +r.dataset.exp)
+    })
+    r.addEventListener('mousemove', posChartTip)
+    r.addEventListener('mouseleave', ()=>{
+      r.setAttribute('fill','rgba(0,0,0,0)')
+      hideChartTip()
+    })
+  })
+}
+
+function setRenewalFilter(f) { _renewalFilter = f; renderRenewals() }
+
+function renderRenewals() {
+  // sync pill active state
+  ;['30d','1y','all'].forEach(f => {
+    const btn = document.getElementById('ren-f-' + f)
+    if (btn) btn.classList.toggle('on', f === _renewalFilter)
+  })
+  const el = document.getElementById('renewals-list')
+  if (!el) return
+  const now = toDate(today())
+  const maxDays = _renewalFilter === '30d' ? 30 : _renewalFilter === '1y' ? 365 : Infinity
+  const emptyMsg = _renewalFilter === '30d' ? 'No renewals in the next 30 days'
+    : _renewalFilter === '1y' ? 'No renewals in the next 12 months'
+    : 'No active recurring subscriptions'
+  const upcoming = loadP(K.sub)
+    .filter(s => s.status === 'Active' && s.billingType !== 'One-Time')
+    .map(s => { const nd = toDate(nextCharge(s)); return {...s, nd, days: Math.round((nd - now) / 864e5)} })
+    .filter(s => s.days >= 0 && s.days <= maxDays)
+    .sort((a, b) => a.days - b.days)
+  if (!upcoming.length) { el.innerHTML=`<div class="empty" style="padding:20px"><div class="ei">${icon('check-open',36)}</div><p>${emptyMsg}</p></div>`; return }
+  el.innerHTML = upcoming.map(s => {
+    const cls = s.days <= 3 ? 'd-urg' : s.days <= 10 ? 'd-soon' : 'd-ok'
+    const dlbl = s.days === 0 ? 'Today' : s.days === 1 ? 'Tomorrow' : s.days < 365 ? `${s.days}d` : `${Math.round(s.days/30)}mo`
+    return `<div class="ren-item"><div><div class="ren-name">${esc(s.name)}</div><div class="ren-when">${fmtDate(toStr(s.nd))} · ${s.billingType}</div></div><div style="display:flex;align-items:center;gap:8px"><span class="ren-amt">${fmt(s.amount)}</span><span class="d-bdg ${cls}">${dlbl}</span></div></div>`
+  }).join('')
+}
+
+// ── BACKUP BANNER ─────────────────────────────────────────────
+
+// ── QUICK LINKS ────────────────────────────────────────────────
+function renderLinks() {
+  const el=document.getElementById('links-list'); if(!el)return
+  const list=load(K.links)
+  if(!list.length){el.innerHTML='<div style="color:var(--text-2);font-size:13px;padding:8px 0">No links yet. Add one above.</div>';return}
+  el.innerHTML=list.map(l=>`<div class="link-item">
+    <a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.name)}</a>
+    <div style="display:flex;gap:5px">
+      <button class="btn btn-sm btn-s" onclick="editLink('${l.id}')" title="Edit">${icon('pencil',13)}</button>
+      <button class="btn btn-sm btn-d" onclick="delLink('${l.id}')" title="Delete">${icon('trash',13)}</button>
+    </div>
+  </div>`).join('')
+}
+function toggleLinkForm() {
+  const w=document.getElementById('link-form-area'), open=w.classList.toggle('open')
+  document.getElementById('link-add-btn').innerHTML=open?`${icon('x',12)} Close`:'+ Add Link'
+  if(!open) clearLinkForm()
+}
+function cancelLinkForm(){document.getElementById('link-form-area').classList.remove('open');document.getElementById('link-add-btn').textContent='+ Add Link';clearLinkForm()}
+function clearLinkForm(){['link-edit-id','link-name','link-url'].forEach(id=>document.getElementById(id).value='')}
+function saveLink() {
+  const id=document.getElementById('link-edit-id').value
+  const name=document.getElementById('link-name').value.trim()
+  const url=document.getElementById('link-url').value.trim()
+  if(!name||!url){toast('Name and URL required');return}
+  const list=load(K.links)
+  const entry={id:id||uid(),name,url}
+  if(!id && privacyMode()) entry._priv = true
+  if(id){const i=list.findIndex(e=>e.id===id);if(i>=0)list[i]=entry}else list.push(entry)
+  save(K.links,list); cancelLinkForm(); renderLinks(); toast(id?'Link updated!':'Link added!')
+}
+function editLink(id) {
+  const e=load(K.links).find(e=>e.id===id); if(!e)return
+  document.getElementById('link-edit-id').value=e.id
+  document.getElementById('link-name').value=e.name
+  document.getElementById('link-url').value=e.url
+  document.getElementById('link-form-area').classList.add('open')
+  document.getElementById('link-add-btn').innerHTML=`${icon('x',12)} Close`
+}
+function delLink(id) {
+  if(!confirm('Delete this link?'))return
+  save(K.links,load(K.links).filter(e=>e.id!==id)); renderLinks(); toast('Link deleted')
+}
+
+// ── TAX SUMMARY ────────────────────────────────────────────────
+// Distributes each subscription's totalSpent across calendar years by
+// counting actual billing cycles, giving accurate per-year estimates
+// without relying on auto-generated subx entries.
+function subYearlySpending() {
+  const result = {}
+  for (const sub of loadP(K.sub)) {
+    const totalSpent = sub.totalSpent !== undefined ? +sub.totalSpent : +sub.amount || 0
+    if (!totalSpent || !sub.startDate) continue
+
+    if (sub.billingType === 'One-Time') {
+      const yr = sub.startDate.slice(0, 4)
+      result[yr] = (result[yr] || 0) + totalSpent
+      continue
+    }
+
+    // Determine end date for billing cycle generation
+    let endDate
+    if (sub.status === 'Active') {
+      // Use lastProcessed if available, else today
+      endDate = sub.lastProcessed ? toDate(sub.lastProcessed) : toDate(today())
+    } else {
+      // Inactive: estimate end from cycle count (totalSpent / amount)
+      const amt = +sub.amount || 0
+      if (amt <= 0) continue
+      const cycles = Math.max(1, Math.round(totalSpent / amt))
+      let cur = toDate(sub.startDate)
+      for (let i = 1; i < cycles; i++) cur = advance(cur, sub.billingType)
+      endDate = cur
+    }
+
+    // Walk all billing dates and bucket by year
+    const yrs = []
+    let cur = toDate(sub.startDate)
+    let guard = 0
+    while (cur <= endDate && guard++ < 600) {
+      yrs.push(String(cur.getFullYear()))
+      cur = advance(cur, sub.billingType)
+    }
+    if (!yrs.length) continue
+
+    const perCycle = totalSpent / yrs.length
+    for (const yr of yrs) result[yr] = (result[yr] || 0) + perCycle
+  }
+  return result
+}
+
+function renderTaxes() {
+  const el=document.getElementById('tax-content')
+  const inc=loadP(K.inc), pur=loadP(K.pur)
+  const subByYear=subYearlySpending()
+  // Include subscription years so historical-only years appear
+  const subYears=Object.keys(subByYear)
+  const allDates=[...inc.map(e=>e.date),...pur.map(e=>e.date),...subYears.map(y=>y+'-01-01')]
+  if(!allDates.length){el.innerHTML=`<div class="card"><div class="empty"><div class="ei">${icon('receipt',40)}</div><p>No data yet to summarize.</p></div></div>`;return}
+  const years=[...new Set(allDates.map(d=>d.slice(0,4)))].sort().reverse()
+  el.innerHTML=years.map(yr=>{
+    const yInc=inc.filter(e=>e.date.startsWith(yr))
+    const yPur=pur.filter(e=>e.date.startsWith(yr))
+    const rev=yInc.reduce((s,e)=>s+(+e.amount||0),0)
+    const trav=yInc.reduce((s,e)=>s+(+(e.travel||e.travelExpenses||e.travel_expenses||0)),0)
+    const purAmt=yPur.reduce((s,e)=>s+(+e.price||0),0)
+    const subAmt=subByYear[yr]||0
+    const exp=purAmt+subAmt+trav
+    const net=rev-exp
+    const pendingCount=yInc.filter(e=>e.status==='Pending').length
+    return `<div class="card" style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:18px">
+        <div>
+          <div style="font-size:24px;font-weight:700;letter-spacing:-.5px">${yr}</div>
+          <div style="font-size:12px;color:var(--text-2);margin-top:3px">${yInc.length} job${yInc.length!==1?'s':''} · ${yPur.length} purchase${yPur.length!==1?'s':''}${subAmt>0?' · subscriptions est.':''}${pendingCount?` · <span style="color:var(--orange)">${pendingCount} pending</span>`:''}</div>
+        </div>
+        <button class="btn btn-p btn-sm" onclick="exportYearXLS('${yr}')">${icon('download',13)} Export ${yr} XLS</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px">
+        <div style="padding:16px;background:rgba(52,199,89,0.1);border-radius:14px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:8px;display:flex;align-items:center;gap:4px">${icon('dollar',12)} Revenue</div>
+          <div style="font-size:24px;font-weight:700;color:var(--green)">${fmt(rev)}</div>
+        </div>
+        <div style="padding:16px;background:rgba(255,59,48,0.1);border-radius:14px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:8px;display:flex;align-items:center;gap:4px">${icon('upload',12)} Expenses</div>
+          <div style="font-size:24px;font-weight:700;color:var(--red)">${fmt(exp)}</div>
+          <div style="font-size:11px;color:var(--text-2);margin-top:6px;line-height:1.5">${fmt(purAmt)} purchases<br>${fmt(subAmt)} subscriptions<br>${fmt(trav)} travel</div>
+        </div>
+        <div style="padding:16px;background:rgba(${net>=0?'52,199,89':'255,59,48'},0.1);border-radius:14px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:8px;display:flex;align-items:center;gap:4px">${icon('trending-up',12)} Net Profit</div>
+          <div style="font-size:24px;font-weight:700;color:var(--${net>=0?'green':'red'})">${fmt(net)}</div>
+        </div>
+        <div style="padding:16px;background:rgba(0,122,255,0.07);border-radius:14px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:8px;display:flex;align-items:center;gap:4px">${icon('document',12)} Tax Note</div>
+          <div style="font-size:12px;color:var(--text-2);line-height:1.5">Net profit may be subject to self-employment tax. Consult your accountant for deductions.</div>
+        </div>
+      </div>
+    </div>`
+  }).join('')
+}
+
+function smlEsc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function smlCell(v){
+  const n=Number(v)
+  if(v!==''&&v!=null&&!isNaN(n)&&typeof v!=='boolean')
+    return `<Cell><Data ss:Type="Number">${n}</Data></Cell>`
+  return `<Cell><Data ss:Type="String">${smlEsc(v)}</Data></Cell>`
+}
+function smlRow(cells){return `<Row>${cells.map(smlCell).join('')}</Row>`}
+function smlSheet(name,headers,rows){
+  return `<Worksheet ss:Name="${smlEsc(name)}"><Table>
+${smlRow(headers)}
+${rows.map(smlRow).join('\n')}
+</Table></Worksheet>`
+}
+
+function exportYearXLS(yr) {
+  const inc=load(K.inc).filter(e=>e.date.startsWith(yr)).sort((a,b)=>b.date.localeCompare(a.date))
+  const pur=load(K.pur).filter(e=>e.date.startsWith(yr)).sort((a,b)=>b.date.localeCompare(a.date))
+  const subx=load(K.subx).filter(e=>e.date.startsWith(yr)).sort((a,b)=>b.date.localeCompare(a.date))
+
+  const incRows=inc.map(e=>{
+    const travel=+(e.travel||e.travelExpenses||e.travel_expenses||0)
+    const profit=e.profit!=null?+e.profit:(+e.amount||0)-travel
+    return [e.date, e.client||'', +e.amount||0, e.pay||e.paymentType||'', travel, profit, e.status||'Paid', e.desc||e.description||'']
+  })
+
+  const expRows=[
+    ...pur.map(e=>[e.date, e.store||e.name||'', e.cat||e.category||'Misc', +e.price||0, e.desc||e.description||'']),
+    ...subx.map(e=>[e.date, e.name||'', 'Subscription', +e.amount||0, ''])
+  ].sort((a,b)=>b[0].localeCompare(a[0]))
+
+  const xml=`<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+${smlSheet('Income',  ['Date','Client','Amount','Payment Type','Travel Expenses','Profit','Status','Description'], incRows)}
+${smlSheet('Expenses',['Date','Store / Service','Category','Amount','Description'], expRows)}
+</Workbook>`
+
+  dl(xml, `kore-visuals-${yr}-tax-summary.xls`, 'application/vnd.ms-excel')
+  toast(`${yr} XLS exported!`)
+}
+
+// ── INLINE ROW EDITING ────────────────────────────────────────
+function cancelRowEdit(tab) {
+  editing[tab]=null
+  if(tab==='inc') renderIncTable()
+  else if(tab==='pur') renderPurTable()
+  else if(tab==='sub'){renderSubTable()}
+}
+
+// Income
+function editIncRow(id){ editing.inc=id; renderIncTable() }
+function calcRowProfit(){
+  const a=parseFloat(document.getElementById('ier-amount')?.value)||0
+  const t=parseFloat(document.getElementById('ier-travel')?.value)||0
+  const el=document.getElementById('ier-profit')
+  if(el) el.innerHTML=`<span class="${a-t>=0?'pos':'neg'}">${fmt(a-t)}</span>`
+}
+function saveIncRow(id){
+  const date=document.getElementById('ier-date')?.value
+  const client=document.getElementById('ier-client')?.value.trim()
+  const amount=parseFloat(document.getElementById('ier-amount')?.value)||0
+  const pay=document.getElementById('ier-pay')?.value
+  const status=document.getElementById('ier-status')?.value
+  const travel=parseFloat(document.getElementById('ier-travel')?.value)||0
+  const desc=document.getElementById('ier-desc')?.value.trim()
+  if(!date||!client||document.getElementById('ier-amount')?.value===''){toast('Fill in date, client, and amount');return}
+  const list=load(K.inc), i=list.findIndex(e=>e.id===id); if(i<0)return
+  list[i]={...list[i],date,client,amount,pay,travel,profit:amount-travel,status,desc}
+  save(K.inc,list); editing.inc=null; renderIncTable(); renderDash(); toast('Job updated!')
+}
+
+// Purchases
+function editPurRow(id){ editing.pur=id; renderPurTable() }
+function savePurRow(id){
+  const date=document.getElementById('per-date')?.value
+  const store=document.getElementById('per-store')?.value.trim()
+  const cat=document.getElementById('per-cat')?.value
+  const price=parseFloat(document.getElementById('per-price')?.value)||0
+  const desc=document.getElementById('per-desc')?.value.trim()
+  if(!date||!store){toast('Fill in date and store');return}
+  const list=load(K.pur), i=list.findIndex(e=>e.id===id); if(i<0)return
+  list[i]={...list[i],date,store,cat,price,desc}
+  save(K.pur,list); editing.pur=null; renderPurTable(); renderDash(); toast('Purchase updated!')
+}
+
+// Subscriptions
+function editSubRow(id){ editing.sub=id; renderSubTable() }
+function saveSubRow(id){
+  const name=document.getElementById('ser-name')?.value.trim()
+  const amount=parseFloat(document.getElementById('ser-amount')?.value)||0
+  const billing=document.getElementById('ser-billing')?.value
+  const status=document.getElementById('ser-status')?.value
+  const start=document.getElementById('ser-start')?.value
+  const endDate=document.getElementById('ser-end')?.value||null
+  const tsRaw=document.getElementById('ser-spent')?.value
+  const totalSpent=tsRaw!==''&&!isNaN(parseFloat(tsRaw))?parseFloat(tsRaw):undefined
+  const desc=document.getElementById('ser-desc')?.value.trim()
+  if(!name||amount<=0||!start){toast('Fill in name, amount, and start date');return}
+  const list=load(K.sub), i=list.findIndex(e=>e.id===id); if(i<0)return
+  list[i]={...list[i],name,amount,billingType:billing,status,startDate:start,endDate,desc}
+  if(totalSpent!==undefined) list[i].totalSpent=totalSpent
+  save(K.sub,list)
+  if(status==='Active') processSubs()
+  editing.sub=null; renderSubTable(); renderDash(); toast('Subscription updated!')
+}
+
+// ── INCOME ────────────────────────────────────────────────────
+function calcProfit() {
+  const a=parseFloat(document.getElementById('inc-amount').value)||0
+  const t=parseFloat(document.getElementById('inc-travel').value)||0
+  const p=a-t, el=document.getElementById('profit-preview')
+  el.textContent=fmt(p); el.style.color=p>=0?'var(--green)':'var(--red)'
+}
+
+function saveIncome() {
+  const id=document.getElementById('inc-edit-id').value
+  const date=document.getElementById('inc-date').value
+  const client=document.getElementById('inc-client').value.trim()
+  const amount=parseFloat(document.getElementById('inc-amount').value)||0
+  const pay=document.getElementById('inc-pay').value
+  const travel=parseFloat(document.getElementById('inc-travel').value)||0
+  const status=document.getElementById('inc-status').value
+  const desc=document.getElementById('inc-desc').value.trim()
+  if(!date||!client||amount<=0){toast('Please fill in date, client, and amount');return}
+  const profit=amount-travel
+  const list=load(K.inc)
+  const entry={id:id||uid(),date,client,amount,pay,travel,profit,status,desc}
+  if(!id && privacyMode()) entry._priv = true
+  if(id){const i=list.findIndex(e=>e.id===id);if(i>=0)list[i]=entry}else list.push(entry)
+  save(K.inc,list); cancelForm('inc'); renderIncTable(); renderDash(); toast(id?'Job updated!':'Job saved!')
+}
+
+function editInc(id) {
+  const e=load(K.inc).find(e=>e.id===id); if(!e)return
+  document.getElementById('inc-edit-id').value=e.id
+  document.getElementById('inc-date').value=e.date
+  document.getElementById('inc-client').value=e.client||''
+  document.getElementById('inc-amount').value=e.amount||''
+  document.getElementById('inc-pay').value=e.pay||e.paymentType||e.payment_type||'Zelle'
+  document.getElementById('inc-travel').value=+(e.travel||e.travelExpenses||e.travel_expenses||0)
+  document.getElementById('inc-status').value=e.status||e.paymentStatus||e.payment_status||'Paid'
+  document.getElementById('inc-desc').value=e.desc||e.description||''
+  calcProfit(); openForm('inc')
+  document.getElementById('inc-form-ttl').textContent='Edit Job'
+  document.getElementById('inc-toggle-btn').innerHTML=`${icon('x',12)} Close`
+}
+
+function delInc(id) {
+  if(!confirm('Delete this income entry?'))return
+  save(K.inc,load(K.inc).filter(e=>e.id!==id)); renderIncTable(); renderDash(); toast('Entry deleted')
+}
+
+function renderIncSummary(list) {
+  const el=document.getElementById('inc-summary'); if(!el)return
+  if(!list.length){el.innerHTML='';return}
+  const totRev   =list.reduce((s,e)=>s+(+e.amount||0),0)
+  const totProfit=list.reduce((s,e)=>s+(+e.profit||0),0)
+  const totTravel=list.reduce((s,e)=>s+(+(e.travel||e.travelExpenses||e.travel_expenses||0)),0)
+  const paidAmt  =list.filter(e=>(e.status||'Paid')==='Paid').reduce((s,e)=>s+(+e.amount||0),0)
+  const pendAmt  =list.filter(e=>(e.status||'Paid')==='Pending').reduce((s,e)=>s+(+e.amount||0),0)
+  const unpaidAmt=list.filter(e=>(e.status||'Paid')==='Unpaid').reduce((s,e)=>s+(+e.amount||0),0)
+  const paidCnt  =list.filter(e=>(e.status||'Paid')==='Paid').length
+  const pendCnt  =list.filter(e=>(e.status||'Paid')==='Pending').length
+  const unpaidCnt=list.filter(e=>(e.status||'Paid')==='Unpaid').length
+  const incMain = [
+    `<div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('dollar',13)} Total Revenue</div><div class="val pos">${fmt(totRev)}</div><div class="sub">${list.length} job${list.length!==1?'s':''}</div>`,
+    `<div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('trending-up',13)} Total Profit</div><div class="val ${totProfit>=0?'pos':'neg'}">${fmt(totProfit)}</div><div class="sub">after travel expenses</div>`,
+    `<div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('upload',13)} Travel Expenses</div><div class="val r">${fmt(totTravel)}</div><div class="sub">total reimbursable</div>`,
+  ]
+  const incSub = [
+    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('check-circle',11)} Paid</div><div class="val pos">${fmt(paidAmt)}</div><div style="font-size:11px;color:var(--text-2);margin-top:3px">${paidCnt} job${paidCnt!==1?'s':''}</div>`,
+    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('clock',11)} Pending</div><div class="val" style="color:var(--orange)">${fmt(pendAmt)}</div><div style="font-size:11px;color:var(--text-2);margin-top:3px">${pendCnt} job${pendCnt!==1?'s':''}</div>`,
+    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('x',11)} Unpaid</div><div class="val" style="color:var(--red)">${fmt(unpaidAmt)}</div><div style="font-size:11px;color:var(--text-2);margin-top:3px">${unpaidCnt} job${unpaidCnt!==1?'s':''}</div>`,
+  ]
+  const incMainOrd = loadGridOrder('dt_order_inc_main', 3)
+  const incSubOrd  = loadGridOrder('dt_order_inc_sub',  3)
+  el.innerHTML=`
+    <div class="sum-grid" id="inc-main-grid" style="margin-bottom:10px">
+      ${incMainOrd.map(i=>`<div class="dw sum-card" draggable="true" data-wi="${i}">${incMain[i]}</div>`).join('')}
+    </div>
+    <div class="sum-sub-grid" id="inc-sub-grid" style="margin-bottom:0">
+      ${incSubOrd.map(i=>`<div class="dw sum-sub-card" draggable="true" data-wi="${i}">${incSub[i]}</div>`).join('')}
+    </div>`
+  initGridDrag(document.getElementById('inc-main-grid'), 'dt_order_inc_main')
+  initGridDrag(document.getElementById('inc-sub-grid'),  'dt_order_inc_sub')
+}
+
+function renderIncTable() {
+  const el=document.getElementById('inc-table')
+  const {from,to}=range(FS.inc)
+  let list=loadP(K.inc).filter(e=>inRange(e.date,from,to))
+  const clients=[...new Set(list.map(e=>e.client||'').filter(Boolean))].sort()
+  buildMs('inc-client-ms', clients, FS.inc.clients)
+  if(FS.inc.clients.length) list=list.filter(e=>FS.inc.clients.includes(e.client))
+  list.sort((a,b)=>b.date.localeCompare(a.date))
+  renderIncSummary(list)
+  if(!list.length){el.innerHTML=`<div class="empty"><div class="ei">${icon('briefcase',40)}</div><p>No income entries yet. Add your first job above!</p></div>`;return}
+  const totRev=list.reduce((s,e)=>s+(+e.amount||0),0)
+  const totTravel=list.reduce((s,e)=>s+(+(e.travel||e.travelExpenses||e.travel_expenses||0)),0)
+  const totProfit=list.reduce((s,e)=>s+(+e.profit||0),0)
+  el.innerHTML=`<table>
+    <thead><tr><th>Date</th><th>Client</th><th>Amount</th><th>Payment</th><th>Status</th><th>Expenses</th><th>Profit</th><th>Description</th><th>Actions</th></tr></thead>
+    <tbody>${list.map(e=>{
+      const pay=e.pay||e.paymentType||e.payment_type||'Other'
+      const status=e.status||e.paymentStatus||e.payment_status||'Paid'
+      const travel=+(e.travel||e.travelExpenses||e.travel_expenses||0)
+      const desc=e.desc||e.description||''
+      const opt=(val,cur)=>`<option${val===cur?' selected':''}>${val}</option>`
+      if(e.id===editing.inc){
+        const profit=+e.amount-travel
+        return `<tr class="editing-row">
+          <td><input type="date" class="isel" id="ier-date" value="${e.date}" onkeydown="if(event.key==='Enter')saveIncRow('${e.id}')"></td>
+          <td><input type="text" class="isel" id="ier-client" value="${esc(e.client)}" style="width:110px" onkeydown="if(event.key==='Enter')saveIncRow('${e.id}')"></td>
+          <td><input type="number" class="isel" id="ier-amount" value="${e.amount}" step="0.01" oninput="calcRowProfit()" style="width:80px" onkeydown="if(event.key==='Enter')saveIncRow('${e.id}')"></td>
+          <td><select class="isel" id="ier-pay">${opt('Zelle',pay)}${opt('Cash',pay)}${opt('Check',pay)}${opt('Other',pay)}</select></td>
+          <td><select class="isel isel-status-${statusSlug(status)}" id="ier-status" onchange="this.className='isel isel-status-'+statusSlug(this.value)">${opt('Paid',status)}${opt('Pending',status)}${opt('Unpaid',status)}</select></td>
+          <td><input type="number" class="isel" id="ier-travel" value="${travel}" min="0" step="0.01" oninput="calcRowProfit()" style="width:70px"></td>
+          <td id="ier-profit"><span class="${profit>=0?'pos':'neg'}">${fmt(profit)}</span></td>
+          <td><input type="text" class="isel" id="ier-desc" value="${esc(desc)}" style="width:130px" onkeydown="if(event.key==='Enter')saveIncRow('${e.id}')"></td>
+          <td style="white-space:nowrap"><button class="btn btn-sm btn-g" onclick="saveIncRow('${e.id}')">${icon('save',13)} Save</button> <button class="btn btn-sm btn-s" onclick="cancelRowEdit('inc')">Cancel</button></td>
+        </tr>`
+      }
+      const rowCls=status==='Pending'?'row-pending':status==='Unpaid'?'row-unpaid':''
+      return `<tr class="${rowCls}">
+        <td>${fmtDate(e.date)}</td>
+        <td><strong>${esc(e.client)}</strong></td>
+        <td><span class="pos">${fmt(e.amount)}</span></td>
+        <td><select class="isel" onchange="updateIncField('${e.id}','pay',this.value)">${opt('Zelle',pay)}${opt('Cash',pay)}${opt('Check',pay)}${opt('Other',pay)}</select></td>
+        <td><select class="isel isel-status-${statusSlug(status)}" onchange="this.className='isel isel-status-'+statusSlug(this.value);updateIncField('${e.id}','status',this.value)">${opt('Paid',status)}${opt('Pending',status)}${opt('Unpaid',status)}</select></td>
+        <td>${travel>0?`<span class="bdg bdg-o">${fmt(travel)}</span>`:'<span style="color:var(--text-2)">—</span>'}</td>
+        <td><span class="${+e.profit>=0?'pos':'neg'}">${fmt(e.profit)}</span></td>
+        <td style="min-width:140px;white-space:normal;word-break:break-word">${esc(desc||'—')}</td>
+        <td style="white-space:nowrap"><button class="btn btn-sm btn-s" onclick="editIncRow('${e.id}')">${icon('pencil',13)}</button> <button class="btn btn-sm btn-d" onclick="delInc('${e.id}')">${icon('trash',13)}</button></td>
+      </tr>`
+    }).join('')}</tbody>
+    <tfoot><tr><td colspan="2">Total (${list.length} jobs)</td><td><span class="pos">${fmt(totRev)}</span></td><td colspan="2"></td><td>${totTravel>0?`<span class="neg">${fmt(totTravel)}</span>`:''}</td><td><span class="${totProfit>=0?'pos':'neg'}">${fmt(totProfit)}</span></td><td colspan="2"></td></tr></tfoot>
+  </table>`
+}
+
+// ── PURCHASES ─────────────────────────────────────────────────
+function savePurchase() {
+  const id=document.getElementById('pur-edit-id').value
+  const date=document.getElementById('pur-date').value
+  const store=document.getElementById('pur-store').value.trim()
+  const cat=document.getElementById('pur-cat').value
+  const price=parseFloat(document.getElementById('pur-price').value)||0
+  const desc=document.getElementById('pur-desc').value.trim()
+  if(!date||!store||price<=0){toast('Please fill in date, store, and price');return}
+  const list=load(K.pur)
+  const entry={id:id||uid(),date,store,cat,price,desc}
+  if(!id && privacyMode()) entry._priv = true
+  if(id){const i=list.findIndex(e=>e.id===id);if(i>=0)list[i]=entry}else list.push(entry)
+  save(K.pur,list); cancelForm('pur'); renderPurTable(); renderDash(); toast(id?'Purchase updated!':'Purchase saved!')
+}
+
+function editPur(id) {
+  const e=load(K.pur).find(e=>e.id===id); if(!e)return
+  document.getElementById('pur-edit-id').value=e.id
+  document.getElementById('pur-date').value=e.date
+  document.getElementById('pur-store').value=e.store||e.name||''
+  document.getElementById('pur-cat').value=e.cat||e.category||'Drone Equipment'
+  document.getElementById('pur-price').value=e.price||''
+  document.getElementById('pur-desc').value=e.desc||e.description||''
+  openForm('pur')
+  document.getElementById('pur-form-ttl').textContent='Edit Purchase'
+  document.getElementById('pur-toggle-btn').innerHTML=`${icon('x',12)} Close`
+}
+
+function delPur(id) {
+  if(!confirm('Delete this purchase?'))return
+  save(K.pur,load(K.pur).filter(e=>e.id!==id)); renderPurTable(); renderDash(); toast('Purchase deleted')
+}
+
+function renderPurSummary() {
+  const el=document.getElementById('pur-summary'); if(!el)return
+  const {from,to}=range(FS.pur)
+  const all=loadP(K.pur).filter(e=>inRange(e.date,from,to))
+  if(!all.length){el.innerHTML='';return}
+  const total=all.reduce((s,e)=>s+(+e.price||0),0)
+  const bycat=cat=>all.filter(e=>(e.cat||e.category||'Misc')===cat).reduce((s,e)=>s+(+e.price||0),0)
+  const drone=bycat('Drone Equipment'), cam=bycat('Camera Equipment'), misc=bycat('Misc')
+  const purSub = [
+    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('drone',11)} Drone Equipment</div><div class="val r">${fmt(drone)}</div>`,
+    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('box',11)} Camera Equipment</div><div class="val r">${fmt(cam)}</div>`,
+    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('briefcase',11)} Misc</div><div class="val r">${fmt(misc)}</div>`,
+  ]
+  const purSubOrd = loadGridOrder('dt_order_pur_sub', 3)
+  el.innerHTML=`
+    <div class="sum-grid" style="margin-bottom:10px">
+      <div class="sum-card"><div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('bag',13)} Total Purchases</div><div class="val r">${fmt(total)}</div><div class="sub">${all.length} item${all.length!==1?'s':''}</div></div>
+    </div>
+    <div class="sum-sub-grid" id="pur-sub-grid" style="margin-bottom:0">
+      ${purSubOrd.map(i=>`<div class="dw sum-sub-card" draggable="true" data-wi="${i}">${purSub[i]}</div>`).join('')}
+    </div>`
+  initGridDrag(document.getElementById('pur-sub-grid'), 'dt_order_pur_sub')
+}
+
+function renderPurTable() {
+  const el=document.getElementById('pur-table')
+  const {from,to}=range(FS.pur)
+  let list=loadP(K.pur).filter(e=>inRange(e.date,from,to))
+  if(FS.pur.cat!=='all') list=list.filter(e=>(e.cat||e.category||'Misc')===FS.pur.cat)
+  const vendors=[...new Set(list.map(e=>e.store||e.name||'').filter(Boolean))].sort()
+  buildMs('pur-vendor-ms', vendors, FS.pur.vendors)
+  if(FS.pur.vendors.length) list=list.filter(e=>FS.pur.vendors.includes(e.store||e.name||''))
+  list.sort((a,b)=>b.date.localeCompare(a.date))
+  renderPurSummary()
+  if(!list.length){el.innerHTML=`<div class="empty"><div class="ei">${icon('cart',40)}</div><p>No purchases yet. Log your first one above!</p></div>`;return}
+  const total=list.reduce((s,e)=>s+(+e.price||0),0)
+  el.innerHTML=`<table>
+    <thead><tr><th>Date</th><th>Store / Vendor</th><th>Category</th><th>Price</th><th>Description</th><th>Actions</th></tr></thead>
+    <tbody>${list.map(e=>{
+      const cat=e.cat||e.category||'Misc'
+      const desc=e.desc||e.description||''
+      const store=e.store||e.name||''
+      const optC=(val)=>`<option${val===cat?' selected':''}>${val}</option>`
+      if(e.id===editing.pur){
+        return `<tr class="editing-row">
+          <td><input type="date" class="isel" id="per-date" value="${e.date}" onkeydown="if(event.key==='Enter')savePurRow('${e.id}')"></td>
+          <td><input type="text" class="isel" id="per-store" value="${esc(store)}" style="width:120px" onkeydown="if(event.key==='Enter')savePurRow('${e.id}')"></td>
+          <td><select class="isel" id="per-cat">${optC('Drone Equipment')}${optC('Camera Equipment')}${optC('Misc')}</select></td>
+          <td><input type="number" class="isel" id="per-price" value="${e.price}" step="0.01" style="width:80px" onkeydown="if(event.key==='Enter')savePurRow('${e.id}')"></td>
+          <td><input type="text" class="isel" id="per-desc" value="${esc(desc)}" style="width:140px" onkeydown="if(event.key==='Enter')savePurRow('${e.id}')"></td>
+          <td style="white-space:nowrap"><button class="btn btn-sm btn-g" onclick="savePurRow('${e.id}')">${icon('save',13)} Save</button> <button class="btn btn-sm btn-s" onclick="cancelRowEdit('pur')">Cancel</button></td>
+        </tr>`
+      }
+      return `<tr>
+      <td>${fmtDate(e.date)}</td>
+      <td><strong>${esc(store)}</strong></td>
+      <td><select class="isel" onchange="updatePurField('${e.id}','cat',this.value)">${optC('Drone Equipment')}${optC('Camera Equipment')}${optC('Misc')}</select></td>
+      <td><span class="${+e.price<0?'pos':'neg'}">${fmt(e.price)}</span></td>
+      <td style="min-width:120px;white-space:normal;word-break:break-word">${esc(desc||'—')}</td>
+      <td><button class="btn btn-sm btn-s" onclick="editPurRow('${e.id}')">${icon('pencil',13)}</button> <button class="btn btn-sm btn-d" onclick="delPur('${e.id}')">${icon('trash',13)}</button></td>
+    </tr>`}).join('')}</tbody>
+    <tfoot><tr><td colspan="3">Total (${list.length} items)</td><td><span class="neg">${fmt(total)}</span></td><td colspan="2"></td></tr></tfoot>
+  </table>`
+}
+
+// ── SUBSCRIPTIONS ─────────────────────────────────────────────
+function saveSub() {
+  const id=document.getElementById('sub-edit-id').value
+  const name=document.getElementById('sub-name').value.trim()
+  const amount=parseFloat(document.getElementById('sub-amount').value)||0
+  const billing=document.getElementById('sub-billing').value
+  const status=document.getElementById('sub-status').value
+  const start=document.getElementById('sub-start').value
+  const endDate=document.getElementById('sub-end').value||null
+  const desc=document.getElementById('sub-desc').value.trim()
+  if(!name||amount<=0||!start){toast('Please fill in name, amount, and start date');return}
+  const list=load(K.sub)
+  let entry
+  if(id){
+    const ex=list.find(e=>e.id===id)
+    entry={...ex,name,amount,billingType:billing,status,startDate:start,endDate,desc}
+  } else {
+    entry={id:uid(),name,amount,billingType:billing,status,startDate:start,endDate,lastProcessed:null,desc}
+    if(privacyMode()) entry._priv = true
+  }
+  if(id){const i=list.findIndex(e=>e.id===id);if(i>=0)list[i]=entry}else list.push(entry)
+  save(K.sub,list)
+  // For new One-Time subscriptions, add a single charge immediately
+  if(!id&&billing==='One-Time'&&status==='Active') {
+    const subx=load(K.subx)
+    if(!subx.some(e=>e.subId===entry.id&&e.date===start)){
+      const sx={id:uid(),subId:entry.id,date:start,name:entry.name,amount:entry.amount}
+      if(entry._priv) sx._priv = true
+      subx.push(sx)
+      save(K.subx,subx)
+    }
+  }
+  processSubs()
+  cancelForm('sub'); renderSubTable(); renderDash()
+  toast(id?'Subscription updated!':'Subscription added!')
+}
+
+function editSub(id) {
+  const e=load(K.sub).find(e=>e.id===id); if(!e)return
+  document.getElementById('sub-edit-id').value=e.id
+  document.getElementById('sub-name').value=e.name
+  document.getElementById('sub-amount').value=e.amount
+  document.getElementById('sub-billing').value=e.billingType
+  document.getElementById('sub-status').value=e.status
+  document.getElementById('sub-start').value=e.startDate
+  document.getElementById('sub-end').value=e.endDate||''
+  document.getElementById('sub-desc').value=e.desc||''
+  openForm('sub')
+  document.getElementById('sub-form-ttl').textContent='Edit Subscription'
+  document.getElementById('sub-toggle-btn').innerHTML=`${icon('x',12)} Close`
+}
+
+function delSub(id) {
+  if(!confirm('Delete this subscription and all its auto-generated charges?'))return
+  save(K.sub,load(K.sub).filter(e=>e.id!==id))
+  save(K.subx,load(K.subx).filter(e=>e.subId!==id))
+  renderSubTable(); renderDash(); toast('Subscription deleted')
+}
+
+function dupSub(id) {
+  const e=load(K.sub).find(e=>e.id===id); if(!e)return
+  const list=load(K.sub)
+  const copy={...e, id:uid(), name:e.name+' (Copy)', lastProcessed:null}
+  list.push(copy); save(K.sub,list)
+  processSubs(); renderSubTable(); renderDash()
+  toast('Subscription duplicated')
+}
+
+function updateSubField(id, field, val) {
+  const list=load(K.sub), i=list.findIndex(e=>e.id===id); if(i<0)return
+  list[i][field]=val; save(K.sub,list)
+  if(field==='status'&&val==='Active'){processSubs()}
+  renderSubTable(); renderDash(); toast('Updated')
+}
+function updateIncField(id, field, val) {
+  const list=load(K.inc), i=list.findIndex(e=>e.id===id); if(i<0)return
+  list[i][field]=val; save(K.inc,list)
+  renderIncTable(); renderDash()
+}
+function updatePurField(id, field, val) {
+  const list=load(K.pur), i=list.findIndex(e=>e.id===id); if(i<0)return
+  list[i][field]=val; save(K.pur,list)
+  renderPurTable(); renderDash()
+}
+
+function delSubx(id) {
+  if(!confirm('Delete this auto-generated charge?'))return
+  save(K.subx,load(K.subx).filter(e=>e.id!==id)); renderDash(); toast('Charge deleted')
+}
+
+function filterSubs(list) {
+  let out=list
+  if(FS.sub.status!=='all') out=out.filter(e=>e.status===FS.sub.status)
+  if(FS.sub.bt!=='all')     out=out.filter(e=>e.billingType===FS.sub.bt)
+  if(FS.sub.svcs.length)    out=out.filter(e=>FS.sub.svcs.includes(e.name))
+  return out
+}
+
+function renderSubSummary() {
+  const el=document.getElementById('sub-summary'); if(!el)return
+  const subs=filterSubs(loadP(K.sub))
+  if(!subs.length){el.innerHTML='';return}
+  const spent=s=>s.totalSpent!==undefined?+s.totalSpent:(+s.amount||0)
+  const sumBy=(pred)=>subs.filter(pred).reduce((s,e)=>s+spent(e),0)
+  const total      =subs.reduce((s,e)=>s+spent(e),0)
+  const activeAmt  =sumBy(s=>s.status==='Active'  &&s.billingType!=='One-Time')
+  const inactiveAmt=sumBy(s=>s.status==='Inactive'&&s.billingType!=='One-Time')
+  const onetimeAmt =sumBy(s=>s.billingType==='One-Time')
+  const activeCnt  =subs.filter(e=>e.status==='Active'  &&e.billingType!=='One-Time').length
+  const inactiveCnt=subs.filter(e=>e.status==='Inactive'&&e.billingType!=='One-Time').length
+  const onetimeCnt =subs.filter(e=>e.billingType==='One-Time').length
+  const subSub = [
+    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('check-circle',11)} Active (Recurring)</div><div class="val r">${fmt(activeAmt)}</div><div style="font-size:11px;color:var(--text-2);margin-top:3px">${activeCnt} sub${activeCnt!==1?'s':''}</div>`,
+    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('x',11)} Inactive</div><div class="val" style="color:var(--text-2)">${fmt(inactiveAmt)}</div><div style="font-size:11px;color:var(--text-2);margin-top:3px">${inactiveCnt} sub${inactiveCnt!==1?'s':''}</div>`,
+    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('dollar',11)} One-Time</div><div class="val r">${fmt(onetimeAmt)}</div><div style="font-size:11px;color:var(--text-2);margin-top:3px">${onetimeCnt} sub${onetimeCnt!==1?'s':''}</div>`,
+  ]
+  const subSubOrd = loadGridOrder('dt_order_sub_sub', 3)
+  el.innerHTML=`
+    <div class="sum-grid" style="margin-bottom:10px">
+      <div class="sum-card"><div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('repeat',13)} Total Spent on Subscriptions</div><div class="val r">${fmt(total)}</div><div class="sub">${subs.length} subscription${subs.length!==1?'s':''} · all time</div></div>
+    </div>
+    <div class="sum-sub-grid" id="sub-sub-grid" style="margin-bottom:0">
+      ${subSubOrd.map(i=>`<div class="dw sum-sub-card" draggable="true" data-wi="${i}">${subSub[i]}</div>`).join('')}
+    </div>`
+  initGridDrag(document.getElementById('sub-sub-grid'), 'dt_order_sub_sub')
+}
+
+function renderSubTable() {
+  const el=document.getElementById('sub-table')
+  // build service multi-select from pre-svc-filtered list so all matching names appear
+  const preSvc=load(K.sub).filter(s=>{
+    if(FS.sub.status!=='all'&&s.status!==FS.sub.status) return false
+    if(FS.sub.bt!=='all'&&s.billingType!==FS.sub.bt) return false
+    return true
+  })
+  const svcs=[...new Set(preSvc.map(s=>s.name||'').filter(Boolean))].sort()
+  buildMs('sub-svc-ms', svcs, FS.sub.svcs)
+  const list=filterSubs(loadP(K.sub)).sort((a,b)=>a.name.localeCompare(b.name))
+  renderSubSummary()
+  if(!list.length){el.innerHTML=`<div class="empty"><div class="ei">${icon('refresh',40)}</div><p>No subscriptions yet. Add your first one above!</p></div>`;return}
+  const bBdg={Monthly:'bdg-b',Annual:'bdg-g','Every 3 Years':'bdg-v','One-Time':'bdg-gr'}
+  const spent=s=>s.totalSpent!==undefined?+s.totalSpent:(+s.amount||0)
+  const total=list.reduce((s,e)=>s+spent(e),0)
+  el.innerHTML=`<table>
+    <thead><tr><th style="min-width:120px">Service</th><th>Amount</th><th>Billing</th><th>Start</th><th>Status</th><th>Next Renewal</th><th>Total Spent</th><th>Actions</th></tr></thead>
+    <tbody>${list.map(s=>{
+      const nr=(s.status==='Active'&&s.billingType!=='One-Time')?fmtDate(nextCharge(s)):'—'
+      const optB=(val)=>`<option${val===s.billingType?' selected':''}>${val}</option>`
+      if(s.id===editing.sub){
+        const ts=s.totalSpent!==undefined?+s.totalSpent:+s.amount||0
+        return `<tr class="editing-row">
+          <td><input type="text" class="isel" id="ser-name" value="${esc(s.name)}" style="width:120px" onkeydown="if(event.key==='Enter')saveSubRow('${s.id}')"></td>
+          <td><input type="number" class="isel" id="ser-amount" value="${s.amount}" step="0.01" style="width:70px" onkeydown="if(event.key==='Enter')saveSubRow('${s.id}')"></td>
+          <td><select class="isel" id="ser-billing">${optB('Monthly')}${optB('Annual')}${optB('Every 3 Years')}${optB('One-Time')}</select></td>
+          <td><input type="date" class="isel" id="ser-start" value="${s.startDate||''}" style="width:130px"></td>
+          <td><div style="display:flex;flex-direction:column;gap:4px"><select class="isel" id="ser-status"><option${s.status==='Active'?' selected':''}>Active</option><option${s.status==='Inactive'?' selected':''}>Inactive</option></select><input type="date" class="isel" id="ser-end" value="${s.endDate||''}" style="width:130px" title="Deactivation date"></div></td>
+          <td style="font-size:12px;color:var(--text-2)">${nr}</td>
+          <td><input type="number" class="isel" id="ser-spent" value="${ts}" step="0.01" style="width:80px" title="Override total spent"></td>
+          <td style="white-space:nowrap"><button class="btn btn-sm btn-g" onclick="saveSubRow('${s.id}')">${icon('save',13)} Save</button> <button class="btn btn-sm btn-s" onclick="cancelRowEdit('sub')">Cancel</button></td>
+        </tr>`
+      }
+      const statusSel=`<select class="isel" onchange="updateSubField('${s.id}','status',this.value)"><option${s.status==='Active'?' selected':''}>Active</option><option${s.status==='Inactive'?' selected':''}>Inactive</option></select>`
+      const statusCell=s.status==='Inactive'&&s.endDate
+        ?`<div>${statusSel}<div style="font-size:11px;color:var(--text-2);margin-top:3px;white-space:nowrap">${fmtDate(s.endDate)}</div></div>`
+        :statusSel
+      return `<tr>
+        <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(s.name)}"><strong>${esc(s.name)}</strong></td>
+        <td><span class="neg">${fmt(s.amount)}</span></td>
+        <td style="white-space:nowrap"><span class="bdg ${bBdg[s.billingType]||'bdg-gr'}">${esc(s.billingType)}</span></td>
+        <td style="white-space:nowrap">${fmtDate(s.startDate)}</td>
+        <td>${statusCell}</td>
+        <td style="font-size:12px;color:var(--text-2);white-space:nowrap">${nr}</td>
+        <td><span class="neg">${fmt(spent(s))}</span></td>
+        <td style="white-space:nowrap"><button class="btn btn-sm btn-s" onclick="editSubRow('${s.id}')">${icon('pencil',13)}</button> <button class="btn btn-sm btn-s" onclick="dupSub('${s.id}')" title="Duplicate">${icon('copy',13)}</button> <button class="btn btn-sm btn-d" onclick="delSub('${s.id}')">${icon('trash',13)}</button></td>
+      </tr>`
+    }).join('')}</tbody>
+    <tfoot><tr><td>Total spent (${list.length} subscription${list.length!==1?'s':''})</td><td colspan="5"></td><td><span class="neg">${fmt(total)}</span></td><td></td></tr></tfoot>
+  </table>`
+}
+
+function renderSubxTable() {
+  const el=document.getElementById('subexp-table')
+  const list=load(K.subx).sort((a,b)=>b.date.localeCompare(a.date))
+  if(!list.length){el.innerHTML=`<div class="empty"><div class="ei">${icon('document',40)}</div><p>No auto-charges yet. Active subscriptions will generate entries here on each open.</p></div>`;return}
+  const total=list.reduce((s,e)=>s+(+e.amount||0),0)
+  el.innerHTML=`<table>
+    <thead><tr><th>Date</th><th>Subscription</th><th>Amount</th><th>Actions</th></tr></thead>
+    <tbody>${list.map(e=>`<tr>
+      <td>${fmtDate(e.date)}</td>
+      <td>${esc(e.name)}</td>
+      <td><span class="neg">${fmt(e.amount)}</span></td>
+      <td><button class="btn btn-sm btn-d" onclick="delSubx('${e.id}')">${icon('trash',13)}</button></td>
+    </tr>`).join('')}</tbody>
+    <tfoot><tr><td colspan="2">Total (${list.length} charges)</td><td><span class="neg">${fmt(total)}</span></td><td></td></tr></tfoot>
+  </table>`
+}
+
+// ── EXPORT ────────────────────────────────────────────────────
+function dl(content, name, type) {
+  const a=document.createElement('a')
+  a.href=URL.createObjectURL(new Blob([content],{type}))
+  a.download=name; a.click()
+}
+function csvField(v) {
+  const s=String(v??'')
+  return (s.includes(',')||s.includes('"')||s.includes('\n'))?`"${s.replace(/"/g,'""')}"`:s
+}
+function csvRow(arr) { return arr.map(csvField).join(',') }
+
+function exportCSV() {
+  const type=document.getElementById('csv-type').value
+  const d=new Date().toISOString().split('T')[0]
+  let rows=[]
+  if(type==='all'||type==='income'){
+    rows.push(csvRow(['Type','Date','Client','Amount','Payment','Status','Travel','Profit','Description']))
+    load(K.inc).sort((a,b)=>b.date.localeCompare(a.date)).forEach(e=>rows.push(csvRow(['Income',e.date,e.client,e.amount,e.pay||'',e.status||'Paid',e.travel||0,e.profit||0,e.desc||''])))
+  }
+  if(type==='all') rows.push('')
+  if(type==='all'||type==='purchases'){
+    if(type==='purchases') rows.push(csvRow(['Type','Date','Store','Category','Price','Description']))
+    load(K.pur).sort((a,b)=>b.date.localeCompare(a.date)).forEach(e=>rows.push(csvRow(['Purchase',e.date,e.store,e.cat,e.price,e.desc||''])))
+  }
+  if(type==='all') rows.push('')
+  if(type==='all'||type==='subs'){
+    if(type==='subs') rows.push(csvRow(['Type','Date','Subscription','Amount']))
+    load(K.subx).sort((a,b)=>b.date.localeCompare(a.date)).forEach(e=>rows.push(csvRow(['Sub Charge',e.date,e.name,e.amount])))
+  }
+  dl(rows.join('\n'), `kore-visuals-${type}-${d}.csv`, 'text/csv')
+  toast('CSV exported!')
+}
+
+function exportExcel() {
+  const d=new Date().toISOString().split('T')[0]
+  const th=cols=>cols.map(c=>`<th style="background:#007AFF;color:#fff;padding:6px 12px;text-align:left">${esc(c)}</th>`).join('')
+  const td=cols=>cols.map(c=>`<td style="padding:5px 12px">${esc(String(c??''))}</td>`).join('')
+  const incRows=load(K.inc).sort((a,b)=>b.date.localeCompare(a.date)).map(e=>`<tr>${td([e.date,e.client,e.amount,e.pay||'',e.status||'Paid',e.travel||0,e.profit||0,e.desc||''])}</tr>`).join('')
+  const purRows=load(K.pur).sort((a,b)=>b.date.localeCompare(a.date)).map(e=>`<tr>${td([e.date,e.store,e.cat,e.price,e.desc||''])}</tr>`).join('')
+  const subxRows=load(K.subx).sort((a,b)=>b.date.localeCompare(a.date)).map(e=>`<tr>${td([e.date,e.name,e.amount])}</tr>`).join('')
+  const subRows=load(K.sub).map(s=>`<tr>${td([s.name,s.amount,s.billingType,s.status,s.startDate,s.desc||''])}</tr>`).join('')
+  const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif}table{border-collapse:collapse}td,th{border:1px solid #ddd}</style></head><body>
+<h2>Income</h2><table><tr>${th(['Date','Client','Amount','Payment','Status','Travel','Profit','Description'])}</tr>${incRows}</table><br>
+<h2>Purchases</h2><table><tr>${th(['Date','Store','Category','Price','Description'])}</tr>${purRows}</table><br>
+<h2>Subscription Charges</h2><table><tr>${th(['Date','Subscription','Amount'])}</tr>${subxRows}</table><br>
+<h2>Subscriptions</h2><table><tr>${th(['Name','Amount','Billing','Status','Start Date','Description'])}</tr>${subRows}</table>
+
+</body></html>`
+  dl(html, `kore-visuals-${d}.xls`, 'application/vnd.ms-excel')
+  toast('Excel exported!')
+}
+
+function exportJSON() {
+  const d=new Date().toISOString().split('T')[0]
+  const data={exportedAt:new Date().toISOString(),version:'1.0',income:load(K.inc),purchases:load(K.pur),subscriptions:load(K.sub),subExpenses:load(K.subx)}
+  dl(JSON.stringify(data,null,2), `kore-visuals-backup-${d}.json`, 'application/json')
+  toast('Backup exported!')
+}
+
+function importJSON(input) {
+  const file=input.files[0]; if(!file)return
+  const reader=new FileReader()
+  reader.onload=e=>{
+    try {
+      const data=JSON.parse(e.target.result)
+      // Support both old key format (drone_*) and current export format
+      const inc  = data.income        || data.drone_income        || []
+      const pur  = data.purchases     || data.drone_purchases     || []
+      const sub  = data.subscriptions || data.drone_subscriptions || []
+      const subx = data.subExpenses   || data.drone_sub_expenses  || []
+      const mode=document.getElementById('import-mode').value
+      if(mode==='replace'){
+        if(!confirm('Replace ALL existing data with this backup?')){input.value='';return}
+        save(K.inc,inc); save(K.pur,pur); save(K.sub,sub); save(K.subx,subx)
+      } else {
+        const merge=(key,arr)=>{const ex=load(key);const ids=new Set(ex.map(e=>e.id));save(key,[...ex,...arr.filter(e=>!ids.has(e.id))])}
+        merge(K.inc,inc); merge(K.pur,pur); merge(K.sub,sub); merge(K.subx,subx)
+      }
+      input.value=''
+      renderDash(); renderIncTable(); renderPurTable(); renderSubTable(); renderTaxes(); renderDataSummary()
+      toast(`Imported (${mode} mode)!`)
+    } catch { toast('Invalid JSON file'); input.value='' }
+  }
+  reader.readAsText(file)
+}
+
+function renderDataSummary() {
+  const el=document.getElementById('data-summary')
+  const inc=load(K.inc),pur=load(K.pur),sub=load(K.sub)
+  const box=(n,lbl,color)=>`<div style="padding:14px;background:rgba(${color},0.1);border-radius:12px;text-align:center"><div style="font-size:26px;font-weight:700;color:rgb(${color})">${n}</div><div style="font-size:12px;color:var(--text-2)">${lbl}</div></div>`
+  el.innerHTML=`<div class="card-ttl">${icon('box',16)} Data Summary</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
+    ${box(inc.length,'Income entries','52,199,89')}
+    ${box(pur.length,'Purchases','0,122,255')}
+    ${box(sub.length,'Subscriptions','175,82,222')}
+  </div>`
+}
+
+// ── FORM HELPERS ──────────────────────────────────────────────
+const wrapIds={inc:'inc-form-wrap',pur:'pur-form-wrap',sub:'sub-form-wrap'}
+
+function openForm(type) { document.getElementById(wrapIds[type]).classList.add('open') }
+
+function toggleForm(type) {
+  const w=document.getElementById(wrapIds[type])
+  if(w.classList.contains('open')){cancelForm(type);return}
+  // default today date
+  const dmap={inc:'inc-date',pur:'pur-date',sub:'sub-start'}
+  const df=document.getElementById(dmap[type]); if(df&&!df.value) df.value=today()
+  w.classList.add('open')
+  const btns={inc:'inc-toggle-btn',pur:'pur-toggle-btn',sub:'sub-toggle-btn'}
+  document.getElementById(btns[type]).innerHTML=`${icon('x',12)} Close`
+}
+
+function cancelForm(type) {
+  const w=document.getElementById(wrapIds[type]); if(w)w.classList.remove('open')
+  if(type==='inc'){
+    ['inc-edit-id','inc-date','inc-client','inc-amount','inc-desc'].forEach(id=>document.getElementById(id).value='')
+    document.getElementById('inc-pay').value='Zelle'
+    document.getElementById('inc-status').value='Paid'
+    document.getElementById('inc-travel').value='0'
+    document.getElementById('profit-preview').textContent='$0.00'
+    document.getElementById('profit-preview').style.color='var(--green)'
+    document.getElementById('inc-form-ttl').textContent='Add New Job'
+    document.getElementById('inc-toggle-btn').textContent='+ Add Job'
+  } else if(type==='pur'){
+    ['pur-edit-id','pur-date','pur-store','pur-price','pur-desc'].forEach(id=>document.getElementById(id).value='')
+    document.getElementById('pur-cat').value='Drone Equipment'
+    document.getElementById('pur-form-ttl').textContent='Add New Purchase'
+    document.getElementById('pur-toggle-btn').textContent='+ Add Purchase'
+  } else if(type==='sub'){
+    ['sub-edit-id','sub-name','sub-amount','sub-start','sub-end','sub-desc'].forEach(id=>document.getElementById(id).value='')
+    document.getElementById('sub-billing').value='Monthly'
+    document.getElementById('sub-status').value='Active'
+    document.getElementById('sub-form-ttl').textContent='Add Subscription'
+    document.getElementById('sub-toggle-btn').textContent='+ Add Subscription'
+  }
+}
+
+// ── FILTER SETUP ──────────────────────────────────────────────
+function setupFilter(containerId, stateKey, renderFn) {
+  document.getElementById(containerId).addEventListener('click', e=>{
+    const rb=e.target.closest('[data-r]')
+    const cb=e.target.closest('[data-cat]')
+    const sb=e.target.closest('[data-s]')
+    const bb=e.target.closest('[data-bt]')
+    if(rb){
+      FS[stateKey].r=rb.dataset.r
+      document.querySelectorAll(`#${containerId} [data-r]`).forEach(b=>b.classList.toggle('on',b===rb))
+      const cr=document.querySelector(`#${containerId} .dr-inputs`); if(cr) cr.classList.toggle('show',rb.dataset.r==='custom')
+      if(rb.dataset.r!=='custom') renderFn()
+    }
+    if(cb){
+      FS[stateKey].cat=cb.dataset.cat
+      document.querySelectorAll(`#${containerId} [data-cat]`).forEach(b=>b.classList.toggle('cat-on',b===cb))
+      renderFn()
+    }
+    if(sb){
+      FS[stateKey].status=sb.dataset.s
+      document.querySelectorAll(`#${containerId} [data-s]`).forEach(b=>b.classList.toggle('on',b===sb))
+      renderFn()
+    }
+    if(bb){
+      FS[stateKey].bt=bb.dataset.bt
+      document.querySelectorAll(`#${containerId} [data-bt]`).forEach(b=>b.classList.toggle('cat-on',b===bb))
+      renderFn()
+    }
+  })
+}
+
+function applyCustom() {
+  const f=document.getElementById('r-from').value, t=document.getElementById('r-to').value
+  if(!f||!t){toast('Select both dates');return}
+  FS.dash.from=f; FS.dash.to=t; renderDash()
+}
+function applyCustomInc() {
+  const f=document.getElementById('inc-r-from').value, t=document.getElementById('inc-r-to').value
+  if(!f||!t){toast('Select both dates');return}
+  FS.inc.from=f; FS.inc.to=t; renderIncTable()
+}
+function applyCustomPur() {
+  const f=document.getElementById('pur-r-from').value, t=document.getElementById('pur-r-to').value
+  if(!f||!t){toast('Select both dates');return}
+  FS.pur.from=f; FS.pur.to=t; renderPurTable()
+}
+// ── MULTI-SELECT ──────────────────────────────────────────────
+const msConfig = {
+  'inc-client-ms': { get:()=>FS.inc.clients,  set:v=>FS.inc.clients=v,  render:()=>renderIncTable(),                       label:'Clients'  },
+  'pur-vendor-ms': { get:()=>FS.pur.vendors,  set:v=>FS.pur.vendors=v,  render:()=>renderPurTable(),                       label:'Vendors'  },
+  'sub-svc-ms':    { get:()=>FS.sub.svcs,     set:v=>FS.sub.svcs=v,     render:()=>{renderSubTable()},   label:'Services' },
+}
+function toggleMs(id) {
+  const wrap=document.getElementById(id)
+  const panel=wrap.querySelector('.ms-panel')
+  const isOpen=panel.classList.contains('open')
+  document.querySelectorAll('.ms-panel.open').forEach(p=>{ p.style.left=''; p.style.right=''; p.classList.remove('open') })
+  if(!isOpen){
+    // Reset position, open, then check if it overflows the right edge
+    panel.style.left='0'; panel.style.right='';
+    panel.classList.add('open')
+    const rect=panel.getBoundingClientRect()
+    if(rect.right>window.innerWidth-8){
+      panel.style.left=''; panel.style.right='0'
+    }
+  }
+}
+function msAction(id, action) {
+  const cfg=msConfig[id]
+  const items=[...document.querySelectorAll(`#${id} .ms-items input`)]
+  cfg.set(action==='all' ? items.map(cb=>cb.value) : [])
+  cfg.render()
+}
+function buildMs(id, items, selected) {
+  const wrap=document.getElementById(id); if(!wrap) return
+  const cfg=msConfig[id]
+  const btn=wrap.querySelector('.ms-btn')
+  btn.textContent=selected.length===0?`All ${cfg.label}`:`${selected.length} selected`
+  btn.classList.toggle('ms-active', selected.length>0)
+  const itemsEl=wrap.querySelector('.ms-items')
+  itemsEl.innerHTML=items.map(v=>`<label class="ms-item"><input type="checkbox" value="${esc(v)}"${selected.includes(v)?' checked':''}><span>${esc(v)}</span></label>`).join('')
+  itemsEl.querySelectorAll('input').forEach(cb=>{
+    cb.addEventListener('change', ()=>{
+      cfg.set([...itemsEl.querySelectorAll('input:checked')].map(c=>c.value))
+      cfg.render()
+    })
+  })
+}
+
+// ── LAST-PROCESSED MIGRATION (one-time) ───────────────────────
+function migrateLastProcessed() {
+  if(localStorage.getItem('dt_lp_migrated')) return
+  const rules=[
+    {name:'Google Storage',      status:'Active', startYM:'2024-05', lastProcessed:'2026-02-28'},
+    {name:'Adobe',               status:'Active', startYM:'2024-12', lastProcessed:'2026-02-28'},
+    {name:'Squarespace Domain',  status:'Active',                    lastProcessed:'2025-08-16'},
+    {name:'Squarespace Website', status:'Active', startYM:'2026-02', lastProcessed:'2026-02-12'},
+  ]
+  const subs=load(K.sub)
+  for(const rule of rules){
+    subs.filter(s=>{
+      if(s.name.trim().toLowerCase()!==rule.name.trim().toLowerCase()) return false
+      if(rule.status && s.status!==rule.status) return false
+      if(rule.startYM && !(s.startDate||'').startsWith(rule.startYM)) return false
+      return true
+    }).forEach(s=>{ s.lastProcessed=rule.lastProcessed })
+  }
+  save(K.sub, subs)
+  save(K.subx, [])
+  localStorage.setItem('dt_lp_migrated','1')
+}
+
+// ── LAST-PROCESSED MIGRATION v2 (fix 2026 charges) ───────────
+function migrateLastProcessed_v2() {
+  if(localStorage.getItem('dt_lp_migrated_v2')) return
+  const rules=[
+    {name:'Google Storage', status:'Active', startYM:'2024-05', lastProcessed:'2025-12-31'},
+    {name:'Adobe',          status:'Active', startYM:'2024-12', lastProcessed:'2025-12-31'},
+  ]
+  const subs=load(K.sub)
+  for(const rule of rules){
+    subs.filter(s=>{
+      if(s.name.trim().toLowerCase()!==rule.name.trim().toLowerCase()) return false
+      if(rule.status && s.status!==rule.status) return false
+      if(rule.startYM && !(s.startDate||'').startsWith(rule.startYM)) return false
+      return true
+    }).forEach(s=>{ s.lastProcessed=rule.lastProcessed })
+  }
+  save(K.sub, subs)
+  // Only remove 2026+ entries for these two subs so processSubs can regenerate them;
+  // preserve all pre-2026 subx entries so historical Tax Summary data stays intact.
+  const affectedNames=['google storage','adobe']
+  const pruned=load(K.subx).filter(e=>!(affectedNames.includes((e.name||'').toLowerCase())&&e.date>='2026-01-01'))
+  save(K.subx, pruned)
+  localStorage.setItem('dt_lp_migrated_v2','1')
+}
+
+// ── SUB TOTAL-SPENT MIGRATION ─────────────────────────────────
+function migrateSubTotalSpent() {
+  const rules=[
+    {name:'Squarespace Domain',            status:'Inactive', startYM:'2022-09', totalSpent:20.00},
+    {name:'Squarespace Website',           status:'Inactive', startYM:'2022-09', totalSpent:192.00},
+    {name:'Epidemic Sounds',                                                     totalSpent:228.00},
+    {name:'Squarespace Website Business',                                        totalSpent:220.80},
+    {name:'FAA DJI FPV Registration',                                            totalSpent:5.00},
+    {name:'Google Storage',               status:'Inactive', startYM:'2022-08', totalSpent:2.16},
+    {name:'Google Storage',               status:'Inactive', startYM:'2022-10', totalSpent:6.48},
+    {name:'Google Storage',               status:'Inactive', startYM:'2023-04', totalSpent:21.89},
+    {name:'Adobe',                        status:'Inactive', startYM:'2024-08', totalSpent:86.84},
+    {name:'Adobe',                        status:'Inactive', startYM:'2024-11', totalSpent:22.70},
+    {name:'Squarespace Domain',           status:'Active',                       totalSpent:40.00},
+    {name:'Squarespace Website',          status:'Active',                       totalSpent:192.00},
+    {name:'FAA 5inch Registration',                                              totalSpent:5.00},
+    {name:'FAA Protek35 Registration',                                           totalSpent:5.00},
+    {name:'FAA BOB57 Registration',                                              totalSpent:5.00},
+    {name:'FAA CineLog25 Registration',                                          totalSpent:5.00},
+    {name:'FAA Mavic Mini 3 Pro Registration',                                   totalSpent:5.00},
+    {name:'Google Storage',               status:'Active',                       totalSpent:45.36},
+    {name:'Adobe',                        status:'Active',                       totalSpent:455.98},
+    {name:'FAA Certificate Replacement',                                         totalSpent:2.00},
+    {name:'Kore Aerials LLC',                                                    totalSpent:225.00},
+    {name:'Newsday Ad',                                                          totalSpent:382.50},
+    {name:'Beacon Ad',                                                           totalSpent:125.00},
+    {name:'FAA Part 107 Test',                                                   totalSpent:175.00},
+    {name:'ReelSteady',                                                          totalSpent:108.61},
+    {name:'ToneLab Addon',                                                       totalSpent:104.40},
+  ]
+  const subs=load(K.sub); let changed=false
+  for(const rule of rules){
+    const matches=subs.filter(s=>{
+      if(s.name.trim().toLowerCase()!==rule.name.trim().toLowerCase()) return false
+      if(rule.status && s.status!==rule.status) return false
+      if(rule.startYM && !(s.startDate||'').startsWith(rule.startYM)) return false
+      return true
+    })
+    for(const sub of matches){
+      if(sub.totalSpent!==rule.totalSpent){sub.totalSpent=rule.totalSpent;changed=true}
+    }
+  }
+  if(changed) save(K.sub,subs)
+}
+
+// ── CLEAR ALL DATA ────────────────────────────────────────────
+function clearStep1() {
+  const area = document.getElementById('clear-confirm-area')
+  area.innerHTML = `
+    <p style="font-size:12px;color:#FF453A;font-weight:600;margin-bottom:8px;text-align:center">Are you sure? This cannot be undone.</p>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-d" style="flex:1" onclick="clearAllData()">Yes, delete everything</button>
+      <button class="btn btn-s" onclick="clearStep0()">Cancel</button>
+    </div>`
+}
+function clearStep0() {
+  const area = document.getElementById('clear-confirm-area')
+  area.innerHTML = `<button class="btn btn-d" style="width:100%" onclick="clearStep1()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg> Clear All Data</button>`
+}
+function clearAllData() {
+  ;[K.inc, K.pur, K.sub, K.subx].forEach(k => save(k, []))
+  localStorage.removeItem(K.links)
+  clearStep0()
+  renderDash(); renderIncTable(); renderPurTable(); renderSubTable(); renderTaxes(); renderDataSummary()
+  toast('All data cleared')
+}
+
+// ── GOOGLE SHEETS INTEGRATION ────────────────────────────────
+let _gsTokenClient = null
+let _gsToken = null        // { access_token, expires_at }
+let _gsSignedIn = false    // UX sign-in state; independent of token expiry
+let _gsSyncQueue = new Set()
+let _gsSyncTimer = null
+
+// ── Sync status UI ────────────────────────────────────────────
+function setSyncStatus(state, detail) {
+  const el = document.getElementById('sync-indicator')
+  if (!el) return
+  const dot = (color, anim) =>
+    `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${color};margin-right:5px;flex-shrink:0${anim?';animation:syncPulse 1s ease-in-out infinite':''}"></span>`
+  const ts = () => new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})
+  const cfgs = {
+    idle:    { d:dot('#9EA3AE'),           text:'Sheets: not signed in', click:true },
+    signing: { d:dot('#007AFF',true),      text:'Signing in…' },
+    loading: { d:dot('#007AFF',true),      text:'Loading from Sheets…' },
+    syncing: { d:dot('#007AFF',true),      text:'Syncing…' },
+    synced:  { d:dot('#34C759'),           text:`Synced ${ts()} · Sign out`, click:true },
+    error:   { d:dot('#FF453A'),           text:detail||'Sync error — tap to retry', click:true },
+    offline: { d:dot('#FF9500'),           text:'Offline — local only' },
+  }
+  const c = cfgs[state] || cfgs.idle
+  el.innerHTML = c.d + c.text
+  el.className = 'sync-pill' + (c.click ? ' clickable' : '')
+  el.onclick = c.click ? (state === 'idle' ? gsSignIn : state === 'synced' ? gsSignOut : gsRetrySync) : null
+}
+
+// ── Token helpers ─────────────────────────────────────────────
+function gsGetStoredToken() {
+  try {
+    const t = JSON.parse(localStorage.getItem('dt_gs_token') || 'null')
+    if (!t || t.expires_at <= Date.now() + 60000) return null
+    // Discard tokens granted under a different scope set so re-consent is triggered
+    const required = GS_SCOPE.split(' ')
+    const granted  = (t.scope || '').split(' ')
+    if (required.some(s => !granted.includes(s))) return null
+    return t
+  } catch { return null }
+}
+function gsGetToken() {
+  if (_gsToken && _gsToken.expires_at > Date.now() + 60000) return _gsToken.access_token
+  const s = gsGetStoredToken(); if (s) { _gsToken = s; return s.access_token }
+  return null
+}
+
+// ── Auth ──────────────────────────────────────────────────────
+let _gsSignInTimer = null
+function gsSignIn() {
+  if (!_gsTokenClient) { toast('Google API not loaded — check your internet connection'); return }
+  setSyncStatus('signing')
+  clearInterval(_gsSignInTimer)
+  // Intercept window.open to capture the popup reference GIS opens internally
+  let _gsPopup = null
+  const _origOpen = window.open
+  window.open = function(...args) {
+    _gsPopup = _origOpen.apply(window, args)
+    window.open = _origOpen  // restore immediately
+    return _gsPopup
+  }
+  _gsTokenClient.requestAccessToken({ prompt: 'consent' })
+  // Poll every 500ms — if the popup closes before auth completes, reset to idle
+  _gsSignInTimer = setInterval(() => {
+    if (_gsPopup && _gsPopup.closed && !gsGetToken()) {
+      clearInterval(_gsSignInTimer)
+      setSyncStatus('idle')
+    }
+  }, 500)
+}
+function gsSilentAuth() {
+  if (_gsTokenClient) _gsTokenClient.requestAccessToken({ prompt: '' })
+}
+function gsSignOut() {
+  if (!confirm('Signing out will clear all local data. You\'ll need to re-sync from Google Sheets or import a backup on next login. Continue?')) return
+  if (_gsToken?.access_token) google.accounts.oauth2.revoke(_gsToken.access_token, () => {})
+  _gsToken = null
+  _gsSignedIn = false
+  localStorage.removeItem('dt_gs_token')
+  Object.values(K).forEach(k => localStorage.removeItem(k))
+  localStorage.removeItem('dt_logo_dark')
+  localStorage.removeItem('dt_logo_light')
+  applyAppName('')
+  applyLogoForTheme(document.documentElement.dataset.theme || 'light')
+  setSyncStatus('idle')
+  renderDash(); renderIncTable(); renderPurTable(); renderSubTable(); renderTaxes(); renderDataSummary(); renderLinks()
+}
+
+// ── Sign-in overlay ───────────────────────────────────────────
+function showGsSignIn() {
+  document.getElementById('gs-signin-overlay').style.display = 'flex'
+}
+function hideGsSignIn() {
+  document.getElementById('gs-signin-overlay').style.display = 'none'
+}
+function gsUseOffline() {
+  hideGsSignIn()
+  setSyncStatus('offline')
+}
+
+// ── Authenticated fetch ───────────────────────────────────────
+async function gsReq(url, opts = {}) {
+  const token = gsGetToken()
+  if (!token) { setSyncStatus('idle'); return null }
+  const resp = await fetch(url, {
+    ...opts,
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type':  'application/json',
+      ...(opts.headers || {})
+    }
+  })
+  if (resp.status === 401) {
+    _gsToken = null; localStorage.removeItem('dt_gs_token')
+    gsSilentAuth(); return null
+  }
+  return resp
+}
+
+// ── Sheet read ────────────────────────────────────────────────
+async function gsReadTab(tabName) {
+  const range = encodeURIComponent(`${tabName}!A1:Z`)
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${GS_SPREADSHEET_ID}/values/${range}`
+  const resp = await gsReq(url)
+  if (!resp?.ok) return null
+  return (await resp.json()).values || []
+}
+
+// ── Sheet full-rewrite ────────────────────────────────────────
+async function gsWriteTab(tabName, cols, rows) {
+  if (!gsGetToken()) return false
+  const base = `https://sheets.googleapis.com/v4/spreadsheets/${GS_SPREADSHEET_ID}`
+  // Clear everything below row 1
+  await gsReq(`${base}/values/${encodeURIComponent(tabName + '!A2:Z')}:clear`,
+    { method: 'POST', body: '{}' })
+  // Write headers + data starting at A1
+  const values = [cols, ...rows]
+  const resp = await gsReq(
+    `${base}/values/${encodeURIComponent(tabName + '!A1')}?valueInputOption=RAW`,
+    { method: 'PUT', body: JSON.stringify({ range: `${tabName}!A1`, majorDimension: 'ROWS', values }) }
+  )
+  return resp?.ok ?? false
+}
+
+// ── Row ↔ object conversion ───────────────────────────────────
+function gsRowsToObjs(key, rows) {
+  if (!rows || rows.length < 2) return null  // null = tab empty / headers only
+  const { toObj } = SHEET_SCHEMA[key]
+  return rows.slice(1)
+    .filter(r => r && r.some(c => c !== '' && c != null))
+    .map(r => toObj(r))
+    .filter(Boolean)
+}
+function gsObjsToRows(key) {
+  const { toRow } = SHEET_SCHEMA[key]
+  return load(key).map(obj => toRow(obj).map(v => v == null ? '' : String(v)))
+}
+// Settings tab rows = subx auto-charges + any app-level key/value settings
+function gsSettingsRows() {
+  const rows = gsObjsToRows(K.subx)
+  const name = localStorage.getItem('dt_app_name')
+  if (name !== null) rows.push(['appName', name])
+  return rows
+}
+
+// ── Load all data from Sheets on sign-in / page open ─────────
+async function gsLoadAll() {
+  setSyncStatus('loading')
+  try {
+    for (const [key, schema] of Object.entries(SHEET_SCHEMA)) {
+      const rows = await gsReadTab(schema.tab)
+      if (rows === null) throw new Error(`Failed to read "${schema.tab}"`)
+      const objs = gsRowsToObjs(key, rows)
+      if (objs === null) {
+        // Tab is empty — push existing localStorage data up to Sheets (first-time setup)
+        // For links, seed with defaults if localStorage is also empty
+        if (key === K.links && !load(K.links).length) {
+          localStorage.setItem(K.links, JSON.stringify(DEFAULT_LINKS))
+        }
+        const writeRows = key === K.subx ? gsSettingsRows() : gsObjsToRows(key)
+        await gsWriteTab(schema.tab, schema.cols, writeRows)
+      } else {
+        // Sheet has data — it wins; overwrite local cache
+        localStorage.setItem(key, JSON.stringify(objs))
+        if (key === K.subx) {
+          const appNameRow = rows.slice(1).find(r => r && r[0] === 'appName')
+          if (appNameRow?.[1] !== undefined) {
+            localStorage.setItem('dt_app_name', appNameRow[1])
+            applyAppName(appNameRow[1])
+          }
+        }
+      }
+    }
+    setSyncStatus('synced')
+    renderDash(); renderIncTable(); renderPurTable(); renderSubTable(); renderTaxes(); renderDataSummary(); renderLinks()
+    return true
+  } catch(err) {
+    console.error('gsLoadAll:', err)
+    setSyncStatus('error', err.message)
+    return false
+  }
+}
+
+// ── Debounced write-back queue ────────────────────────────────
+function gsQueueSync(key) {
+  if (privacyMode()) return
+  if (!SHEET_SCHEMA[key] || !gsGetToken()) return
+  _gsSyncQueue.add(key)
+  clearTimeout(_gsSyncTimer)
+  _gsSyncTimer = setTimeout(gsFlushQueue, 400)
+}
+async function gsFlushQueue() {
+  if (!_gsSyncQueue.size) return
+  const keys = [..._gsSyncQueue]; _gsSyncQueue.clear()
+  setSyncStatus('syncing')
+  try {
+    for (const key of keys) {
+      const { tab, cols } = SHEET_SCHEMA[key]
+      const rows = key === K.subx ? gsSettingsRows() : gsObjsToRows(key)
+      const ok = await gsWriteTab(tab, cols, rows)
+      if (!ok) throw new Error(`Write failed: ${tab}`)
+    }
+    setSyncStatus('synced')
+  } catch(err) {
+    console.error('gsFlushQueue:', err)
+    setSyncStatus('error', err.message)
+  }
+}
+function gsRetrySync() {
+  Object.keys(SHEET_SCHEMA).forEach(k => _gsSyncQueue.add(k))
+  gsFlushQueue()
+}
+
+// ── Manual full sync (for import, etc.) ──────────────────────
+function gsSyncAll() {
+  Object.keys(SHEET_SCHEMA).forEach(k => _gsSyncQueue.add(k))
+  gsFlushQueue()
+}
+
+// ── GIS library callbacks ─────────────────────────────────────
+function gsOnLibraryLoad() {
+  if (!GS_CLIENT_ID || GS_CLIENT_ID === 'YOUR_CLIENT_ID_HERE') {
+    setSyncStatus('offline'); return  // not yet configured
+  }
+  _gsTokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: GS_CLIENT_ID,
+    scope: GS_SCOPE,
+    callback: async resp => {
+      clearInterval(_gsSignInTimer)
+      if (resp.error) {
+        const cancelled = ['interaction_required','popup_closed_by_user','popup_blocked','access_denied'].includes(resp.error)
+        cancelled ? setSyncStatus('idle') : setSyncStatus('error', resp.error)
+        return
+      }
+      _gsToken = { access_token: resp.access_token, expires_at: Date.now() + resp.expires_in * 1000, scope: resp.scope || GS_SCOPE }
+      localStorage.setItem('dt_gs_token', JSON.stringify(_gsToken))
+      _gsSignedIn = true
+      hideGsSignIn()
+      await gsLoadAll()
+      gdLoadLogo()
+    }
+  })
+  const stored = gsGetStoredToken()
+  if (stored) { _gsToken = stored; _gsSignedIn = true; gsLoadAll(); gdLoadLogo() }
+  else { setSyncStatus('idle') }  // wait for user to click the indicator
+}
+function gsOnLibraryError() {
+  setSyncStatus('offline')
+  console.warn('Google Identity Services failed to load — running in offline/local mode')
+}
+
+// ── GOOGLE DRIVE — LOGO STORAGE ───────────────────────────────
+const GD_DRIVE_API  = 'https://www.googleapis.com/drive/v3'
+const GD_UPLOAD_API = 'https://www.googleapis.com/upload/drive/v3'
+const GD_LOGO_PATH  = ['Files', 'Kore Aerials Tool', 'Logos']
+const GD_LOGO_NAMES = { dark: 'logo-dark.png', light: 'logo-light.png' }
+const GD_LOGO_KEYS  = { dark: 'dt_logo_dark',  light: 'dt_logo_light'  }
+
+// Walk My Drive → path[0] → path[1] → … and return the final folder's ID, or null.
+async function gdResolvePath(parts) {
+  let parentId = 'root'
+  for (const name of parts) {
+    const q = encodeURIComponent(`name='${name}' and '${parentId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`)
+    const resp = await gsReq(`${GD_DRIVE_API}/files?q=${q}&fields=files(id)`)
+    if (!resp?.ok) return null
+    const data = await resp.json()
+    if (!data.files?.length) return null
+    parentId = data.files[0].id
+  }
+  return parentId
+}
+
+// Return the ID of the first file matching name in folderId, or null.
+async function gdFindFile(name, folderId) {
+  const q = encodeURIComponent(`name='${name}' and '${folderId}' in parents and trashed=false`)
+  const resp = await gsReq(`${GD_DRIVE_API}/files?q=${q}&fields=files(id)`)
+  if (!resp?.ok) return null
+  return (await resp.json()).files?.[0]?.id || null
+}
+
+// Fetch file content and return a data URL, or null on failure.
+async function gdDownloadAsDataUrl(fileId) {
+  const resp = await gsReq(`${GD_DRIVE_API}/files/${fileId}?alt=media`)
+  if (!resp?.ok) return null
+  const blob = await resp.blob()
+  return new Promise(resolve => {
+    const r = new FileReader()
+    r.onload = e => resolve(e.target.result)
+    r.onerror = () => resolve(null)
+    r.readAsDataURL(blob)
+  })
+}
+
+// Upload a File object to folderId with the given filename.
+// If existingId is given, PATCHes that file; otherwise POSTs a new one.
+async function gdUploadLogo(file, filename, folderId, existingId) {
+  const token = gsGetToken()
+  if (!token) return null
+  const meta = existingId
+    ? JSON.stringify({ name: filename })
+    : JSON.stringify({ name: filename, parents: [folderId] })
+  const form = new FormData()
+  form.append('metadata', new Blob([meta], { type: 'application/json' }))
+  form.append('file', file)
+  const url = existingId
+    ? `${GD_UPLOAD_API}/files/${existingId}?uploadType=multipart`
+    : `${GD_UPLOAD_API}/files?uploadType=multipart`
+  const resp = await fetch(url, {
+    method: existingId ? 'PATCH' : 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: form
+  })
+  return resp.ok ? (await resp.json()).id : null
+}
+
+// Load logo-dark.png and logo-light.png from Drive, cache each in localStorage.
+async function gdLoadLogo() {
+  if (!gsGetToken()) return
+  try {
+    const folderId = await gdResolvePath(GD_LOGO_PATH)
+    if (!folderId) return
+    let updated = false
+    for (const mode of ['dark', 'light']) {
+      const fileId = await gdFindFile(GD_LOGO_NAMES[mode], folderId)
+      if (!fileId) continue
+      const dataUrl = await gdDownloadAsDataUrl(fileId)
+      if (!dataUrl) continue
+      localStorage.setItem(GD_LOGO_KEYS[mode], dataUrl)
+      updated = true
+    }
+    if (updated) applyLogoForTheme(document.documentElement.dataset.theme || 'light')
+  } catch (err) {
+    console.warn('gdLoadLogo:', err)
+  }
+}
+
+// ── THEME ─────────────────────────────────────────────────────
+// ── SETTINGS ──────────────────────────────────────────────────
+let _defaultLogoSrc = ''
+const _pendingLogos = { dark: null, light: null }  // File objects staged for Drive upload on Save
+
+function applyLogoForTheme(theme) {
+  const key = theme === 'dark' ? 'dt_logo_dark' : 'dt_logo_light'
+  const saved = localStorage.getItem(key)
+  document.getElementById('hdr-logo').src = saved || _defaultLogoSrc
+}
+
+function refreshLogoPreview(mode) {
+  const key = mode === 'dark' ? 'dt_logo_dark' : 'dt_logo_light'
+  const saved = localStorage.getItem(key)
+  const preview = document.getElementById('smod-preview-' + mode)
+  const none = document.getElementById('smod-logo-none-' + mode)
+  if (saved) {
+    preview.src = saved; preview.style.display = 'block'; none.style.display = 'none'
+  } else {
+    preview.src = ''; preview.style.display = 'none'; none.style.display = ''
+  }
+}
+
+function openSettings() {
+  document.getElementById('smod-name').value = localStorage.getItem('dt_app_name') || ''
+  document.getElementById('smod-privacy').checked = privacyMode()
+  _pendingLogos.dark = null; _pendingLogos.light = null
+  refreshLogoPreview('dark')
+  refreshLogoPreview('light')
+  document.getElementById('settings-overlay').classList.add('open')
+}
+
+function closeSettings() {
+  document.getElementById('settings-overlay').classList.remove('open')
+}
+
+async function saveSettings() {
+  const name = document.getElementById('smod-name').value.trim()
+  localStorage.setItem('dt_app_name', name)
+  applyAppName(name)
+  if (gsGetToken()) gsQueueSync(K.subx)
+  // Upload any newly-selected logos to Drive
+  const hasPending = _pendingLogos.dark || _pendingLogos.light
+  if (hasPending && gsGetToken()) {
+    toast('Saving logos to Drive…')
+    try {
+      const folderId = await gdResolvePath(GD_LOGO_PATH)
+      if (folderId) {
+        for (const mode of ['dark', 'light']) {
+          const file = _pendingLogos[mode]; if (!file) continue
+          const filename = GD_LOGO_NAMES[mode]
+          const existingId = await gdFindFile(filename, folderId)
+          await gdUploadLogo(file, filename, folderId, existingId)
+          _pendingLogos[mode] = null
+        }
+      }
+    } catch (err) { console.warn('Logo upload:', err) }
+  }
+  closeSettings()
+  toast('Settings saved!')
+}
+
+function applyAppName(name) {
+  const display = name || 'Enter Name'
+  const el = document.getElementById('hdr-title')
+  if (el) el.textContent = display
+  document.title = display
+}
+
+function handleLogoUpload(input, mode) {
+  const file = input.files[0]; if (!file) return
+  _pendingLogos[mode] = file
+  const reader = new FileReader()
+  reader.onload = e => {
+    localStorage.setItem(GD_LOGO_KEYS[mode], e.target.result)
+    refreshLogoPreview(mode)
+    applyLogoForTheme(document.documentElement.dataset.theme || 'light')
+  }
+  reader.readAsDataURL(file)
+}
+
+function removeLogo(mode) {
+  const key = mode === 'dark' ? 'dt_logo_dark' : 'dt_logo_light'
+  localStorage.removeItem(key)
+  refreshLogoPreview(mode)
+  applyLogoForTheme(document.documentElement.dataset.theme || 'light')
+  toast('Logo removed')
+}
+
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme
+  const btn = document.getElementById('theme-toggle')
+  const sunSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`
+  const moonSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>`
+  btn.innerHTML = theme === 'dark' ? `${sunSvg} Light` : `${moonSvg} Dark`
+  applyLogoForTheme(theme)
+}
+function toggleTheme() {
+  const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'
+  localStorage.setItem('dt_theme', next)
+  applyTheme(next)
+}
+
+// ── TAB SWITCHING ─────────────────────────────────────────────
+const tabRenders={dashboard:renderDash,income:renderIncTable,purchases:renderPurTable,subscriptions:()=>{renderSubTable()},taxes:renderTaxes,export:renderDataSummary}
+
+function openTab(t) {
+  const tab=document.querySelector(`[data-tab="${t}"]`); if(!tab)return
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b===tab))
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id===`panel-${t}`))
+  if(tabRenders[t]) tabRenders[t]()
+}
+
+document.getElementById('nav').addEventListener('click', e=>{
+  const tab=e.target.closest('[data-tab]'); if(!tab)return
+  const t=tab.dataset.tab
+  localStorage.setItem('dt_active_tab', t)
+  openTab(t)
+})
+
+// ── INIT ──────────────────────────────────────────────────────
+// Apply theme immediately (before DOMContentLoaded) to avoid flash
+;(()=>{ const t=localStorage.getItem('dt_theme')||'light'; document.documentElement.dataset.theme=t })()
+
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.ms-wrap')) document.querySelectorAll('.ms-panel.open').forEach(p=>p.classList.remove('open'))
+})
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  applyTheme(localStorage.getItem('dt_theme')||'light')
+  if (privacyMode()) document.body.classList.add('privacy-mode')
+  // Store embedded logo src so Remove Logo can restore it
+  _defaultLogoSrc = document.getElementById('hdr-logo').src
+  // Apply saved logo for current theme
+  applyLogoForTheme(localStorage.getItem('dt_theme') || 'light')
+  // App name loads from Google Sheets on sign-in; show placeholder until then
+  applyAppName('')
+  migrateLastProcessed()
+  migrateLastProcessed_v2()
+  processSubs()
+  migrateSubTotalSpent()
+  setupFilter('dash-filter','dash',renderDash)
+  setupFilter('inc-filter','inc',renderIncTable)
+  setupFilter('pur-filter','pur',renderPurTable)
+  setupFilter('sub-filter','sub',()=>{renderSubTable()})
+  openTab(localStorage.getItem('dt_active_tab')||'dashboard')
+  setSyncStatus('idle')  // will be updated by gsOnLibraryLoad() once GIS script loads
+})
+
+// ── INVOICE GENERATOR ─────────────────────────────────────────
+const INV_TEMPLATE_NAME_STD = 'Invoice Template no Deposit.docx'
+const INV_TEMPLATE_NAME_DEP = 'Invoice Template with Deposit.docx'
+
+function openInvoiceModal() {
+  const now = new Date()
+  const mm = String(now.getMonth()+1).padStart(2,'0')
+  const dd = String(now.getDate()).padStart(2,'0')
+  const yyyy = now.getFullYear()
+  document.getElementById('inv-date').value = `${mm}/${dd}/${yyyy}`
+  document.getElementById('inv-due').value = 'Due on receipt'
+  document.getElementById('inv-client').value = ''
+  document.getElementById('inv-include-deposit').checked = false
+  document.getElementById('inv-deposit-box').style.display = 'none'
+  document.getElementById('inv-deposit-paid').checked = false
+  const depAmt = document.getElementById('inv-deposit-amt')
+  depAmt.value = ''; depAmt.dataset.auto = 'true'
+  document.getElementById('inv-remaining').textContent = '$0.00'
+  document.getElementById('inv-success').style.display = 'none'
+  const btn = document.getElementById('inv-gen-btn')
+  btn.disabled = false; btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Generate'
+  document.getElementById('inv-items').innerHTML = ''
+  invAddLineItem()
+  invUpdateTotal()
+  invUpdateNumber()
+  document.getElementById('inv-modal-overlay').classList.add('open')
+}
+
+function closeInvoiceModal() {
+  document.getElementById('inv-modal-overlay').classList.remove('open')
+}
+
+function invUpdateNumber() {
+  const client = document.getElementById('inv-client').value.trim()
+  const dateStr = document.getElementById('inv-date').value.trim()
+  const el = document.getElementById('inv-number-preview')
+  if (!client || dateStr.length < 10) { el.textContent = '—'; return }
+  const parts = dateStr.split('/')
+  if (parts.length !== 3 || parts[2].length !== 4) { el.textContent = '—'; return }
+  el.textContent = client.substring(0,2).toUpperCase() + parts[2] + parts[0].padStart(2,'0') + parts[1].padStart(2,'0')
+}
+
+function invAddLineItem(desc='', amount='') {
+  const row = document.createElement('div')
+  row.className = 'inv-item-row'
+  row.innerHTML = `<input type="text" class="inv-item-desc" placeholder="Description" value="${esc(String(desc))}" oninput="invUpdateTotal()"><input type="number" class="inv-item-amt" placeholder="0.00" value="${esc(String(amount))}" min="0" step="0.01" oninput="invUpdateTotal()"><button class="btn btn-sm btn-d" onclick="this.closest('.inv-item-row').remove();invUpdateTotal()" type="button">&#x2715;</button>`
+  document.getElementById('inv-items').appendChild(row)
+}
+
+function invUpdateTotal() {
+  const total = [...document.querySelectorAll('.inv-item-amt')].reduce((s,i)=>s+(parseFloat(i.value)||0),0)
+  document.getElementById('inv-total-display').textContent = fmt(total)
+  if (document.getElementById('inv-include-deposit').checked) {
+    const d = document.getElementById('inv-deposit-amt')
+    if (d.dataset.auto !== 'false') d.value = (total*0.25).toFixed(2)
+    invUpdateRemaining()
+  }
+}
+
+function invToggleDeposit() {
+  const on = document.getElementById('inv-include-deposit').checked
+  document.getElementById('inv-deposit-box').style.display = on ? 'block' : 'none'
+  if (on) invUpdateTotal()
+}
+
+function invUpdateRemaining() {
+  const total = [...document.querySelectorAll('.inv-item-amt')].reduce((s,i)=>s+(parseFloat(i.value)||0),0)
+  const dep = parseFloat(document.getElementById('inv-deposit-amt').value)||0
+  const paid = document.getElementById('inv-deposit-paid').checked
+  document.getElementById('inv-remaining').textContent = fmt(paid ? total-dep : total)
+}
+
+async function invUploadToDrive(content, srcMime, name, dstMime, folderId, token) {
+  const boundary = 'kore_inv_mp'
+  const metaObj = { name, mimeType: dstMime }
+  if (folderId) metaObj.parents = [folderId]
+  const header = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metaObj)}\r\n--${boundary}\r\nContent-Type: ${srcMime}\r\n\r\n`
+  const footer = `\r\n--${boundary}--`
+  const body = new Blob([header, content instanceof Blob ? content : new Blob([content]), footer])
+  const resp = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': `multipart/related; boundary=${boundary}` },
+    body
+  })
+  if (!resp.ok) throw new Error('Drive upload failed: ' + resp.status)
+  return resp.json()
+}
+
+async function loadInvoiceLibs() {
+  if (window.PizZip && window.Docxtemplater) return
+  await new Promise((resolve, reject) => {
+    const s = document.createElement('script')
+    s.src = 'https://unpkg.com/pizzip@3.1.1/dist/pizzip.min.js'
+    s.onload = resolve; s.onerror = reject
+    document.head.appendChild(s)
+  })
+  const response = await fetch('https://unpkg.com/docxtemplater@3.26.2/build/docxtemplater.js')
+  const text = await response.text()
+  eval(text)
+}
+
+async function generateInvoice() {
+  console.log('Generate clicked')
+  const btn = document.getElementById('inv-gen-btn')
+  const successEl = document.getElementById('inv-success')
+  try {
+    await loadInvoiceLibs()
+    console.log('Libraries loaded')
+
+    const client  = document.getElementById('inv-client').value.trim()
+    const dateStr = document.getElementById('inv-date').value.trim()
+    const dueStr  = document.getElementById('inv-due').value.trim() || 'Due on receipt'
+    const withDep = document.getElementById('inv-include-deposit').checked
+
+    if (!client || !dateStr) { toast('Enter client name and invoice date'); return }
+    const parts = dateStr.split('/')
+    if (parts.length !== 3 || parts[2].length !== 4) { toast('Date must be MM/DD/YYYY'); return }
+    const invNum = client.substring(0,2).toUpperCase() + parts[2] + parts[0].padStart(2,'0') + parts[1].padStart(2,'0')
+
+    const items = [...document.querySelectorAll('.inv-item-row')].map(r=>({
+      description: r.querySelector('.inv-item-desc').value.trim(),
+      amount: parseFloat(r.querySelector('.inv-item-amt').value)||0
+    })).filter(i=>i.description||i.amount)
+    const total = items.reduce((s,i)=>s+i.amount,0)
+
+    const token = gsGetToken()
+    if (!token) { toast('Sign in with Google to generate invoices'); return }
+
+    btn.disabled = true; btn.textContent = 'Generating…'
+    successEl.style.display = 'none'
+    const templateName = withDep ? INV_TEMPLATE_NAME_DEP : INV_TEMPLATE_NAME_STD
+
+    // Read lastInvoiceNumber from Sheets Settings tab
+    console.log('Reading from Sheets...')
+    const settingsRows = await gsReadTab('Settings')
+
+    // Search for template by filename
+    console.log('Searching for template: ' + templateName)
+    const searchQ = encodeURIComponent(`name='${templateName}' and trashed=false`)
+    const searchResp = await fetch(`https://www.googleapis.com/drive/v3/files?q=${searchQ}&spaces=drive&fields=files(id,name,parents)`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    if (!searchResp.ok) throw new Error('Template search failed (status ' + searchResp.status + ')')
+    const searchData = await searchResp.json()
+    if (!searchData.files?.length) throw new Error('Template not found: ' + templateName)
+    const templateId = searchData.files[0].id
+    console.log('Found template ID: ' + templateId)
+
+    // Fetch template content
+    console.log('Fetching template...')
+    const tResp = await fetch(`https://www.googleapis.com/drive/v3/files/${templateId}?alt=media`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    if (!tResp.ok) throw new Error('Could not fetch template (status ' + tResp.status + ')')
+    const tBuf = await tResp.arrayBuffer()
+
+    // Get Invoices folder from the template's parent
+    console.log('Resolving folders...')
+    const invoicesFolderId = (searchData.files[0].parents||[])[0]||null
+
+    // Navigate into "Customer Invoices" subfolder
+    let saveFolderId = invoicesFolderId
+    if (invoicesFolderId) {
+      const q = encodeURIComponent(`name='Customer Invoices' and '${invoicesFolderId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`)
+      const subResp = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id)`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (subResp.ok) {
+        const subData = await subResp.json()
+        if (subData.files?.[0]?.id) saveFolderId = subData.files[0].id
+      }
+    }
+
+    // Fill template
+    console.log('Filling template...')
+    const zip = new PizZip(tBuf)
+    const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true })
+    const tplData = {
+      INVOICE_NUMBER: invNum,
+      DATE: dateStr,
+      DUE_DATE: dueStr,
+      CLIENT_NAME: client,
+      total: fmt(total),
+      items: items.map(i=>({ description: i.description, amount: fmt(i.amount) }))
+    }
+    if (withDep) {
+      const dep = parseFloat(document.getElementById('inv-deposit-amt').value)||0
+      const paid = document.getElementById('inv-deposit-paid').checked
+      tplData.deposit = fmt(dep)
+      tplData.remaining = fmt(paid ? total-dep : total)
+    }
+    doc.render(tplData)
+    const filledBuf = doc.getZip().generate({ type: 'arraybuffer' })
+
+    // Upload filled docx → convert to Google Doc (placed in Invoices folder temporarily)
+    console.log('Uploading to Drive...')
+    const baseName = `${client} - ${invNum}`
+    const uploaded = await invUploadToDrive(
+      filledBuf,
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      baseName,
+      'application/vnd.google-apps.document',
+      invoicesFolderId, token
+    )
+
+    // Export as PDF
+    console.log('Exporting PDF...')
+    const pdfResp = await fetch(`https://www.googleapis.com/drive/v3/files/${uploaded.id}/export?mimeType=application/pdf`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    if (!pdfResp.ok) throw new Error('PDF export failed (status ' + pdfResp.status + ')')
+    const pdfBlob = await pdfResp.blob()
+
+    // Download locally
+    const pdfName = baseName + '.pdf'
+    const dlUrl = URL.createObjectURL(pdfBlob)
+    const a = document.createElement('a'); a.href = dlUrl; a.download = pdfName; a.click()
+    setTimeout(()=>URL.revokeObjectURL(dlUrl), 5000)
+
+    // Save PDF to Customer Invoices subfolder
+    console.log('Saving PDF to Drive...')
+    await invUploadToDrive(pdfBlob, 'application/pdf', pdfName, 'application/pdf', saveFolderId, token)
+
+    // Delete temporary Google Doc
+    await fetch(`https://www.googleapis.com/drive/v3/files/${uploaded.id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+
+    // Write lastInvoiceNumber back to Sheets Settings tab
+    console.log('Saving invoice number to Sheets...')
+    if (settingsRows) {
+      let found = false
+      const newRows = settingsRows.map(r => {
+        if (r && r[0] === 'lastInvoiceNumber') { found = true; return ['lastInvoiceNumber', invNum] }
+        return r
+      })
+      if (!found) newRows.push(['lastInvoiceNumber', invNum])
+      const writeUrl = `https://sheets.googleapis.com/v4/spreadsheets/${GS_SPREADSHEET_ID}/values/${encodeURIComponent('Settings!A1')}?valueInputOption=RAW`
+      await fetch(writeUrl, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ range: 'Settings!A1', majorDimension: 'ROWS', values: newRows })
+      })
+    }
+
+    console.log('Invoice generated.')
+    successEl.textContent = `Invoice ${pdfName} generated and saved to Drive.`
+    successEl.style.display = 'block'
+    toast('Invoice saved to Drive!', 4000)
+
+  } catch(err) {
+    console.log('Invoice error: ' + String(err))
+    console.log('Invoice error message: ' + err.message)
+    console.log('Invoice error stack: ' + err.stack)
+    toast('Invoice error: ' + (err.message || String(err)), 5000)
+  } finally {
+    if (btn) {
+      btn.disabled = false
+      btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Generate'
+    }
+  }
+}
+</script>
+<!-- SETTINGS MODAL -->
+<div class="smod-overlay" id="settings-overlay" onclick="if(event.target===this)closeSettings()">
+  <div class="smod">
+    <div class="smod-hdr">
+      <span class="smod-ttl">Settings</span>
+      <button class="smod-close" onclick="closeSettings()">&#x2715;</button>
+    </div>
+    <div class="smod-row">
+      <div class="smod-lbl">App Name</div>
+      <input type="text" id="smod-name" class="isel" style="width:100%;box-sizing:border-box" placeholder="Enter app name">
+    </div>
+    <div class="smod-row">
+      <div class="smod-lbl">Logo (Dark Mode)</div>
+      <div class="smod-logo-row">
+        <img id="smod-preview-dark" style="display:none;max-height:40px;width:auto">
+        <span id="smod-logo-none-dark" style="font-size:13px;color:var(--text-2)">Using default embedded logo</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <label class="btn btn-s btn-sm" style="cursor:pointer;display:inline-flex;align-items:center;gap:5px">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Upload
+          <input type="file" accept=".png,.jpg,.jpeg,.svg" style="display:none" onchange="handleLogoUpload(this,'dark')">
+        </label>
+        <button class="btn btn-sm btn-d" onclick="removeLogo('dark')">Remove</button>
+      </div>
+    </div>
+    <div class="smod-row">
+      <div class="smod-lbl">Logo (Light Mode)</div>
+      <div class="smod-logo-row">
+        <img id="smod-preview-light" style="display:none;max-height:40px;width:auto">
+        <span id="smod-logo-none-light" style="font-size:13px;color:var(--text-2)">Using default embedded logo</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <label class="btn btn-s btn-sm" style="cursor:pointer;display:inline-flex;align-items:center;gap:5px">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Upload
+          <input type="file" accept=".png,.jpg,.jpeg,.svg" style="display:none" onchange="handleLogoUpload(this,'light')">
+        </label>
+        <button class="btn btn-sm btn-d" onclick="removeLogo('light')">Remove</button>
+      </div>
+    </div>
+    <div class="smod-row">
+      <div class="smod-lbl">Privacy Mode</div>
+      <div class="toggle-row">
+        <span style="font-size:13px;color:var(--text-2);line-height:1.4">Hide all monetary values and block Google Sheets sync. New entries are temporary.</span>
+        <label class="toggle-switch" title="Toggle Privacy Mode">
+          <input type="checkbox" id="smod-privacy" onchange="applyPrivacyMode(this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+    <div class="smod-footer">
+      <button class="btn btn-p" onclick="saveSettings()" style="flex:1">Save Changes</button>
+      <button class="btn btn-s" onclick="closeSettings()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- INVOICE MODAL -->
+<div class="smod-overlay" id="inv-modal-overlay" onclick="if(event.target===this)closeInvoiceModal()">
+  <div class="smod inv-modal">
+    <div class="smod-hdr">
+      <span class="smod-ttl">Generate Invoice</span>
+      <button class="smod-close" onclick="closeInvoiceModal()">&#x2715;</button>
+    </div>
+
+    <div class="inv-number-pill">
+      <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-2)">Invoice #</span>
+      <span id="inv-number-preview" style="font-size:17px;font-weight:700;color:var(--blue);letter-spacing:-.4px">—</span>
+    </div>
+
+    <div class="fg" style="margin-bottom:16px">
+      <div class="ff">
+        <label>Client Name</label>
+        <input type="text" id="inv-client" placeholder="Client or company" oninput="invUpdateNumber()">
+      </div>
+      <div class="ff">
+        <label>Invoice Date</label>
+        <input type="text" id="inv-date" placeholder="MM/DD/YYYY" oninput="invUpdateNumber()">
+      </div>
+      <div class="ff">
+        <label>Due Date</label>
+        <input type="text" id="inv-due" placeholder="Due on receipt">
+      </div>
+    </div>
+
+    <div style="margin-bottom:6px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-2);margin-bottom:10px">Line Items</div>
+      <div id="inv-items"></div>
+      <button class="btn btn-s btn-sm" onclick="invAddLineItem()" type="button" style="margin-top:4px">+ Add Line Item</button>
+    </div>
+
+    <div class="inv-total-bar" style="margin-top:14px">
+      <span style="font-size:12px;font-weight:600;color:var(--text-2);margin-right:12px">Total</span>
+      <span id="inv-total-display" style="font-size:24px;font-weight:700;color:var(--green)">$0.00</span>
+    </div>
+
+    <div style="margin-bottom:18px">
+      <label class="inv-chk-row" style="margin-bottom:0">
+        <input type="checkbox" id="inv-include-deposit" onchange="invToggleDeposit()">
+        Include deposit breakdown
+      </label>
+      <div class="inv-deposit-box" id="inv-deposit-box">
+        <div class="ff" style="margin-bottom:12px">
+          <label>Deposit Amount ($)</label>
+          <input type="number" id="inv-deposit-amt" placeholder="0.00" min="0" step="0.01"
+            oninput="this.dataset.auto='false';invUpdateRemaining()">
+        </div>
+        <label class="inv-chk-row">
+          <input type="checkbox" id="inv-deposit-paid" onchange="invUpdateRemaining()">
+          Deposit already paid
+        </label>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;padding-top:6px;border-top:1px solid rgba(0,0,0,0.07)">
+          <span style="color:var(--text-2);font-weight:600">Remaining Balance</span>
+          <span id="inv-remaining" style="font-size:17px;font-weight:700;color:var(--blue)">$0.00</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="inv-success" id="inv-success"></div>
+
+    <div class="smod-footer">
+      <button class="btn btn-p" id="inv-gen-btn" onclick="generateInvoice()" style="flex:1">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Generate
+      </button>
+      <button class="btn btn-s" onclick="closeInvoiceModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- GOOGLE SIGN-IN OVERLAY -->
+<div id="gs-signin-overlay" class="gs-overlay" style="display:none">
+  <div class="gs-card">
+    <div style="font-size:40px;line-height:1;margin-bottom:4px">📊</div>
+    <h2>Connect to Google Sheets</h2>
+    <p>Sign in with Google to sync your income, purchases, and subscriptions to your spreadsheet. Your data is also cached locally so the app loads fast.</p>
+    <button class="gs-btn-google" onclick="gsSignIn()">
+      <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66 2.84-.99-.78z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
+      Sign in with Google
+    </button>
+    <button class="gs-btn-skip" onclick="gsUseOffline()">Continue without syncing</button>
+  </div>
+</div>
+
+</body>
+</html>
