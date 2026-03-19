@@ -1472,7 +1472,7 @@ function renderIncTable() {
         <td>${travel>0?`<span class="bdg bdg-o">${fmt(travel)}</span>`:'<span style="color:var(--text-2)">—</span>'}</td>
         <td><span class="${+e.profit>=0?'pos':'neg'}">${fmt(e.profit)}</span></td>
         <td style="min-width:140px;white-space:normal;word-break:break-word">${esc(desc||'—')}</td>
-        <td style="white-space:nowrap"><button class="btn btn-sm btn-s" style="${e.invoiceNum?'color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)':'opacity:0.45'}" title="${e.invoiceNum?'Invoice: '+e.invoiceNum:'Link Invoice'}" onclick="openInvLinkModal('${e.id}')">${icon('receipt',13)}</button> <button class="btn btn-sm btn-s" style="${e.agreementId?'color:var(--purple);background:rgba(175,82,222,0.12);border-color:rgba(175,82,222,0.28)':'opacity:0.45'}" title="${e.agreementId?'Agreement linked':'Link Agreement'}" onclick="openAgrModal('${e.id}')">${icon('paperclip',13)}</button> <button class="btn btn-sm btn-s" onclick="editIncRow('${e.id}')">${icon('pencil',13)}</button> <button class="btn btn-sm btn-d" onclick="delInc('${e.id}')">${icon('trash',13)}</button></td>
+        <td style="white-space:nowrap"><button class="btn btn-sm btn-s" style="${e.invoiceNum?'color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)':'opacity:0.45'}" title="${e.invoiceNum?'Invoice: '+e.invoiceNum:'Link Invoice'}" onclick="openInvLinkModal('${e.id}')">${icon('receipt',13)}</button> <button class="btn btn-sm btn-s" style="${e.agreementId?'color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)':'opacity:0.45'}" title="${e.agreementId?'Agreement linked':'Link Agreement'}" onclick="openAgrModal('${e.id}')">${icon('paperclip',13)}</button> <button class="btn btn-sm btn-s" onclick="editIncRow('${e.id}')">${icon('pencil',13)}</button> <button class="btn btn-sm btn-d" onclick="delInc('${e.id}')">${icon('trash',13)}</button></td>
       </tr>`
     }).join('')}</tbody>
     <tfoot><tr><td colspan="2">Total (${list.length} jobs)</td><td><span class="pos">${fmt(totRev)}</span></td><td colspan="2"></td><td>${totTravel>0?`<span class="neg">${fmt(totTravel)}</span>`:''}</td><td><span class="${totProfit>=0?'pos':'neg'}">${fmt(totProfit)}</span></td><td colspan="2"></td></tr></tfoot>
@@ -3332,30 +3332,31 @@ async function downloadAgreement() {
   const token = gsGetToken()
   if(!token){ toast('Sign in with Google to access Drive'); return }
   const statusEl = document.getElementById('agr-status')
-  statusEl.textContent = 'Fetching file…'
+  // Always parse the stored value in case a full URL was saved previously
+  const fileId = parseFileId(e.agreementId)
+  statusEl.textContent = 'Downloading…'
   statusEl.style.color = 'var(--text-2)'
   try {
-    const metaResp = await fetch(
-      `https://www.googleapis.com/drive/v3/files/${e.agreementId}?fields=name,mimeType`,
+    // Best-effort metadata fetch for filename only — never blocks the download
+    let fileName = 'agreement'
+    try {
+      const metaResp = await fetch(
+        `https://www.googleapis.com/drive/v3/files/${fileId}?fields=name`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      )
+      if(metaResp.ok) { const m = await metaResp.json(); if(m.name) fileName = m.name }
+    } catch(_) {}
+    // Download directly by file ID
+    const dlResp = await fetch(
+      `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
       { headers: { 'Authorization': `Bearer ${token}` } }
     )
-    if(!metaResp.ok) { statusEl.textContent = 'Agreement not found'; statusEl.style.color = 'var(--red)'; return }
-    const meta = await metaResp.json()
-    statusEl.textContent = `Downloading ${meta.name}…`
-    const isGoogleType = meta.mimeType.startsWith('application/vnd.google-apps.')
-    const dlUrl = isGoogleType
-      ? `https://www.googleapis.com/drive/v3/files/${e.agreementId}/export?mimeType=application/pdf`
-      : `https://www.googleapis.com/drive/v3/files/${e.agreementId}?alt=media`
-    const dlResp = await fetch(dlUrl, { headers: { 'Authorization': `Bearer ${token}` } })
-    if(!dlResp.ok) throw new Error('Download failed')
+    if(!dlResp.ok) { statusEl.textContent = 'Agreement not found'; statusEl.style.color = 'var(--red)'; return }
     const blob = await dlResp.blob()
     const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = isGoogleType ? meta.name + '.pdf' : meta.name
-    a.click()
+    const a = document.createElement('a'); a.href = url; a.download = fileName; a.click()
     setTimeout(() => URL.revokeObjectURL(url), 5000)
-    statusEl.textContent = `Downloaded: ${meta.name}`
+    statusEl.textContent = `Downloaded: ${fileName}`
     statusEl.style.color = 'var(--green)'
   } catch(err) {
     statusEl.textContent = 'Agreement not found'
