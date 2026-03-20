@@ -342,6 +342,43 @@ body.privacy-mode #privacy-banner{display:block}
 .inv-job-opt:hover{background:rgba(0,122,255,0.07)}
 [data-theme=dark] .inv-job-opt:hover{background:rgba(0,122,255,0.12)}
 [data-theme=dark] .inv-job-opt{border-bottom-color:rgba(255,255,255,0.06)}
+/* ── MOBILE NAV DRAWER ─────────────────────────────────────── */
+#mob-menu-btn{display:none;align-items:center;justify-content:center;width:38px;height:38px;border:1px solid rgba(255,255,255,0.55);background:rgba(255,255,255,0.42);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:12px;cursor:pointer;color:var(--text);flex-shrink:0}
+#mob-menu-btn:hover{background:rgba(255,255,255,0.7)}
+[data-theme=dark] #mob-menu-btn{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.15);color:var(--text)}
+[data-theme=dark] #mob-menu-btn:hover{background:rgba(255,255,255,0.18)}
+#mob-drawer-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.38);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+#mob-drawer-overlay.open{display:block}
+#mob-drawer{position:fixed;top:0;left:0;bottom:0;width:260px;z-index:501;background:rgba(255,255,255,0.96);backdrop-filter:blur(30px) saturate(200%);-webkit-backdrop-filter:blur(30px) saturate(200%);border-right:1px solid rgba(255,255,255,0.6);padding:20px 12px 32px;display:flex;flex-direction:column;gap:4px;transform:translateX(-100%);transition:transform .28s cubic-bezier(.25,.46,.45,.94)}
+#mob-drawer.open{transform:translateX(0)}
+[data-theme=dark] #mob-drawer{background:rgba(18,18,24,0.97);border-color:rgba(255,255,255,0.08)}
+.mob-drawer-logo{font-size:16px;font-weight:700;padding:4px 10px 18px;border-bottom:1px solid rgba(0,0,0,0.08);margin-bottom:8px;letter-spacing:-.3px}
+[data-theme=dark] .mob-drawer-logo{border-color:rgba(255,255,255,0.08)}
+#mob-drawer .tab{width:100%;text-align:left;padding:12px 12px;border-radius:12px;font-size:15px;justify-content:flex-start;min-height:44px}
+
+/* ── MOBILE MEDIA QUERY ─────────────────────────────────────── */
+@media(max-width:768px){
+  .hdr{padding:10px 14px}
+  .hdr-inner{gap:8px}
+  #mob-menu-btn{display:flex}
+  .nav{display:none}
+  #hdr-title{display:none}
+  .main{padding:16px 12px}
+  .sec-hdr h2{font-size:18px}
+  #dash-widgets .dw{grid-column:1/-1!important}
+  .sum-grid{grid-template-columns:1fr}
+  .sum-sub-grid{grid-template-columns:1fr 1fr}
+  .fg{grid-template-columns:1fr}
+  .smod-overlay{padding:0;align-items:flex-end}
+  .smod{border-radius:24px 24px 0 0;max-width:100%;max-height:92vh;overflow-y:auto}
+  .exp-grid{grid-template-columns:1fr}
+  .btn{min-height:44px}
+  input,select,textarea{min-height:44px}
+  .fbtn{min-height:36px;padding:7px 14px}
+  .fbar{gap:6px}
+  .hdr-right{gap:6px}
+}
+
 /* ── CLIENTS TAB ── */
 .cli-type-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:.3px}
 .cli-type-re{background:rgba(0,122,255,.13);color:#007aff}
@@ -387,6 +424,7 @@ body.privacy-mode #privacy-banner{display:block}
 <header class="hdr">
   <div class="hdr-inner">
     <span class="logo"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAIAAAD/gAIDAAAARGVYSWZNTQAqAAAACAABh2kABAAAAAEAAAAaAAAAAAADoAEAAwAAAAEAAQAAoAIABAAAAAEAAABkoAMABAAAAAEAAABkAAAAAC+73kEAABOsSURBVHic7V17bFTF95+5u20ppUqrBaFAI9Ri5FFKq1AexdKALQWsoTFSBeUhSXklqBGjojEYlUQjQUOC1aBNrEgkwRdQCFSwQKEiDyvyqkYolFJoty197t473z+Oe35nZ+5ut8s+yC/9/LG5vXfuzJnPPefMzJlHGetFL3rRi170ohe96EUgwH1/k3PGmBBC0zTDMDjnQgjGGPw5evTorKys9PT0uLg4m81WVVX1ww8/nDhxAl+HZPSC5gxZMcYsFouu66ZlwU3G2NixY8eOHTto0KCwsDC73X7jxo0zZ86cPHkS00OenHPDMOgdFFgIgSX6GVarFQVF1rBuEydO/P7779vb24UQuq4bhiGEsNvtQojy8vKCggJN05Av/OWc4wV9ShNgEZqmWa3Wl176aceOHVevXoUisBQhhGEYZ8+e3bZt27JlyzBneFeqCxU+IMAC4HPRmwsXLmxqaurs7GxraxOucDgcUI3169dDYloNd0Vg9eAO/Ll06dKrV69CbpB5bW3tlStXGhoa6E1AeXn59OnT1cyh6PDwcEY+jJ/hTqcYY0899ZTNZmtsbGxvb29vb8fvDNB1Ha9ff/11SR9pPiB6WFiYdAeSfffdd5DbyZMn33nnnVmzZiUlJcGj6OjocePGLViw4JNPPmlpaQHW4Hf9+vUWi8X081itVn+RIwOVguqUpmlxcXF1dXW3bt26fft2R0cHGqBhGPipqfQ5OTkgJVUZtSxat8TExPPnz+u6XlRUNGvWLHhdMlIAyLNo0aKysjLDMECpi4uLoRSaJ61IoEA9C1yvXr0amGpra2tvbwf5qDahWwGy9uzZw1wtGi6gPlgrrMzAgQMhw9zcXOaqa3ihKo7FYtm0aRO6s4qKCpoGMw+UGSI7tDCLxXL06NHGxkabzdbV1YXeHRVK8iO6rjc2Nvbr1w/zZGauHW4CEc3NzUKIpKQk2iwgR+6EhN+lS5eiADt27GCutAZDuRhpzoYMGWKz2VpaWjo6Ojo7Ox0OB1ocpUzStblz51Ka6C9zNcy33npLCDF8+HCsHk2g0qcKOW/ePJQhIyPDQ/voT5hWbMqUKTabDbwVGlq3WLFihWqGNHPoJYwcOVIIMXr0aEwguR6qiZR9atGMsbfffhvKvX79emC4UWBK1uTJk5ubm9va2rq6utC1d4vCwkKVLNXvnDhx4sCBA3BfdeTUeAE0Q6p9Fovl0qVLoN3z58/HZAG0QYkmwKRJk1pbWzs7O1WP7g6GYSxbtsxDKUBEampqTU1NbGyslEAiTmqjJfeHnYNx48ZB6SdPnvTBqfuhFeCc67oOJtMjCXRdd5ch+pc1a9aUlJQ0NDTAI9QUeArXMF4BpuAm/ML4hnPucDhAsFOnTv3444+MseTk5JSUFNraegMf+2PCdSQFw7ceMYU1EcqgjN6x2+3bt2/HsSEM7oAa0JGBAwfm5+cPHz68o6Nj3759Bw8eZGQUabVaHQ4HYwzL2rhx45w5czjnGRkZJ06cMBUgsEhJScEW0Hs8//zzqlFTgxowYMBrr72Gj6BPT19ZsmTJ7du3ITfwAJs3b5aGrpIXi4qKunHjhhCiqKhITeMZvpshFUjXdXQi3n8oqJ5phpDPvffeW1lZiXdAR1CtPvjggy1btkRGRjLGQON0XS8sLDx+/DjNB3QK/2xtba2trRVCJCQkcCe8lNk/PVdJIIQHIcCm1GTU6bS2tlZXV8N9TsIynPP8/Py1a9eCo2Sk7TMMIyUlZfny5fAnfj/6OihjWFgYNWdvqukLWSgBCmq327Gq+KHcMYiZdHZ20jsoMb7V0tLS0NCgjv6eeeaZ7du30xfhKSg4Y6ygoACaHSSX0tHc3AweE4X00sf7QhYWjBcwEmSER6aYlQop5vefQJomnDG51tZWGOUwZ600TVu6dGlxcbHq5phTswzD6N+/PzAIRWAbClmBxrW3t8O1977jjswQi4GAjPTUM1lCCPBBElQGUXE0TUtJSSkqKoLKQ88DZMBeCHRfbt68iY0m+DIqEsSwamtrQfvw83SLHpMlUQAa3tbW1tHRodqRZyFM+1n4LugIVdW0tLTy8nJGFIQ5uyBwjcV9+eWXGDuGNhq0SQhhtVpjYmIYY7/99pvpYMufUMlijPXt2/fWrVvSmFkoQUsJM2fONC2CBv+wuNzcXGl44G60AEbKOZf6EJBzREQEvBgXFwc3AzuWpgBpIiMjIaTrDUeIrKwsdYBCs8WbgwYNgmztdjtUlcYRhTNmDT1YKTcpMJ2bmyuE+Pnnn7HfEAyC6LVElpeYNm2aaZ40fsI5HzJkyLVr16ge4SQIDQEJIQ4dOuRuSgJ/y8vLDcNITU11VyM/Q+3v9u3bt76+Xg3yeYBhGFOnTvUgLlR74sSJTU1NaiyMXoNa/fTTTzhglhQWOx9ZWVlCiC+++IJWJODKRQEtTk1NjVD8iGfu0tPTMQc1T8ZYVFQUzBJRsqhDxOu9e/dK9VctkXPe3NxsGEZERAS9H6iYsimArMuXL6tkeYCu6xMnTqRfHnNjzh5AZWUlJd3dlzhz5oxphalyWSyWzz//XAixePFi7gxVI4LN1z///NOtKkmYMGECc/28aEcJCQkwpazruocP4HA4Kioq7r//fsoOc2oWUhAWFrZ8+XKHw7Fy5UqJnaDShIAgpPcwDCM5ORlfp5+ac15fX0+pR77APeGjI0eOUBnUvoLFYrFYLB9++KEQYsGCBarYvIeRJf/g/PnzlAhv+JKaJIxb7N+/H7q44JWQKemiqqrKdHYHDZlzPnDgwCNHjui6/vTTT2MpTOmaeOnj/TYZK3oeQrPb7XSZhmEYMTExO3fuzMjIwDyhbsI5WmTO0XJ1dXVGRoY6BoBoH+c8JycnLy8vJiamsrLyiSeeuH37NnMuM2GucQjvJfc/WV6WDZFoHB5DhODYsWMw39XV1RUWFqZ+eYfDYbVaL1y4kJ6ebrPZmHMRDpKenJw8evTooUOHxsXFnTt3rri4+ObNm8I5PMKRoESTlzL3mCzpU9CxmwpBFgZJsFgsMPYWzsDW1q1bExMTIf/w8HBBolf/J67VWlNTM23aNIjKc2dsmoabr1+/fvjw4b///hvCyigb6BRVZPoxfLAM3/Hnn356760AY8aMwdehXceuE/ziwht8pb6+/uGHH0YSg9qf9KMZ9hQYiuGcl5WVwdAHK6/rutVqBf+NQYW6urrx48dDQ8l88pJ3C6qqqnqqWY888oimadCu01U3NA3qms1mGzp0KHbEQjBS8SP++OOPnpIVHx9vsVhu3LihdtBh0Qvm1tHRIS0JAQSZrFD0XxljjBmGERkZqet6Q0MDOl14BE0ealZbW9tjjz1WXV0NyUJofSEjS9O0rq4uGucEQBPGnLNbQohp06acOXMG2jJstqTQaHDgZwfvvV0I1+kp5trzFELAVEJmZiascZbGfdAvCzJZIdMsyhH4JhigUJOcPn364cOHBZndA+CLQR7W+U2zJJ0S7rujKkzrPGPGDFi4wBRzw26H6WRa4BCyfpY7AHGzZs06cOBACH25KUJmhu6g63peXt7u3btprzW0IiECZYY+13Du3Lm7du1CNy+EsFqt6gxuSHDXaVZ+fn54eDh03OGO3W6/S5TLz2TduZdZtGjRuXPnYmNj6aKHu8R5+Y0sP388hISE06dPDx48mDljKf7K+Q5x15kh9J7i4+NPnz49atSoUIvjAj+TRfXLe9vBlLQFjI2NraqqgvUQmK00lpYuTLWbTrjeofqH2AxpoFXqxDPGDMPYs2fPnDlzJDZh2ChdMLLXh/ICTSrvyQo/dwiZGQoSBceIMCOrQ5lz0fjOnTtfeOEFeEv9JMgXc/JCSeHO9fR0+O0zQqZZQARTlglCxejaEE3Ttm7dumbNGqaYNqwcgWi61WpF/aIrlHF9FnO/8t5LhFKzYAYUwn54H41IkHWOQoiPPvpo/fr1zKkdQBDEC4EaWEfIyYYD5hqnZsFciuUZdJIV43YewqRCiISEBMZYc3MzzjPjhXDdgYe/W7ZsYcrAm04Cqb68p/s+goGekmUYRlJSEmPss88+A2q6urqE2RoQaR3h119/zVynnRnRoAcffPChhx6SZMPEd1jHAEYdPHsxzjms9y8sLIyLi8vLy8Pmn/osCDEz0iAUFBTExcVlZ2ejt6L+OyYmJjU1df78+X379t2/f/+BAwdgNhc2gAQ/XvhfVaU/L1y4oFqNZ+AWQs55UVGR6ZJRQ9neCaZ69OhRVRic+xkxYsS6deuOHTtWWVk5ZcoU5tqABJqc7nHx4sUekaXrekpKCiPWsW7dOnwqbbGmueH1vn377rvvPniXux4LAeqmadp777175cqVb7/9dtiwYZgSZVZnvIOES5cuea9TkIzOSDPGNE1buXIlPpUW19KbeAhCbW1tYmIirbC0rYkxNmDAAFhoOWbMGGRHmk8LVAugfhkArC3whiYEmCF6X9xJgj5ecu0ItFDDMBoaGkaOHKkKJg2Azp49K1wXDDCz9iEYZHHO//333x6RZRjGuHHjmNmHzcnJMV3tJ52qgcTV1dU9+uijmJWUG7IGeaappWmDxACaoamnhAW46sy7Z76Sk5PVY0HgYvLkyWA7qETUi5lSmZ+frxJExZ4wYYLD4bDb7dg1xbNVAt4Ro6yFhYXV1tb2lCxY+UfdDXculmWMjRgxAnZRugM9pgfYnDt3rsoR1aOSkhKHw/HKK68wJYARPLLCw8Pr6uokB98tWePHj1eFpkoxePDgmpoatYOqLpzER08++aRpuAb+vOeee+CtqKgoqZcfcJqYUwuioqJggV2PNAsdjbvMOeexsbG//PKL9A1Mc8b7b775Js0QPwbkXFxcLITYsGGDlCAY4M6NTqbHMXkGLO1W/StXjnDYu3evpEpqi0kTrFmzhjsXu0vs5+TkCCGamprwUTDIomVERUU1NjYKN2M6d5g0aZKH/KWWpLS0FN7Cbhf6LF3XYTRDt2DgNgoJ/fv3h6XQjz/+OOthHML3/YaCxEBoGI+mFB4HYp4PrhJkTyZjLCcnZ/Pmzbixl74OSiR1QZ999llsainvTU1N165dY4zNnDkTF/56WXcfNRCJ4M64MJ2D8cwRgvYbUGJ6gIwgIS3DMFasWLFhwwbujBoy51EY+C5uz2eMZWVl4dQs+nIhhKZpbW1tjLERI0bAaqcAkiVcV3wgLx52z7iDqWaB7ui6DlSCoaH+vvHGG59++inGnTFmD6zR48eg94SRQhQGHUX//v3xTy/dlo8bylGt4KJPnz7gI4RrfNIz1N0jzBkI1jQN9IJuGoDf1atXr1q1ivoa4IVmZRjGrl27wIvRTCBNZGSkEAJ6pLDEMFBTk1LHHe4MGzYM/K466PUAOOZEzRYg7UCVEsyfPx+aQnW8DQAuJP8N/WfY0V9aWmpaKQ/wxQwxd1zJGB4eTjd3UdvxgD59+lANlbryhmH069cvNjZWOMN+1Fi2bdu2atUqKhXyouv6u+++29XVhf6bkzmexMTE6OhoIQRs0KCV6hY+OnhBZq6Y01WjsYBw3UoAK90hJT1fAacbNE2bPXt2RESEIMezou/fvHlzZmbmqVOnML0Q4vr1688995y6deuGjeqOi8XHx2dnZ69evRom7vFrlZWV4fEPiJAxxRizWCwzZ87Eg4jozBW1wVdffRXSUzPsNnPqyD/++GNq8hcuXCgtLS0tLb148SKsLqG4du3aiy++qJYSSqaw7FGjRh0/fhwrQ9vH2tpamIDB2Sd3fSJT0KZz5MiRxcXFameFNizV1dUbN26Mjo5WRfWNKX+yi8MUxlheXt7UqVMTEhLg0Ma6urqKioqSkhLpUERODlfgHiOrGvm/IJgyPj4+MzMzLS3tgQce0DQNdhs0NzfX1dX9+uuuu3fvpoMYzeyQAknsYEPTNPwXAprZ4fFM0SNv9Is6JqqYWISmHFNNY4HuWsDQ+HjT2TqA6SwLU+rvTSk0E7XXzghl0myA+rq7O73oRS968f8E/wP5KBzi4d+84wAAAABJRU5ErkJggg==" id="hdr-logo" style="height:32px;width:auto;border-radius:7px;object-fit:contain;display:inline-block;vertical-align:middle;margin-right:8px;flex-shrink:0"><span id="hdr-title">Kore Visuals Tracker</span></span>
+    <button id="mob-menu-btn" onclick="openMobDrawer()" aria-label="Open menu"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
     <nav class="nav" id="nav">
       <button class="tab on" data-tab="dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg> Dashboard</button>
       <button class="tab" data-tab="income"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg> Income</button>
@@ -403,6 +441,20 @@ body.privacy-mode #privacy-banner{display:block}
     </div>
   </div>
 </header>
+
+<!-- MOBILE NAV DRAWER -->
+<div id="mob-drawer-overlay" onclick="closeMobDrawer()"></div>
+<div id="mob-drawer">
+  <div class="mob-drawer-logo">Kore Visuals Tracker</div>
+  <button class="tab on" data-tab="dashboard" onclick="mobNavTo('dashboard')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg> Dashboard</button>
+  <button class="tab" data-tab="income" onclick="mobNavTo('income')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg> Income</button>
+  <button class="tab" data-tab="purchases" onclick="mobNavTo('purchases')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Purchases</button>
+  <button class="tab" data-tab="subscriptions" onclick="mobNavTo('subscriptions')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg> Subscriptions</button>
+  <button class="tab" data-tab="clients" onclick="mobNavTo('clients')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Clients</button>
+  <button class="tab" data-tab="taxes" onclick="mobNavTo('taxes')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/><line x1="16" y1="8" x2="8" y2="8"/><line x1="16" y1="12" x2="8" y2="12"/><line x1="13" y1="16" x2="8" y2="16"/></svg> Tax Summary</button>
+  <button class="tab" data-tab="export" onclick="mobNavTo('export')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Export</button>
+</div>
+
 <div id="privacy-banner"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px;margin-top:-1px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Privacy Mode — monetary values are hidden &nbsp;·&nbsp; new entries are temporary and will be discarded when disabled</div>
 
 <main class="main">
@@ -1538,7 +1590,7 @@ function renderIncSummary(list) {
   const unpaidCnt=list.filter(e=>(e.status||'Paid')==='Unpaid').length
   const incMain = [
     `<div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('dollar',13)} Total Revenue</div><div class="val pos">${fmt(totRev)}</div><div class="sub">${list.length} job${list.length!==1?'s':''}</div>`,
-    `<div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('trending-up',13)} Total Profit</div><div class="val ${totProfit>=0?'pos':'neg'}">${fmt(totProfit)}</div><div class="sub">after travel expenses</div>`,
+    `<div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('trending-up',13)} Total Profit</div><div class="val ${totProfit>=0?'pos':'neg'}">${fmt(totProfit)}</div><div class="sub">after job expenses</div>`,
     `<div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('upload',13)} Job Expenses</div><div class="val r">${fmt(totTravel)}</div><div class="sub">travel, insurance & misc</div>`,
   ]
   const incSub = [
@@ -2921,8 +2973,9 @@ function toggleTheme() {
 const tabRenders={dashboard:renderDash,income:renderIncTable,purchases:renderPurTable,subscriptions:()=>{renderSubTable()},taxes:renderTaxes,export:renderDataSummary,clients:renderClientsTab}
 
 function openTab(t) {
-  const tab=document.querySelector(`[data-tab="${t}"]`); if(!tab)return
-  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b===tab))
+  const tab=document.querySelector(`#nav [data-tab="${t}"]`); if(!tab)return
+  document.querySelectorAll('#nav .tab').forEach(b=>b.classList.toggle('on',b===tab))
+  document.querySelectorAll('#mob-drawer .tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===t))
   document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id===`panel-${t}`))
   if(tabRenders[t]) tabRenders[t]()
 }
@@ -2933,6 +2986,24 @@ document.getElementById('nav').addEventListener('click', e=>{
   localStorage.setItem('dt_active_tab', t)
   openTab(t)
 })
+
+function openMobDrawer(){
+  document.getElementById('mob-drawer-overlay').classList.add('open')
+  document.getElementById('mob-drawer').classList.add('open')
+  document.body.style.overflow='hidden'
+}
+function closeMobDrawer(){
+  document.getElementById('mob-drawer-overlay').classList.remove('open')
+  document.getElementById('mob-drawer').classList.remove('open')
+  document.body.style.overflow=''
+}
+function mobNavTo(t){
+  closeMobDrawer()
+  localStorage.setItem('dt_active_tab', t)
+  openTab(t)
+  // sync active state in drawer
+  document.querySelectorAll('#mob-drawer .tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===t))
+}
 
 // ── INIT ──────────────────────────────────────────────────────
 // Apply theme immediately (before DOMContentLoaded) to avoid flash
