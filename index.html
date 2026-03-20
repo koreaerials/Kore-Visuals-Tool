@@ -82,7 +82,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sa
 
 /* FORM TOGGLE */
 .form-toggle-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-.form-ttl{font-size:16px;font-weight:700}
+.form-ttl{font-size:16px;font-weight:700;display:none}
 .form-wrap{overflow:hidden;max-height:0;transition:max-height .3s ease}
 .form-wrap.open{max-height:900px}
 .form-inner{padding:18px;background:rgba(255,255,255,0.45);border-radius:14px;border:1px solid rgba(255,255,255,0.75);margin-bottom:18px}
@@ -1565,7 +1565,6 @@ function editInc(id) {
   document.getElementById('inc-desc').value=e.desc||e.description||''
   calcProfit(); openForm('inc')
   document.getElementById('inc-form-ttl').textContent='Edit Job'
-  document.getElementById('inc-toggle-btn').innerHTML=`${icon('x',12)} Close`
 }
 
 async function delInc(id) {
@@ -1690,7 +1689,6 @@ function editPur(id) {
   document.getElementById('pur-desc').value=e.desc||e.description||''
   openForm('pur')
   document.getElementById('pur-form-ttl').textContent='Edit Purchase'
-  document.getElementById('pur-toggle-btn').innerHTML=`${icon('x',12)} Close`
 }
 
 function delPur(id) {
@@ -1822,7 +1820,6 @@ function editSub(id) {
   document.getElementById('sub-desc').value=e.desc||''
   openForm('sub')
   document.getElementById('sub-form-ttl').textContent='Edit Subscription'
-  document.getElementById('sub-toggle-btn').innerHTML=`${icon('x',12)} Close`
 }
 
 function delSub(id) {
@@ -2251,7 +2248,11 @@ function renderDataSummary() {
 // ── FORM HELPERS ──────────────────────────────────────────────
 const wrapIds={inc:'inc-form-wrap',pur:'pur-form-wrap',sub:'sub-form-wrap'}
 
-function openForm(type) { document.getElementById(wrapIds[type]).classList.add('open') }
+function openForm(type) {
+  document.getElementById(wrapIds[type]).classList.add('open')
+  const ttls={inc:'inc-form-ttl',pur:'pur-form-ttl',sub:'sub-form-ttl'}
+  document.getElementById(ttls[type]).style.display=''
+}
 
 function toggleForm(type) {
   const w=document.getElementById(wrapIds[type])
@@ -2259,9 +2260,7 @@ function toggleForm(type) {
   // default today date
   const dmap={inc:'inc-date',pur:'pur-date',sub:'sub-start'}
   const df=document.getElementById(dmap[type]); if(df&&!df.value) df.value=today()
-  w.classList.add('open')
-  const btns={inc:'inc-toggle-btn',pur:'pur-toggle-btn',sub:'sub-toggle-btn'}
-  document.getElementById(btns[type]).innerHTML=`${icon('x',12)} Close`
+  openForm(type)
 }
 
 function cancelForm(type) {
@@ -2274,18 +2273,18 @@ function cancelForm(type) {
     document.getElementById('profit-preview').textContent='$0.00'
     document.getElementById('profit-preview').style.color='var(--green)'
     document.getElementById('inc-form-ttl').textContent='Add New Job'
-    document.getElementById('inc-toggle-btn').textContent='+ Add Job'
+    document.getElementById('inc-form-ttl').style.display='none'
   } else if(type==='pur'){
     ['pur-edit-id','pur-date','pur-store','pur-price','pur-desc'].forEach(id=>document.getElementById(id).value='')
     document.getElementById('pur-cat').value='Drone Equipment'
     document.getElementById('pur-form-ttl').textContent='Add New Purchase'
-    document.getElementById('pur-toggle-btn').textContent='+ Add Purchase'
+    document.getElementById('pur-form-ttl').style.display='none'
   } else if(type==='sub'){
     ['sub-edit-id','sub-name','sub-amount','sub-start','sub-end','sub-desc'].forEach(id=>document.getElementById(id).value='')
     document.getElementById('sub-billing').value='Monthly'
     document.getElementById('sub-status').value='Active'
     document.getElementById('sub-form-ttl').textContent='Add Subscription'
-    document.getElementById('sub-toggle-btn').textContent='+ Add Subscription'
+    document.getElementById('sub-form-ttl').style.display='none'
   }
 }
 
