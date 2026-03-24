@@ -664,6 +664,9 @@ body.privacy-mode #privacy-banner{display:block}
             </div>
             <div class="ff"><label>Start Date (first charge)</label><input type="date" id="sub-start"></div>
             <div class="ff"><label>Deactivation Date</label><input type="date" id="sub-end"></div>
+            <div class="ff"><label>Renewal Type</label>
+              <select id="sub-autorenew"><option value="Auto">Auto Renew</option><option value="Manual">Manual Renew</option></select>
+            </div>
             <div class="ff wide"><label>Description / Notes</label><input type="text" id="sub-desc" placeholder="Account, plan tier, notes..."></div>
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
@@ -845,10 +848,6 @@ body.privacy-mode #privacy-banner{display:block}
       </div>
       <input type="hidden" id="job-edit-id">
       <div class="smod-row">
-        <div class="smod-lbl">Job Name <span style="color:var(--red)">*</span></div>
-        <input id="job-name" placeholder="e.g. Smith Wedding Aerial">
-      </div>
-      <div class="smod-row">
         <div class="smod-lbl">Client</div>
         <select id="job-client"><option value="">— Select Client —</option></select>
       </div>
@@ -872,6 +871,10 @@ body.privacy-mode #privacy-banner{display:block}
       <div class="smod-row">
         <div class="smod-lbl">Amount ($)</div>
         <input type="number" id="job-amount" placeholder="0.00" min="0" step="0.01">
+      </div>
+      <div class="smod-row">
+        <div class="smod-lbl">Job Description <span style="color:var(--red)">*</span></div>
+        <input id="job-name" placeholder="e.g. Smith Wedding Aerial">
       </div>
       <div class="smod-row">
         <div class="smod-lbl">Notes <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
@@ -993,18 +996,20 @@ const SHEET_SCHEMA = {
   },
   [K.sub]: {
     tab:  'Subscriptions',
-    cols: ['id','name','amount','billingType','status','startDate','lastProcessed','totalSpent','description','calendarEventId'],
+    cols: ['id','name','amount','billingType','status','startDate','lastProcessed','totalSpent','description','calendarEventId','autoRenew'],
     toRow: o => [
       o.id, o.name, o.amount, o.billingType, o.status, o.startDate,
       o.lastProcessed||'',
       o.totalSpent||'',
       o.desc||o.description||'',
-      o.calendarEventId||''
+      o.calendarEventId||'',
+      o.autoRenew===false?'Manual':'Auto'
     ],
     toObj: r => ({
       id: r[0], name: r[1], amount: r[2], billingType: r[3], status: r[4],
       startDate: r[5], lastProcessed: r[6]||null, totalSpent: r[7], desc: r[8],
-      calendarEventId: r[9]||''
+      calendarEventId: r[9]||'',
+      autoRenew: r[10]==='Manual'?false:true
     }),
   },
   [K.subx]: {
@@ -1133,7 +1138,7 @@ function processSubs() {
   const now=toDate(today())
   let sc=false, xc=false
   for(const s of subs) {
-    if(s._priv||s.status==='Inactive'||s.billingType==='One-Time') continue
+    if(s._priv||s.status==='Inactive'||s.billingType==='One-Time'||s.autoRenew===false) continue
     let cur=toDate(s.startDate)
     if(s.lastProcessed) {
       const last=toDate(s.lastProcessed)
@@ -1661,9 +1666,12 @@ function saveIncRow(id){
   const travel=parseFloat(document.getElementById('ier-travel')?.value)||0
   const desc=document.getElementById('ier-desc')?.value.trim()
   if(!date||!client||document.getElementById('ier-amount')?.value===''){toast('Fill in date, client, and amount');return}
+  const filmingDate=document.getElementById('ier-filming-date')?.value||''
   const list=load(K.inc), i=list.findIndex(e=>e.id===id); if(i<0)return
-  list[i]={...list[i],date,client,amount,pay,travel,profit:amount-travel,status,desc}
-  save(K.inc,list); editing.inc=null; renderIncTable(); renderDash(); toast('Job updated!')
+  list[i]={...list[i],date,client,amount,pay,travel,profit:amount-travel,status,desc,filmingDate}
+  save(K.inc,list)
+  if(status==='Paid'){const jobs=load(K.jobs),ji=jobs.findIndex(j=>j.incomeId===id);if(ji>=0&&jobs[ji].stage!=='Paid'){jobs[ji].stage='Paid';save(K.jobs,jobs);gsQueueSync(K.jobs)}}
+  editing.inc=null; renderIncTable(); renderDash(); toast('Job updated!')
 }
 
 // Purchases
@@ -1694,7 +1702,8 @@ function saveSubRow(id){
   const desc=document.getElementById('ser-desc')?.value.trim()
   if(!name||amount<=0||!start){toast('Fill in name, amount, and start date');return}
   const list=load(K.sub), i=list.findIndex(e=>e.id===id); if(i<0)return
-  list[i]={...list[i],name,amount,billingType:billing,status,startDate:start,endDate,desc}
+  const autoRenew=document.getElementById('ser-autorenew')?.value!=='Manual'
+  list[i]={...list[i],name,amount,billingType:billing,status,startDate:start,endDate,desc,autoRenew}
   if(totalSpent!==undefined) list[i].totalSpent=totalSpent
   save(K.sub,list)
   if(status==='Active') processSubs()
@@ -1827,7 +1836,7 @@ function renderIncTable() {
       if(e.id===editing.inc){
         const profit=+e.amount-travel
         return `<tr class="editing-row">
-          <td><span style="color:var(--text-2);font-size:12px">${fmtDate(filmingDate)}</span></td>
+          <td><input type="date" class="isel" id="ier-filming-date" value="${filmingDate}" style="width:130px"></td>
           <td><input type="date" class="isel" id="ier-date" value="${e.date}" onkeydown="if(event.key==='Enter')saveIncRow('${e.id}')"></td>
           <td><input type="text" class="isel" id="ier-client" value="${esc(e.client)}" style="width:110px" onkeydown="if(event.key==='Enter')saveIncRow('${e.id}')"></td>
           <td><input type="number" class="isel" id="ier-amount" value="${e.amount}" step="0.01" oninput="calcRowProfit()" style="width:80px" onkeydown="if(event.key==='Enter')saveIncRow('${e.id}')"></td>
@@ -2091,8 +2100,8 @@ async function saveJob() {
   }
   if(id){const i=list.findIndex(j=>j.id===id);if(i>=0)list[i]=entry}else list.push(entry)
   save(K.jobs,list); gsQueueSync(K.jobs)
-  // If stage is Paid, auto-create income
-  if(stage==='Paid') await jobCreateIncomeIfNeeded(entry)
+  // If stage is Invoiced, auto-create income as Pending
+  if(stage==='Invoiced') await jobCreateIncomeIfNeeded(entry)
   closeJobForm(); renderJobsBoard(); toast(id?'Job updated!':'Job created!')
 }
 
@@ -2105,7 +2114,7 @@ async function jobSetStage(id, stage) {
   const list=load(K.jobs); const i=list.findIndex(j=>j.id===id); if(i<0)return
   list[i].stage=stage
   save(K.jobs,list); gsQueueSync(K.jobs)
-  if(stage==='Paid') await jobCreateIncomeIfNeeded(list[i])
+  if(stage==='Invoiced') await jobCreateIncomeIfNeeded(list[i])
   renderJobsBoard(); renderDash()
 }
 
@@ -2113,7 +2122,7 @@ async function jobCreateIncomeIfNeeded(job) {
   if(job.incomeId){toast('Income entry already exists');return}
   const incEntry={
     id:uid(),date:today(),filmingDate:job.filmingDate||'',client:job.clientName||'Unknown',
-    amount:job.amount||0,pay:'Other',travel:0,profit:job.amount||0,status:'Paid',
+    amount:job.amount||0,pay:'Other',travel:0,profit:job.amount||0,status:'Pending',
     desc:job.name,invoiceNum:'',agreementId:'',calendarEventId:'',jobTime:''
   }
   const incList=load(K.inc); incList.push(incEntry); save(K.inc,incList)
@@ -2267,14 +2276,15 @@ async function saveSub() {
   const start=document.getElementById('sub-start').value
   const endDate=document.getElementById('sub-end').value||null
   const desc=document.getElementById('sub-desc').value.trim()
+  const autoRenew=document.getElementById('sub-autorenew').value!=='Manual'
   if(!name||amount<=0||!start){toast('Please fill in name, amount, and start date');return}
   const list=load(K.sub)
   let entry
   if(id){
     const ex=list.find(e=>e.id===id)
-    entry={...ex,name,amount,billingType:billing,status,startDate:start,endDate,desc}
+    entry={...ex,name,amount,billingType:billing,status,startDate:start,endDate,desc,autoRenew}
   } else {
-    entry={id:uid(),name,amount,billingType:billing,status,startDate:start,endDate,lastProcessed:null,desc}
+    entry={id:uid(),name,amount,billingType:billing,status,startDate:start,endDate,lastProcessed:null,desc,autoRenew}
     if(privacyMode()) entry._priv = true
   }
   if(id){const i=list.findIndex(e=>e.id===id);if(i>=0)list[i]=entry}else list.push(entry)
@@ -2340,9 +2350,29 @@ function updateSubField(id, field, val) {
   if(field==='status'&&val==='Active'){processSubs()}
   renderSubTable(); renderDash(); toast('Updated')
 }
+function confirmManualRenew(id) {
+  const list=load(K.sub), i=list.findIndex(e=>e.id===id); if(i<0)return
+  const s=list[i]
+  const renewed=confirm(`Mark "${s.name}" as renewed?\n\nYes = record a charge of ${fmt(s.amount)} and advance to next renewal date.\nCancel = skip (no charge recorded).`)
+  if(!renewed) return
+  const nextDate=nextCharge(s)
+  const subx=load(K.subx)
+  if(!subx.some(e=>e.subId===s.id&&e.date===nextDate)){
+    subx.push({id:uid(),subId:s.id,date:nextDate,name:s.name,amount:s.amount})
+    save(K.subx,subx)
+  }
+  list[i].lastProcessed=nextDate; save(K.sub,list)
+  renderSubTable(); renderDash(); gsQueueSync(K.sub); gsQueueSync(K.subx)
+  toast(`${s.name} renewed — charge logged for ${fmtDate(nextDate)}`)
+}
 function updateIncField(id, field, val) {
   const list=load(K.inc), i=list.findIndex(e=>e.id===id); if(i<0)return
   list[i][field]=val; save(K.inc,list)
+  // Sync income status → linked job stage
+  if(field==='status'&&val==='Paid') {
+    const jobs=load(K.jobs), ji=jobs.findIndex(j=>j.incomeId===id)
+    if(ji>=0&&jobs[ji].stage!=='Paid'){jobs[ji].stage='Paid';save(K.jobs,jobs);gsQueueSync(K.jobs)}
+  }
   renderIncTable(); renderDash()
 }
 function updatePurField(id, field, val) {
@@ -2410,16 +2440,18 @@ function renderSubTable() {
   const spent=s=>s.totalSpent!==undefined?+s.totalSpent:(+s.amount||0)
   const total=list.reduce((s,e)=>s+spent(e),0)
   el.innerHTML=`<table>
-    <thead><tr><th style="min-width:120px">Service</th><th>Amount</th><th>Billing</th><th>Start</th><th>Status</th><th>Next Renewal</th><th>Total Spent</th><th>Actions</th></tr></thead>
+    <thead><tr><th style="min-width:120px">Service</th><th>Amount</th><th>Billing</th><th>Renewal</th><th>Start</th><th>Status</th><th>Next Renewal</th><th>Total Spent</th><th>Actions</th></tr></thead>
     <tbody>${list.map(s=>{
       const nr=(s.status==='Active'&&s.billingType!=='One-Time')?fmtDate(nextCharge(s)):'—'
       const optB=(val)=>`<option${val===s.billingType?' selected':''}>${val}</option>`
+      const isManual=s.autoRenew===false
       if(s.id===editing.sub){
         const ts=s.totalSpent!==undefined?+s.totalSpent:+s.amount||0
         return `<tr class="editing-row">
           <td><input type="text" class="isel" id="ser-name" value="${esc(s.name)}" style="width:120px" onkeydown="if(event.key==='Enter')saveSubRow('${s.id}')"></td>
           <td><input type="number" class="isel" id="ser-amount" value="${s.amount}" step="0.01" style="width:70px" onkeydown="if(event.key==='Enter')saveSubRow('${s.id}')"></td>
           <td><select class="isel" id="ser-billing">${optB('Monthly')}${optB('Annual')}${optB('Every 3 Years')}${optB('One-Time')}</select></td>
+          <td><select class="isel" id="ser-autorenew"><option value="Auto"${!isManual?' selected':''}>Auto</option><option value="Manual"${isManual?' selected':''}>Manual</option></select></td>
           <td><input type="date" class="isel" id="ser-start" value="${s.startDate||''}" style="width:130px"></td>
           <td><div style="display:flex;flex-direction:column;gap:4px"><select class="isel" id="ser-status"><option${s.status==='Active'?' selected':''}>Active</option><option${s.status==='Inactive'?' selected':''}>Inactive</option></select><input type="date" class="isel" id="ser-end" value="${s.endDate||''}" style="width:130px" title="Deactivation date"></div></td>
           <td style="font-size:12px;color:var(--text-2)">${nr}</td>
@@ -2427,6 +2459,12 @@ function renderSubTable() {
           <td style="white-space:nowrap"><button class="btn btn-sm btn-g" onclick="saveSubRow('${s.id}')">${icon('save',13)} Save</button> <button class="btn btn-sm btn-s" onclick="cancelRowEdit('sub')">Cancel</button></td>
         </tr>`
       }
+      const renewTypeBadge=isManual
+        ?`<span class="bdg bdg-o" style="font-size:10px">Manual</span>`
+        :`<span class="bdg bdg-gr" style="font-size:10px">Auto</span>`
+      const manualActionBtn=isManual&&s.status==='Active'&&s.billingType!=='One-Time'
+        ?`<button class="btn btn-sm btn-g" onclick="confirmManualRenew('${s.id}')" style="font-size:10px;padding:2px 7px;margin-top:3px">Mark Renewed</button>`
+        :''
       const statusSel=`<select class="isel" onchange="updateSubField('${s.id}','status',this.value)"><option${s.status==='Active'?' selected':''}>Active</option><option${s.status==='Inactive'?' selected':''}>Inactive</option></select>`
       const statusCell=s.status==='Inactive'&&s.endDate
         ?`<div>${statusSel}<div style="font-size:11px;color:var(--text-2);margin-top:3px;white-space:nowrap">${fmtDate(s.endDate)}</div></div>`
@@ -2435,6 +2473,7 @@ function renderSubTable() {
         <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(s.name)}"><strong>${esc(s.name)}</strong></td>
         <td><span class="neg">${fmt(s.amount)}</span></td>
         <td style="white-space:nowrap"><span class="bdg ${bBdg[s.billingType]||'bdg-gr'}">${esc(s.billingType)}</span></td>
+        <td>${renewTypeBadge}${manualActionBtn}</td>
         <td style="white-space:nowrap">${fmtDate(s.startDate)}</td>
         <td>${statusCell}</td>
         <td style="font-size:12px;color:var(--text-2);white-space:nowrap">${nr}</td>
@@ -3135,9 +3174,16 @@ async function gsReadTab(tabName) {
 async function gsWriteTab(tabName, cols, rows) {
   if (!gsGetToken()) return false
   const base = `https://sheets.googleapis.com/v4/spreadsheets/${GS_SPREADSHEET_ID}`
-  // Clear everything below row 1
-  await gsReq(`${base}/values/${encodeURIComponent(tabName + '!A2:Z')}:clear`,
+  // Clear everything below row 1 — if this fails the tab doesn't exist yet
+  const clearResp = await gsReq(`${base}/values/${encodeURIComponent(tabName + '!A2:Z')}:clear`,
     { method: 'POST', body: '{}' })
+  if (!clearResp?.ok) {
+    // Tab missing — create it before writing
+    await gsReq(`${base}:batchUpdate`, {
+      method: 'POST',
+      body: JSON.stringify({ requests: [{ addSheet: { properties: { title: tabName } } }] })
+    })
+  }
   // Write headers + data starting at A1
   const values = [cols, ...rows]
   const resp = await gsReq(
@@ -3173,8 +3219,16 @@ async function gsLoadAll() {
   setSyncStatus('loading')
   try {
     for (const [key, schema] of Object.entries(SHEET_SCHEMA)) {
-      const rows = await gsReadTab(schema.tab)
-      if (rows === null) throw new Error(`Failed to read "${schema.tab}"`)
+      let rows = await gsReadTab(schema.tab)
+      if (rows === null) {
+        // Tab doesn't exist yet (e.g. new V2 tabs on an existing V1 sheet) — create it
+        const base = `https://sheets.googleapis.com/v4/spreadsheets/${GS_SPREADSHEET_ID}`
+        await gsReq(`${base}:batchUpdate`, {
+          method: 'POST',
+          body: JSON.stringify({ requests: [{ addSheet: { properties: { title: schema.tab } } }] })
+        })
+        rows = [] // treat as empty; local data will be pushed up below
+      }
       const objs = gsRowsToObjs(key, rows)
       if (objs === null) {
         // Tab is empty — push existing localStorage data up to Sheets (first-time setup)
