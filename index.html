@@ -800,7 +800,8 @@ body.privacy-mode #privacy-banner{display:block}
       <div class="card-ttl">Quote Builder</div>
       <div class="fg" style="margin-bottom:16px">
         <div class="ff"><label>Client <span style="font-weight:400;color:var(--text-2)">(optional)</span></label>
-          <select id="quote-client"><option value="">— Select Client —</option></select>
+          <input id="quote-client" list="quote-client-list" placeholder="Type or select client..." autocomplete="off">
+          <datalist id="quote-client-list"></datalist>
         </div>
         <div class="ff"><label>Quote Date</label><input type="date" id="quote-date"></div>
         <div class="ff"><label>Business Name</label><input type="text" id="quote-biz" placeholder="Your business name"></div>
@@ -849,7 +850,8 @@ body.privacy-mode #privacy-banner{display:block}
       <input type="hidden" id="job-edit-id">
       <div class="smod-row">
         <div class="smod-lbl">Client</div>
-        <select id="job-client"><option value="">— Select Client —</option></select>
+        <input id="job-client" list="job-client-list" placeholder="Type or select client..." autocomplete="off">
+        <datalist id="job-client-list"></datalist>
       </div>
       <div class="smod-row">
         <div class="smod-lbl">Stage</div>
@@ -1032,9 +1034,9 @@ const SHEET_SCHEMA = {
   },
   [K.jobs]: {
     tab: 'Jobs',
-    cols: ['id','name','clientName','clientId','stage','filmingDate','amount','notes','incomeId','createdAt'],
-    toRow: o => [o.id,o.name,o.clientName||'',o.clientId||'',o.stage||'Lead',o.filmingDate||'',o.amount||0,o.notes||'',o.incomeId||'',o.createdAt||''],
-    toObj: r => ({id:r[0]||'',name:r[1]||'',clientName:r[2]||'',clientId:r[3]||'',stage:r[4]||'Lead',filmingDate:r[5]||'',amount:r[6]||0,notes:r[7]||'',incomeId:r[8]||'',createdAt:r[9]||''})
+    cols: ['id','name','clientName','clientId','stage','filmingDate','filmingTime','amount','notes','incomeId','createdAt','calendarEventId'],
+    toRow: o => [o.id,o.name,o.clientName||'',o.clientId||'',o.stage||'Lead',o.filmingDate||'',o.filmingTime||'',o.amount||0,o.notes||'',o.incomeId||'',o.createdAt||'',o.calendarEventId||''],
+    toObj: r => ({id:r[0]||'',name:r[1]||'',clientName:r[2]||'',clientId:r[3]||'',stage:r[4]||'Lead',filmingDate:r[5]||'',filmingTime:r[6]||'',amount:r[7]||0,notes:r[8]||'',incomeId:r[9]||'',createdAt:r[10]||'',calendarEventId:r[11]||''})
   },
 }
 const today = () => toStr(new Date())
@@ -1929,12 +1931,13 @@ async function initQuoteBuilder() {
   if(bn&&!bn.value){const n=localStorage.getItem('dt_biz_name')||'Kore Aerials'; bn.value=n}
   // Load clients if not yet loaded
   if(_clients===null) await loadClientsFromSheets()
-  // Populate client dropdown from CRM only
-  const sel=document.getElementById('quote-client')
-  if(sel){
-    sel.innerHTML='<option value="">— Select Client —</option>'
-    const names=(_clients||[]).map(c=>c.name).filter(Boolean).sort()
-    names.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o)})
+  // Populate client datalist — CRM names + fallback from income entries
+  const dl=document.getElementById('quote-client-list')
+  if(dl){
+    const crmNames=(_clients||[]).map(c=>c.name).filter(Boolean)
+    const incNames=load(K.inc).map(e=>e.client).filter(Boolean)
+    const names=[...new Set([...crmNames,...incNames])].sort()
+    dl.innerHTML=names.map(n=>`<option value="${esc(n)}">`).join('')
   }
   renderQuoteServiceOptions()
   // Restore draft if exists, else start with one blank line
@@ -2049,12 +2052,13 @@ async function openJobForm(id) {
   overlay.classList.add('open')
   // Load clients if not yet loaded
   if(_clients===null) await loadClientsFromSheets()
-  // Populate client dropdown from CRM only
-  const sel=document.getElementById('job-client')
-  if(sel){
-    sel.innerHTML='<option value="">— Select Client —</option>'
-    const names=(_clients||[]).map(c=>c.name).filter(Boolean).sort()
-    names.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o)})
+  // Populate client datalist — CRM names + fallback from income entries
+  const dl=document.getElementById('job-client-list')
+  if(dl){
+    const crmNames=(_clients||[]).map(c=>c.name).filter(Boolean)
+    const incNames=load(K.inc).map(e=>e.client).filter(Boolean)
+    const names=[...new Set([...crmNames,...incNames])].sort()
+    dl.innerHTML=names.map(n=>`<option value="${esc(n)}">`).join('')
   }
   if(id){
     const e=load(K.jobs).find(j=>j.id===id); if(!e)return
