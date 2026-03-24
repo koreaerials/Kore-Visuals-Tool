@@ -403,6 +403,31 @@ body.privacy-mode #privacy-banner{display:block}
 .cli-detail-avatar{width:50px;height:50px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;flex-shrink:0}
 .cli-ct-row{border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;background:rgba(0,0,0,0.02)}
 [data-theme=dark] .cli-ct-row{background:rgba(255,255,255,0.03)}
+
+/* ── KANBAN BOARD ── */
+.kanban-board{display:flex;gap:12px;overflow-x:auto;padding-bottom:16px}
+.kanban-col{flex:0 0 165px;background:rgba(255,255,255,0.45);border-radius:var(--r);border:1px solid var(--card-border);padding:12px}
+.kanban-col-hdr{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.job-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--r-sm);padding:10px 12px;margin-bottom:8px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.05)}
+.job-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.1)}
+.job-card .job-name{font-size:13px;font-weight:600;margin-bottom:3px}
+.job-card .job-meta{font-size:11px;color:var(--text-2)}
+.job-card-expanded{background:rgba(0,122,255,0.05);border-top:1px solid var(--card-border);margin-top:8px;padding-top:8px}
+[data-theme=dark] .kanban-col{background:rgba(255,255,255,0.06)}
+
+/* ── PRICING ── */
+.pricing-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.pricing-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(255,255,255,0.5);border-radius:var(--r-sm);border:1px solid var(--card-border)}
+[data-theme=dark] .pricing-row{background:rgba(255,255,255,0.06)}
+.quote-line-item{display:grid;grid-template-columns:1fr 120px 80px auto;gap:8px;align-items:center;margin-bottom:8px}
+
+/* ── PRINT / QUOTE ── */
+.quote-print-area{display:none}
+@media print {
+  body > *:not(.quote-print-area){display:none !important}
+  .quote-print-area{display:block !important;position:static}
+  .quote-print-area *{color:#000 !important}
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.7/dist/pizzip.js"></script>
 <script>
@@ -431,6 +456,8 @@ body.privacy-mode #privacy-banner{display:block}
       <button class="tab" data-tab="purchases"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Purchases</button>
       <button class="tab" data-tab="subscriptions"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg> Subscriptions</button>
       <button class="tab" data-tab="clients"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Clients</button>
+      <button class="tab" data-tab="pricing"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg> Pricing</button>
+      <button class="tab" data-tab="jobs"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Jobs</button>
       <button class="tab" data-tab="taxes"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/><line x1="16" y1="8" x2="8" y2="8"/><line x1="16" y1="12" x2="8" y2="12"/><line x1="13" y1="16" x2="8" y2="16"/></svg> Tax Summary</button>
       <button class="tab" data-tab="export"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Export</button>
     </nav>
@@ -451,6 +478,8 @@ body.privacy-mode #privacy-banner{display:block}
   <button class="tab" data-tab="purchases" onclick="mobNavTo('purchases')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Purchases</button>
   <button class="tab" data-tab="subscriptions" onclick="mobNavTo('subscriptions')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg> Subscriptions</button>
   <button class="tab" data-tab="clients" onclick="mobNavTo('clients')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Clients</button>
+  <button class="tab" data-tab="pricing" onclick="mobNavTo('pricing')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg> Pricing</button>
+  <button class="tab" data-tab="jobs" onclick="mobNavTo('jobs')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Jobs</button>
   <button class="tab" data-tab="taxes" onclick="mobNavTo('taxes')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/><line x1="16" y1="8" x2="8" y2="8"/><line x1="16" y1="12" x2="8" y2="12"/><line x1="13" y1="16" x2="8" y2="16"/></svg> Tax Summary</button>
   <button class="tab" data-tab="export" onclick="mobNavTo('export')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Export</button>
 </div>
@@ -497,7 +526,8 @@ body.privacy-mode #privacy-banner{display:block}
         <div class="form-inner">
           <input type="hidden" id="inc-edit-id">
           <div class="fg">
-            <div class="ff"><label>Date</label><input type="date" id="inc-date"></div>
+            <div class="ff"><label>Filming Date <span style="font-weight:400;color:var(--text-2)">(optional)</span></label><input type="date" id="inc-filming-date"></div>
+            <div class="ff"><label>Payment Date</label><input type="date" id="inc-date"></div>
             <div class="ff"><label>Time <span style="font-weight:400;color:var(--text-2)">(optional)</span></label><input type="time" id="inc-time"></div>
             <div class="ff"><label>Client Name</label><input type="text" id="inc-client" placeholder="Client or company"></div>
             <div class="ff"><label>Amount Earned ($)</label><input type="number" id="inc-amount" placeholder="0.00" min="0" step="0.01" oninput="calcProfit()"></div>
@@ -737,7 +767,127 @@ body.privacy-mode #privacy-banner{display:block}
     <div id="cli-detail-view" style="display:none"></div>
   </section>
 
+  <!-- PRICING -->
+  <section class="panel" id="panel-pricing">
+    <div class="sec-hdr"><h2>Pricing</h2><p>Manage your services and build quotes</p></div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="form-toggle-hdr">
+        <span class="card-ttl" style="margin-bottom:0">Services</span>
+        <button class="btn btn-g btn-sm" onclick="openPrcForm()">+ Add Service</button>
+      </div>
+      <div class="form-wrap" id="prc-form-wrap" style="margin-top:12px">
+        <div class="form-inner">
+          <input type="hidden" id="prc-edit-id">
+          <div class="fg">
+            <div class="ff"><label>Service Name</label><input type="text" id="prc-name" placeholder="e.g. Aerial Photography"></div>
+            <div class="ff"><label>Type</label>
+              <select id="prc-type"><option value="Hourly">Hourly</option><option value="Flat Rate">Flat Rate</option></select>
+            </div>
+            <div class="ff"><label>Rate ($)</label><input type="number" id="prc-rate" placeholder="0.00" min="0" step="0.01"></div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-g" onclick="savePricing()">Save Service</button>
+            <button class="btn btn-s" onclick="closePrcForm()">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <div class="pricing-list" id="prc-list"></div>
+    </div>
+    <div class="card" id="quote-builder-card">
+      <div class="card-ttl">Quote Builder</div>
+      <div class="fg" style="margin-bottom:16px">
+        <div class="ff"><label>Client <span style="font-weight:400;color:var(--text-2)">(optional)</span></label>
+          <select id="quote-client"><option value="">— Select Client —</option></select>
+        </div>
+        <div class="ff"><label>Quote Date</label><input type="date" id="quote-date"></div>
+        <div class="ff"><label>Business Name</label><input type="text" id="quote-biz" placeholder="Your business name"></div>
+      </div>
+      <div style="margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:10px">Line Items</div>
+        <div id="quote-items"></div>
+        <button class="btn btn-s btn-sm" onclick="quoteAddLine()" style="margin-top:6px">+ Add Line Item</button>
+      </div>
+      <div style="text-align:right;padding:14px;background:rgba(52,199,89,0.08);border-radius:12px;border:1px solid rgba(52,199,89,0.2);margin-bottom:16px">
+        <span style="font-size:12px;font-weight:600;color:var(--text-2);margin-right:12px">Grand Total</span>
+        <span id="quote-total" style="font-size:24px;font-weight:700;color:var(--green)">$0.00</span>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-p" onclick="quotePrint()">Print / Export PDF</button>
+        <button class="btn btn-g" onclick="quoteToJob()">Convert to Job</button>
+        <button class="btn btn-s" onclick="quoteClear()">Clear Quote</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- JOBS (KANBAN) -->
+  <section class="panel" id="panel-jobs">
+    <div class="sec-hdr" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+      <div>
+        <h2>Jobs</h2>
+        <p>Manage your pipeline from lead to payment</p>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <label style="font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" id="jobs-show-paid" onchange="renderJobsBoard()" style="min-height:auto;height:16px;width:16px;padding:0"> Show Paid
+        </label>
+        <button class="btn btn-g" onclick="openJobForm()">+ New Job</button>
+      </div>
+    </div>
+    <div class="kanban-board" id="jobs-board"></div>
+  </section>
+
+  <!-- JOB FORM MODAL -->
+  <div class="smod-overlay" id="job-form-overlay" onclick="if(event.target===this)closeJobForm()">
+    <div class="smod" style="max-width:500px">
+      <div class="smod-hdr">
+        <span class="smod-ttl" id="job-form-ttl">New Job</span>
+        <button class="smod-close" onclick="closeJobForm()">&#x2715;</button>
+      </div>
+      <input type="hidden" id="job-edit-id">
+      <div class="smod-row">
+        <div class="smod-lbl">Job Name <span style="color:var(--red)">*</span></div>
+        <input id="job-name" placeholder="e.g. Smith Wedding Aerial">
+      </div>
+      <div class="smod-row">
+        <div class="smod-lbl">Client</div>
+        <select id="job-client"><option value="">— Select Client —</option></select>
+      </div>
+      <div class="smod-row">
+        <div class="smod-lbl">Stage</div>
+        <select id="job-stage">
+          <option value="Lead">Lead</option>
+          <option value="Quoted">Quoted</option>
+          <option value="Booked">Booked</option>
+          <option value="Shooting">Shooting</option>
+          <option value="Editing">Editing</option>
+          <option value="Delivered">Delivered</option>
+          <option value="Invoiced">Invoiced</option>
+          <option value="Paid">Paid</option>
+        </select>
+      </div>
+      <div class="smod-row">
+        <div class="smod-lbl">Filming Date</div>
+        <input type="date" id="job-filming-date">
+      </div>
+      <div class="smod-row">
+        <div class="smod-lbl">Amount ($)</div>
+        <input type="number" id="job-amount" placeholder="0.00" min="0" step="0.01">
+      </div>
+      <div class="smod-row">
+        <div class="smod-lbl">Notes <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
+        <textarea id="job-notes" rows="3" placeholder="Additional details..."></textarea>
+      </div>
+      <div class="smod-footer">
+        <button class="btn btn-g" onclick="saveJob()" style="flex:1">Save Job</button>
+        <button class="btn btn-s" onclick="closeJobForm()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
 </main>
+
+<!-- QUOTE PRINT AREA -->
+<div class="quote-print-area" id="quote-print-area"></div>
 
 <div id="toast"></div>
 
@@ -788,7 +938,7 @@ function icon(name, size=16) {
 }
 
 // ── STORAGE ──────────────────────────────────────────────────
-const K = { inc:'dt_income', pur:'dt_purchases', sub:'dt_subs', subx:'dt_subx', links:'dt_links' }
+const K = { inc:'dt_income', pur:'dt_purchases', sub:'dt_subs', subx:'dt_subx', links:'dt_links', prc:'dt_pricing', jobs:'dt_jobs' }
 const DEFAULT_LINKS = [
   {id:'l1', name:'Kore Aerials Website', url:'https://www.koreaerials.com'},
   {id:'l2', name:'FAA DroneZone', url:'https://faadronezone-operator.faa.gov/#/part107'}
@@ -809,7 +959,7 @@ const GS_SCOPE          = 'https://www.googleapis.com/auth/spreadsheets https://
 const SHEET_SCHEMA = {
   [K.inc]: {
     tab:  'Income',
-    cols: ['id','date','client','amount','paymentType','jobExpenses','profit','paymentStatus','description','invoiceNumber','agreementId','calendarEventId','jobTime'],
+    cols: ['id','date','client','amount','paymentType','jobExpenses','profit','paymentStatus','description','invoiceNumber','agreementId','calendarEventId','jobTime','filmingDate'],
     toRow: o => [
       o.id, o.date, o.client, o.amount,
       o.pay||o.paymentType||'Other',
@@ -820,12 +970,13 @@ const SHEET_SCHEMA = {
       o.invoiceNum||o.invoiceNumber||'',
       o.agreementId||'',
       o.calendarEventId||'',
-      o.jobTime||''
+      o.jobTime||'',
+      o.filmingDate||''
     ],
     toObj: r => ({
       id: r[0], date: r[1], client: r[2], amount: r[3],
       pay: r[4], travel: r[5], profit: r[6], status: r[7], desc: r[8],
-      invoiceNum: r[9]||'', agreementId: r[10]||'', calendarEventId: r[11]||'', jobTime: r[12]||''
+      invoiceNum: r[9]||'', agreementId: r[10]||'', calendarEventId: r[11]||'', jobTime: r[12]||'', filmingDate: r[13]||''
     }),
   },
   [K.pur]: {
@@ -867,6 +1018,18 @@ const SHEET_SCHEMA = {
     cols: ['id','name','url'],
     toRow: o => [o.id, o.name, o.url],
     toObj: r => ({ id: r[0], name: r[1], url: r[2] }),
+  },
+  [K.prc]: {
+    tab: 'Pricing',
+    cols: ['id','name','type','rate'],
+    toRow: o => [o.id, o.name, o.type, o.rate],
+    toObj: r => ({id:r[0]||'',name:r[1]||'',type:r[2]||'Hourly',rate:r[3]||0})
+  },
+  [K.jobs]: {
+    tab: 'Jobs',
+    cols: ['id','name','clientName','clientId','stage','filmingDate','amount','notes','incomeId','createdAt'],
+    toRow: o => [o.id,o.name,o.clientName||'',o.clientId||'',o.stage||'Lead',o.filmingDate||'',o.amount||0,o.notes||'',o.incomeId||'',o.createdAt||''],
+    toObj: r => ({id:r[0]||'',name:r[1]||'',clientName:r[2]||'',clientId:r[3]||'',stage:r[4]||'Lead',filmingDate:r[5]||'',amount:r[6]||0,notes:r[7]||'',incomeId:r[8]||'',createdAt:r[9]||''})
   },
 }
 const today = () => toStr(new Date())
@@ -1524,6 +1687,7 @@ async function saveIncome() {
   const id=document.getElementById('inc-edit-id').value
   const date=document.getElementById('inc-date').value
   const jobTime=document.getElementById('inc-time').value  // 'HH:MM' or ''
+  const filmingDate=document.getElementById('inc-filming-date').value||''
   const client=document.getElementById('inc-client').value.trim()
   const amount=parseFloat(document.getElementById('inc-amount').value)||0
   const pay=document.getElementById('inc-pay').value
@@ -1534,7 +1698,7 @@ async function saveIncome() {
   const profit=amount-travel
   const list=load(K.inc)
   const existing=id?list.find(e=>e.id===id):null
-  const entry={id:id||uid(),date,jobTime,client,amount,pay,travel,profit,status,desc,invoiceNum:existing?.invoiceNum||'',agreementId:existing?.agreementId||'',calendarEventId:existing?.calendarEventId||''}
+  const entry={id:id||uid(),date,jobTime,filmingDate,client,amount,pay,travel,profit,status,desc,invoiceNum:existing?.invoiceNum||'',agreementId:existing?.agreementId||'',calendarEventId:existing?.calendarEventId||''}
   if(!id && privacyMode()) entry._priv = true
   if(id){const i=list.findIndex(e=>e.id===id);if(i>=0)list[i]=entry}else list.push(entry)
   save(K.inc,list); cancelForm('inc'); renderIncTable(); renderDash(); toast(id?'Job updated!':'Job saved!')
@@ -1555,6 +1719,7 @@ async function saveIncome() {
 function editInc(id) {
   const e=load(K.inc).find(e=>e.id===id); if(!e)return
   document.getElementById('inc-edit-id').value=e.id
+  document.getElementById('inc-filming-date').value=e.filmingDate||''
   document.getElementById('inc-date').value=e.date
   document.getElementById('inc-time').value=e.jobTime||''
   document.getElementById('inc-client').value=e.client||''
@@ -1624,17 +1789,19 @@ function renderIncTable() {
   const totTravel=list.reduce((s,e)=>s+(+(e.travel||e.travelExpenses||e.travel_expenses||0)),0)
   const totProfit=list.reduce((s,e)=>s+(+e.profit||0),0)
   el.innerHTML=`<table>
-    <thead><tr><th>Date</th><th>Client</th><th>Amount</th><th>Payment</th><th>Status</th><th>Expenses</th><th>Profit</th><th>Description</th><th>Actions</th></tr></thead>
+    <thead><tr><th>Filming</th><th>Payment Date</th><th>Client</th><th>Amount</th><th>Payment</th><th>Status</th><th>Expenses</th><th>Profit</th><th>Description</th><th>Actions</th></tr></thead>
     <tbody>${list.map(e=>{
       const pay=e.pay||e.paymentType||e.payment_type||'Other'
       const status=e.status||e.paymentStatus||e.payment_status||'Paid'
       const travel=+(e.travel||e.travelExpenses||e.travel_expenses||0)
       const desc=e.desc||e.description||''
+      const filmingDate=e.filmingDate||''
       const attCount=(()=>{if(!e.agreementId)return 0;try{const p=JSON.parse(e.agreementId);return Array.isArray(p)?p.length:1}catch{return 1}})()
       const opt=(val,cur)=>`<option${val===cur?' selected':''}>${val}</option>`
       if(e.id===editing.inc){
         const profit=+e.amount-travel
         return `<tr class="editing-row">
+          <td><span style="color:var(--text-2);font-size:12px">${fmtDate(filmingDate)}</span></td>
           <td><input type="date" class="isel" id="ier-date" value="${e.date}" onkeydown="if(event.key==='Enter')saveIncRow('${e.id}')"></td>
           <td><input type="text" class="isel" id="ier-client" value="${esc(e.client)}" style="width:110px" onkeydown="if(event.key==='Enter')saveIncRow('${e.id}')"></td>
           <td><input type="number" class="isel" id="ier-amount" value="${e.amount}" step="0.01" oninput="calcRowProfit()" style="width:80px" onkeydown="if(event.key==='Enter')saveIncRow('${e.id}')"></td>
@@ -1648,6 +1815,7 @@ function renderIncTable() {
       }
       const rowCls=status==='Pending'?'row-pending':status==='Unpaid'?'row-unpaid':''
       return `<tr class="${rowCls}">
+        <td style="white-space:nowrap;color:var(--text-2);font-size:12px">${filmingDate?fmtDate(filmingDate):'—'}</td>
         <td style="white-space:nowrap">${fmtDate(e.date)}</td>
         <td><strong>${esc(e.client)}</strong></td>
         <td><span class="pos">${fmt(e.amount)}</span></td>
@@ -1659,8 +1827,306 @@ function renderIncTable() {
         <td style="white-space:nowrap"><button class="btn btn-sm btn-s" style="${e.invoiceNum?'color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)':'opacity:0.45'}" title="${e.invoiceNum?'Invoice: '+e.invoiceNum:'Link Invoice'}" onclick="openInvLinkModal('${e.id}')">${icon('receipt',13)}</button> <button class="btn btn-sm btn-s" style="${attCount?'color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)':'opacity:0.45'}" title="${attCount?'Attachments: '+attCount:'Link Attachment'}" onclick="openAgrModal('${e.id}')">${icon('paperclip',13)}</button>${(e.calendarEventId&&e.date>=today()&&gcEventLink(e.calendarEventId))?` <button class="btn btn-sm btn-s" style="color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)" title="View in Google Calendar" data-href="${esc(gcEventLink(e.calendarEventId))}" onclick="window.open(this.dataset.href,'_blank')">${icon('calendar',13)}</button>`:''} <button class="btn btn-sm btn-s" onclick="editIncRow('${e.id}')">${icon('pencil',13)}</button> <button class="btn btn-sm btn-d" onclick="delInc('${e.id}')">${icon('trash',13)}</button></td>
       </tr>`
     }).join('')}</tbody>
-    <tfoot><tr><td colspan="2">Total (${list.length} jobs)</td><td><span class="pos">${fmt(totRev)}</span></td><td colspan="2"></td><td>${totTravel>0?`<span class="neg">${fmt(totTravel)}</span>`:''}</td><td><span class="${totProfit>=0?'pos':'neg'}">${fmt(totProfit)}</span></td><td colspan="2"></td></tr></tfoot>
+    <tfoot><tr><td></td><td colspan="2">Total (${list.length} jobs)</td><td><span class="pos">${fmt(totRev)}</span></td><td colspan="2"></td><td>${totTravel>0?`<span class="neg">${fmt(totTravel)}</span>`:''}</td><td><span class="${totProfit>=0?'pos':'neg'}">${fmt(totProfit)}</span></td><td colspan="2"></td></tr></tfoot>
   </table>`
+}
+
+// ── PRICING ───────────────────────────────────────────────────
+function openPrcForm(id) {
+  const w=document.getElementById('prc-form-wrap'); w.classList.add('open')
+  if(id) {
+    const e=load(K.prc).find(p=>p.id===id); if(!e)return
+    document.getElementById('prc-edit-id').value=e.id
+    document.getElementById('prc-name').value=e.name
+    document.getElementById('prc-type').value=e.type
+    document.getElementById('prc-rate').value=e.rate
+  } else {
+    document.getElementById('prc-edit-id').value=''
+    document.getElementById('prc-name').value=''
+    document.getElementById('prc-type').value='Hourly'
+    document.getElementById('prc-rate').value=''
+  }
+}
+function closePrcForm() {
+  document.getElementById('prc-form-wrap').classList.remove('open')
+}
+function savePricing() {
+  const id=document.getElementById('prc-edit-id').value
+  const name=document.getElementById('prc-name').value.trim()
+  const type=document.getElementById('prc-type').value
+  const rate=parseFloat(document.getElementById('prc-rate').value)||0
+  if(!name||rate<=0){toast('Please fill in name and rate');return}
+  const list=load(K.prc)
+  const entry={id:id||uid(),name,type,rate}
+  if(id){const i=list.findIndex(p=>p.id===id);if(i>=0)list[i]=entry}else list.push(entry)
+  save(K.prc,list); gsQueueSync(K.prc); closePrcForm(); renderPricingList(); toast(id?'Service updated!':'Service added!')
+}
+function delPricing(id) {
+  if(!confirm('Delete this service?'))return
+  save(K.prc,load(K.prc).filter(p=>p.id!==id)); gsQueueSync(K.prc); renderPricingList(); toast('Service deleted')
+}
+function renderPricingList() {
+  const el=document.getElementById('prc-list'); if(!el)return
+  const list=load(K.prc)
+  if(!list.length){el.innerHTML=`<div class="empty" style="padding:20px 0"><p>No services yet. Add your first service above.</p></div>`;return}
+  el.innerHTML=list.map(p=>`<div class="pricing-row">
+    <div style="flex:1"><strong>${esc(p.name)}</strong></div>
+    <div style="font-size:12px;color:var(--text-2)">${p.type}</div>
+    <div style="font-weight:700;color:var(--green);min-width:80px;text-align:right">${fmt(p.rate)}${p.type==='Hourly'?'/hr':''}</div>
+    <button class="btn btn-sm btn-s" onclick="openPrcForm('${p.id}')">${icon('pencil',12)}</button>
+    <button class="btn btn-sm btn-d" onclick="delPricing('${p.id}')">${icon('trash',12)}</button>
+  </div>`).join('')
+  // Repopulate quote service selects
+  renderQuoteServiceOptions()
+}
+
+// ── QUOTE BUILDER ──────────────────────────────────────────────
+let _quoteLines = []
+
+function _saveQuoteDraft() { try{localStorage.setItem('dt_quote_draft',JSON.stringify(_quoteLines))}catch(e){} }
+function _loadQuoteDraft() { try{const d=localStorage.getItem('dt_quote_draft');return d?JSON.parse(d):[]}catch(e){return []} }
+
+function initQuoteBuilder() {
+  // Set today's date
+  const qd=document.getElementById('quote-date'); if(qd&&!qd.value) qd.value=today()
+  // Prepopulate biz name
+  const bn=document.getElementById('quote-biz')
+  if(bn&&!bn.value){const n=localStorage.getItem('dt_biz_name')||localStorage.getItem('dt_app_name')||''; bn.value=n}
+  // Populate client dropdown from CRM only
+  const sel=document.getElementById('quote-client')
+  if(sel){
+    sel.innerHTML='<option value="">— Select Client —</option>'
+    const names=(_clients||[]).map(c=>c.name).filter(Boolean).sort()
+    names.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o)})
+  }
+  renderQuoteServiceOptions()
+  // Restore draft if exists, else start with one blank line
+  if(!_quoteLines.length){const draft=_loadQuoteDraft();_quoteLines=draft.length?draft:[{svcId:'',qty:1,total:0}]}
+  renderQuoteLines()
+}
+
+function renderQuoteServiceOptions() {
+  const services=load(K.prc)
+  document.querySelectorAll('.quote-svc-sel').forEach(sel=>{
+    const cur=sel.value
+    sel.innerHTML='<option value="">— Select Service —</option>'+services.map(s=>`<option value="${s.id}">${esc(s.name)} (${s.type})</option>`).join('')
+    if(cur) sel.value=cur
+  })
+}
+
+function quoteAddLine() {
+  _quoteLines.push({svcId:'',qty:1,total:0})
+  renderQuoteLines(); _saveQuoteDraft()
+}
+
+function renderQuoteLines() {
+  const services=load(K.prc)
+  const svcMap={}; services.forEach(s=>svcMap[s.id]=s)
+  const el=document.getElementById('quote-items'); if(!el)return
+  el.innerHTML=_quoteLines.map((line,i)=>`<div class="quote-line-item" id="qline-${i}">
+    <select class="quote-svc-sel" onchange="quoteUpdateLine(${i},'svc',this.value)">
+      <option value="">— Select Service —</option>
+      ${services.map(s=>`<option value="${s.id}"${line.svcId===s.id?' selected':''}>${esc(s.name)} (${s.type})</option>`).join('')}
+    </select>
+    <input type="number" min="0" step="0.01" placeholder="${svcMap[line.svcId]?.type==='Hourly'?'Hours':'Qty'}" value="${line.qty}" oninput="quoteUpdateLine(${i},'qty',this.value)" style="padding:7px 10px">
+    <div style="font-weight:700;color:var(--green);padding:7px 0;text-align:right">${fmt(line.total)}</div>
+    <button class="btn btn-sm btn-d" onclick="quoteRemoveLine(${i})">${icon('trash',12)}</button>
+  </div>`).join('')
+  quoteCalcTotal()
+}
+
+function quoteUpdateLine(i,field,val) {
+  const services=load(K.prc); const svcMap={}; services.forEach(s=>svcMap[s.id]=s)
+  if(field==='svc'){_quoteLines[i].svcId=val; _quoteLines[i].qty=1}
+  if(field==='qty') _quoteLines[i].qty=parseFloat(val)||0
+  const svc=svcMap[_quoteLines[i].svcId]
+  _quoteLines[i].total=svc?(parseFloat(svc.rate)||0)*(parseFloat(_quoteLines[i].qty)||0):0
+  renderQuoteLines(); _saveQuoteDraft()
+}
+
+function quoteRemoveLine(i) {
+  _quoteLines.splice(i,1); renderQuoteLines(); _saveQuoteDraft()
+}
+
+function quoteCalcTotal() {
+  const total=_quoteLines.reduce((s,l)=>s+(l.total||0),0)
+  const el=document.getElementById('quote-total'); if(el) el.textContent=fmt(total)
+}
+
+function quotePrint() {
+  const client=document.getElementById('quote-client').value
+  const date=document.getElementById('quote-date').value
+  const biz=document.getElementById('quote-biz').value||''
+  const services=load(K.prc); const svcMap={}; services.forEach(s=>svcMap[s.id]=s)
+  const total=_quoteLines.reduce((s,l)=>s+(l.total||0),0)
+  const rows=_quoteLines.filter(l=>l.svcId&&svcMap[l.svcId]).map(l=>{
+    const s=svcMap[l.svcId]
+    return `<tr><td style="padding:10px 14px;border-bottom:1px solid #eee">${esc(s.name)}</td><td style="padding:10px 14px;border-bottom:1px solid #eee">${s.type}</td><td style="padding:10px 14px;border-bottom:1px solid #eee;text-align:right">${fmt(s.rate)}${s.type==='Hourly'?'/hr':''}</td><td style="padding:10px 14px;border-bottom:1px solid #eee;text-align:center">${l.qty}</td><td style="padding:10px 14px;border-bottom:1px solid #eee;text-align:right;font-weight:700">${fmt(l.total)}</td></tr>`
+  }).join('')
+  const pa=document.getElementById('quote-print-area')
+  pa.innerHTML=`<div style="max-width:700px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:40px 30px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:36px">
+      <div><h1 style="font-size:28px;font-weight:700;margin:0 0 4px">${esc(biz)}</h1><div style="font-size:13px;color:#666">Quote</div></div>
+      <div style="text-align:right"><div style="font-size:13px;color:#666">Date</div><div style="font-size:14px;font-weight:600">${fmtDate(date)}</div></div>
+    </div>
+    ${client?`<div style="margin-bottom:28px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888;margin-bottom:4px">Client</div><div style="font-size:16px;font-weight:600">${esc(client)}</div></div>`:''}
+    <table style="width:100%;border-collapse:collapse;margin-bottom:24px">
+      <thead><tr style="background:#f5f5f7"><th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#666">Service</th><th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#666">Type</th><th style="padding:10px 14px;text-align:right;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#666">Rate</th><th style="padding:10px 14px;text-align:center;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#666">Qty/Hrs</th><th style="padding:10px 14px;text-align:right;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#666">Total</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="text-align:right;padding:16px 0;border-top:2px solid #000">
+      <span style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#666;margin-right:16px">Grand Total</span>
+      <span style="font-size:28px;font-weight:700">${fmt(total)}</span>
+    </div>
+  </div>`
+  window.print()
+}
+
+function quoteClear() {
+  _quoteLines=[]; localStorage.removeItem('dt_quote_draft'); renderQuoteLines()
+  const qd=document.getElementById('quote-date'); if(qd) qd.value=today()
+  const qc=document.getElementById('quote-client'); if(qc) qc.value=''
+}
+
+function quoteToJob() {
+  const client=document.getElementById('quote-client').value||''
+  const total=_quoteLines.reduce((s,l)=>s+(l.total||0),0)
+  if(!total){toast('Add at least one line item before converting');return}
+  // Switch to Jobs tab and open new job form pre-filled
+  document.querySelector('[data-tab="jobs"]').click()
+  setTimeout(()=>{
+    openJobForm()
+    if(client) document.getElementById('job-client').value=client
+    document.getElementById('job-amount').value=total.toFixed(2)
+    document.getElementById('job-stage').value='Quoted'
+    document.getElementById('job-name').focus()
+  },80)
+}
+
+// ── JOBS (KANBAN) ──────────────────────────────────────────────
+const JOB_STAGES = ['Lead','Quoted','Booked','Shooting','Editing','Delivered','Invoiced','Paid']
+let _expandedJob = null
+
+function openJobForm(id) {
+  const overlay=document.getElementById('job-form-overlay'); if(!overlay)return
+  overlay.classList.add('open')
+  // Populate client dropdown from CRM only
+  const sel=document.getElementById('job-client')
+  if(sel){
+    sel.innerHTML='<option value="">— Select Client —</option>'
+    const names=(_clients||[]).map(c=>c.name).filter(Boolean).sort()
+    names.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o)})
+  }
+  if(id){
+    const e=load(K.jobs).find(j=>j.id===id); if(!e)return
+    document.getElementById('job-edit-id').value=e.id
+    document.getElementById('job-name').value=e.name
+    document.getElementById('job-client').value=e.clientName||''
+    document.getElementById('job-stage').value=e.stage||'Lead'
+    document.getElementById('job-filming-date').value=e.filmingDate||''
+    document.getElementById('job-amount').value=e.amount||''
+    document.getElementById('job-notes').value=e.notes||''
+    document.getElementById('job-form-ttl').textContent='Edit Job'
+  } else {
+    document.getElementById('job-edit-id').value=''
+    document.getElementById('job-name').value=''
+    document.getElementById('job-client').value=''
+    document.getElementById('job-stage').value='Lead'
+    document.getElementById('job-filming-date').value=''
+    document.getElementById('job-amount').value=''
+    document.getElementById('job-notes').value=''
+    document.getElementById('job-form-ttl').textContent='New Job'
+  }
+}
+function closeJobForm() {
+  const overlay=document.getElementById('job-form-overlay'); if(overlay)overlay.classList.remove('open')
+}
+
+async function saveJob() {
+  const id=document.getElementById('job-edit-id').value
+  const name=document.getElementById('job-name').value.trim()
+  if(!name){toast('Job name is required');return}
+  const clientName=document.getElementById('job-client').value||''
+  const clientId=((_clients||[]).find(c=>c.name===clientName)||{}).id||''
+  const stage=document.getElementById('job-stage').value
+  const filmingDate=document.getElementById('job-filming-date').value||''
+  const amount=parseFloat(document.getElementById('job-amount').value)||0
+  const notes=document.getElementById('job-notes').value.trim()
+  const list=load(K.jobs)
+  const existing=id?list.find(j=>j.id===id):null
+  const entry={
+    id:id||uid(),name,clientName,clientId,stage,filmingDate,amount,notes,
+    incomeId:existing?.incomeId||'',
+    createdAt:existing?.createdAt||today()
+  }
+  if(id){const i=list.findIndex(j=>j.id===id);if(i>=0)list[i]=entry}else list.push(entry)
+  save(K.jobs,list); gsQueueSync(K.jobs)
+  // If stage is Paid, auto-create income
+  if(stage==='Paid') await jobCreateIncomeIfNeeded(entry)
+  closeJobForm(); renderJobsBoard(); toast(id?'Job updated!':'Job created!')
+}
+
+function delJob(id) {
+  if(!confirm('Delete this job?'))return
+  save(K.jobs,load(K.jobs).filter(j=>j.id!==id)); renderJobsBoard(); toast('Job deleted')
+}
+
+async function jobSetStage(id, stage) {
+  const list=load(K.jobs); const i=list.findIndex(j=>j.id===id); if(i<0)return
+  list[i].stage=stage
+  save(K.jobs,list); gsQueueSync(K.jobs)
+  if(stage==='Paid') await jobCreateIncomeIfNeeded(list[i])
+  renderJobsBoard(); renderDash()
+}
+
+async function jobCreateIncomeIfNeeded(job) {
+  if(job.incomeId){toast('Income entry already exists');return}
+  const incEntry={
+    id:uid(),date:today(),filmingDate:job.filmingDate||'',client:job.clientName||'Unknown',
+    amount:job.amount||0,pay:'Other',travel:0,profit:job.amount||0,status:'Paid',
+    desc:job.name,invoiceNum:'',agreementId:'',calendarEventId:'',jobTime:''
+  }
+  const incList=load(K.inc); incList.push(incEntry); save(K.inc,incList)
+  // Store incomeId on job
+  const jobList=load(K.jobs); const ji=jobList.findIndex(j=>j.id===job.id)
+  if(ji>=0){jobList[ji].incomeId=incEntry.id; save(K.jobs,jobList)}
+  renderIncTable(); renderDash(); toast(`Income entry created for ${job.name}`)
+}
+
+function renderJobsBoard() {
+  const el=document.getElementById('jobs-board'); if(!el)return
+  const showPaid=document.getElementById('jobs-show-paid')?.checked||false
+  const allJobs=load(K.jobs)
+  const stages=showPaid?JOB_STAGES:JOB_STAGES.filter(s=>s!=='Paid')
+  el.innerHTML=stages.map(stage=>{
+    const jobs=allJobs.filter(j=>j.stage===stage)
+    const cards=jobs.map(job=>{
+      const expanded=_expandedJob===job.id
+      return `<div class="job-card" onclick="toggleJobExpand('${job.id}')">
+        <div class="job-name">${esc(job.name)}</div>
+        <div class="job-meta">${job.clientName?esc(job.clientName)+'<br>':''}${job.amount?fmt(job.amount):''}${job.filmingDate?' · '+fmtDate(job.filmingDate):''}
+        </div>
+        ${expanded?`<div class="job-card-expanded">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:8px">Move to stage:</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">
+            ${JOB_STAGES.filter(s=>s!==stage).map(s=>`<button class="btn btn-sm btn-s" style="font-size:10px;padding:3px 7px" onclick="event.stopPropagation();jobSetStage('${job.id}','${s}')">${s}</button>`).join('')}
+          </div>
+          <div style="display:flex;gap:6px;margin-top:4px">
+            <button class="btn btn-sm btn-s" onclick="event.stopPropagation();openJobForm('${job.id}')">${icon('pencil',12)} Edit</button>
+            <button class="btn btn-sm btn-d" onclick="event.stopPropagation();delJob('${job.id}')">${icon('trash',12)} Delete</button>
+          </div>
+        </div>`:''}
+      </div>`
+    }).join('')
+    return `<div class="kanban-col">
+      <div class="kanban-col-hdr"><span>${stage}</span><span style="background:rgba(0,0,0,0.08);border-radius:8px;padding:1px 6px;font-size:10px">${jobs.length}</span></div>
+      ${cards||`<div style="font-size:11px;color:var(--text-2);padding:8px 0;text-align:center">—</div>`}
+    </div>`
+  }).join('')
+}
+
+function toggleJobExpand(id) {
+  _expandedJob=_expandedJob===id?null:id; renderJobsBoard()
 }
 
 // ── PURCHASES ─────────────────────────────────────────────────
@@ -2194,7 +2660,7 @@ async function backupToSheets() {
     const sheet1Id = metaResp?.ok ? ((await metaResp.json()).sheets?.[0]?.properties?.sheetId ?? 0) : 0
 
     // 7. Rename Sheet1 → Income, add remaining tabs
-    const tabsToAdd = ['Purchases','Subscriptions','Settings','Links','Clients']
+    const tabsToAdd = ['Purchases','Subscriptions','Settings','Links','Clients','Pricing','Jobs']
     await gsReq(`https://sheets.googleapis.com/v4/spreadsheets/${newId}:batchUpdate`, {
       method: 'POST',
       body: JSON.stringify({ requests: [
@@ -2210,6 +2676,8 @@ async function backupToSheets() {
     const subRows = gsObjsToRows(K.sub);   if(subRows.length)  await gsWriteTabToSheet(newId,'Subscriptions',schema[K.sub].cols, subRows)
     const setRows = gsSettingsRows();       if(setRows.length)  await gsWriteTabToSheet(newId,'Settings',    schema[K.subx].cols, setRows)
     const lnkRows = gsObjsToRows(K.links); if(lnkRows.length)  await gsWriteTabToSheet(newId,'Links',       schema[K.links].cols,lnkRows)
+    const prcRows = gsObjsToRows(K.prc); if(prcRows.length) await gsWriteTabToSheet(newId,'Pricing',schema[K.prc].cols,prcRows)
+    const jobRows = gsObjsToRows(K.jobs); if(jobRows.length) await gsWriteTabToSheet(newId,'Jobs',schema[K.jobs].cols,jobRows)
     // Read Clients directly from the main sheet so we get the live data regardless of in-memory state
     const cliSheetRows = await gsReadTab(CLI_TAB)
     if (cliSheetRows && cliSheetRows.length > 1) {
@@ -2266,7 +2734,7 @@ function toggleForm(type) {
 function cancelForm(type) {
   const w=document.getElementById(wrapIds[type]); if(w)w.classList.remove('open')
   if(type==='inc'){
-    ['inc-edit-id','inc-date','inc-time','inc-client','inc-amount','inc-desc'].forEach(id=>document.getElementById(id).value='')
+    ['inc-edit-id','inc-filming-date','inc-date','inc-time','inc-client','inc-amount','inc-desc'].forEach(id=>document.getElementById(id).value='')
     document.getElementById('inc-pay').value='Zelle'
     document.getElementById('inc-status').value='Paid'
     document.getElementById('inc-travel').value='0'
@@ -2969,7 +3437,7 @@ function toggleTheme() {
 }
 
 // ── TAB SWITCHING ─────────────────────────────────────────────
-const tabRenders={dashboard:renderDash,income:renderIncTable,purchases:renderPurTable,subscriptions:()=>{renderSubTable()},taxes:renderTaxes,export:renderDataSummary,clients:renderClientsTab}
+const tabRenders={dashboard:renderDash,income:renderIncTable,purchases:renderPurTable,subscriptions:()=>{renderSubTable()},taxes:renderTaxes,export:renderDataSummary,clients:renderClientsTab,pricing:()=>{renderPricingList();initQuoteBuilder()},jobs:renderJobsBoard}
 
 function openTab(t) {
   const tab=document.querySelector(`#nav [data-tab="${t}"]`); if(!tab)return
