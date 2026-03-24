@@ -538,7 +538,7 @@ body.privacy-mode #privacy-banner{display:block}
             </div>
             <div class="ff"><label>Job Expenses ($)</label><input type="number" id="inc-travel" placeholder="0.00" min="0" step="0.01" value="0" oninput="calcProfit()"></div>
             <div class="ff"><label>Payment Status</label>
-              <select id="inc-status"><option value="Paid">Paid</option><option value="Pending">Pending</option><option value="Unpaid">Unpaid</option></select>
+              <select id="inc-status"><option value="Paid">Paid</option><option value="Pending">Pending</option><option value="Unpaid">Unpaid</option><option value="Written Off">Written Off</option></select>
             </div>
             <div class="ff"><label>Job Profit (auto)</label><div class="profit-preview" id="profit-preview">$0.00</div></div>
             <div class="ff wide"><label>Description</label><input type="text" id="inc-desc" placeholder="Project details, location, deliverables..."></div>
@@ -1119,7 +1119,7 @@ function loadP(k) {
   })
 }
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
-function statusSlug(s){ return s==='Paid'?'paid':s==='Unpaid'?'unpaid':'pending' }
+function statusSlug(s){ return s==='Paid'?'paid':s==='Unpaid'?'unpaid':s==='Written Off'?'unpaid':'pending' }
 
 // ── TOAST ─────────────────────────────────────────────────────
 function toast(msg, ms=2600) {
@@ -1260,17 +1260,43 @@ function renderDash() {
     `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('repeat',11)} Subscription Charges</div><div class="val r">${fmt(subAmt)}</div>`,
     `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('plane',11)} Job Expenses</div><div class="val r">${fmt(trav)}</div>`,
   ]
-  // Widget catalogue: 0-2 main cards, 3-5 sub-cards, 6 chart, 7 renewals, 8 quick links
-  const WIDGET_SPANS = [2,2,2, 2,2,2, 4,2, 6]
-  const WIDGET_CLS   = ['sum-card','sum-card','sum-card','sum-sub-card','sum-sub-card','sum-sub-card','card','card','card']
+  // Jobs pipeline widget
+  const allJobs = load(K.jobs)
+  const activeJobs = allJobs.filter(j => j.stage !== 'Paid')
+  const pipelineValue = activeJobs.reduce((s,j) => s + (+j.amount||0), 0)
+  const JOB_STAGE_LIST = ['Lead','Quoted','Booked','Shooting','Editing','Delivered','Invoiced']
+  const stagePills = JOB_STAGE_LIST
+    .map(s => ({s, n: allJobs.filter(j => j.stage === s).length}))
+    .filter(x => x.n > 0)
+    .map(x => `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:rgba(0,122,255,0.08);border-radius:20px;font-size:11px;font-weight:600;color:var(--blue);margin:2px">${x.n} ${x.s}</span>`)
+    .join('')
+  const jobsWidgetHTML = activeJobs.length === 0
+    ? `<div class="card-ttl" style="display:flex;align-items:center;gap:7px;margin-bottom:12px">${icon('briefcase',16)} Jobs Pipeline</div><div class="empty" style="padding:16px 0"><div class="ei">${icon('briefcase',32)}</div><p>No active jobs</p><button class="btn btn-sm btn-g" onclick="document.querySelector('[data-tab=&quot;jobs&quot;]').click()" style="margin-top:8px">+ New Job</button></div>`
+    : `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="card-ttl" style="margin-bottom:0;display:flex;align-items:center;gap:7px">${icon('briefcase',16)} Jobs Pipeline</div><button class="btn btn-sm btn-s" onclick="document.querySelector('[data-tab=&quot;jobs&quot;]').click()">View Jobs</button></div><div style="margin-bottom:12px;line-height:2">${stagePills}</div><div style="display:flex;gap:20px"><div><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:4px">Active Jobs</div><div style="font-size:22px;font-weight:700;color:var(--blue)">${activeJobs.length}</div></div><div><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:4px">Pipeline Value</div><div style="font-size:22px;font-weight:700;color:var(--green)">${fmt(pipelineValue)}</div></div></div>`
+
+  // Outstanding payments widget
+  const outstanding = loadP(K.inc).filter(e => e.status === 'Pending' || e.status === 'Unpaid')
+  const outstandingAmt = outstanding.reduce((s,e) => s + (+e.amount||0), 0)
+  const unpaidCnt = outstanding.filter(e => e.status === 'Unpaid').length
+  const pendingCnt = outstanding.filter(e => e.status === 'Pending').length
+  const outstandingSubParts = [unpaidCnt > 0 ? unpaidCnt+' unpaid' : '', pendingCnt > 0 ? pendingCnt+' pending' : ''].filter(Boolean)
+  const outstandingHTML = outstanding.length === 0
+    ? `<div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('dollar',13)} Outstanding</div><div class="val g">$0.00</div><div class="sub">All paid up</div>`
+    : `<div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('dollar',13)} Outstanding</div><div class="val o">${fmt(outstandingAmt)}</div><div class="sub">${outstandingSubParts.join(' · ')}</div>`
+
+  // Widget catalogue: 0-2 main cards, 3-5 sub-cards, 6 chart, 7 renewals, 8 quick links, 9 jobs pipeline, 10 outstanding
+  const WIDGET_SPANS = [2,2,2, 2,2,2, 4,2, 6, 4, 2]
+  const WIDGET_CLS   = ['sum-card','sum-card','sum-card','sum-sub-card','sum-sub-card','sum-sub-card','card','card','card', 'card', 'sum-card']
   const WIDGET_HTML  = [
     ...mainCards,
     ...subCards,
     `<div class="card-ttl">Monthly Revenue vs Expenses (Last 12 Months)</div><div class="chart-wrap" id="chart"></div>`,
     `<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><div style="position:relative"><div id="ren-view-heading" class="card-ttl" style="margin-bottom:0;display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none" onclick="toggleDashViewMenu()">${icon('bell',16)} <span id="ren-view-label">Upcoming Renewals</span><span style="font-size:14px;opacity:.75;margin-left:4px;line-height:1">▾</span></div><div id="ren-view-menu" class="ren-view-menu"><button id="ren-opt-renewals" class="ren-view-opt" onclick="setDashView('renewals')">Renewals</button><button id="ren-opt-shoots" class="ren-view-opt" onclick="setDashView('shoots')">Shoots</button><button id="ren-opt-both" class="ren-view-opt" onclick="setDashView('both')">All</button></div></div></div><div style="display:flex;justify-content:flex-end;gap:5px;margin-bottom:12px"><button id="ren-f-30d" class="fbtn" onclick="setRenewalFilter('30d')">30 Days</button><button id="ren-f-1y" class="fbtn" onclick="setRenewalFilter('1y')">1 Year</button><button id="ren-f-all" class="fbtn" onclick="setRenewalFilter('all')">All Active</button></div><div id="renewals-list"></div>`,
     `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="card-ttl" style="margin-bottom:0;display:flex;align-items:center;gap:7px">${icon('link',16)} Quick Links</div><button class="btn btn-sm btn-p" id="link-add-btn" onclick="toggleLinkForm()">+ Add Link</button></div><div class="link-form-area" id="link-form-area"><div class="form-inner" style="margin-bottom:0"><input type="hidden" id="link-edit-id"><div class="fg" style="grid-template-columns:1fr 1fr;margin-bottom:10px"><div class="ff"><label>Name</label><input type="text" id="link-name" placeholder="e.g. FAA DroneZone"></div><div class="ff"><label>URL</label><input type="text" id="link-url" placeholder="https://..."></div></div><div style="display:flex;gap:8px"><button class="btn btn-p btn-sm" onclick="saveLink()">${icon('save',13)} Save</button><button class="btn btn-s btn-sm" onclick="cancelLinkForm()">Cancel</button></div></div></div><div id="links-list"></div>`,
+    jobsWidgetHTML,
+    outstandingHTML,
   ]
-  const order = loadGridOrder('dt_dash_order', 9)
+  const order = loadGridOrder('dt_dash_order', 11)
   document.getElementById('dash-widgets').innerHTML = order
     .map(i => `<div class="dw ${WIDGET_CLS[i]}" draggable="true" data-wi="${i}" data-span="${WIDGET_SPANS[i]}">${WIDGET_HTML[i]}</div>`)
     .join('')
@@ -1806,7 +1832,7 @@ function renderIncTable() {
           <td><input type="text" class="isel" id="ier-client" value="${esc(e.client)}" style="width:110px" onkeydown="if(event.key==='Enter')saveIncRow('${e.id}')"></td>
           <td><input type="number" class="isel" id="ier-amount" value="${e.amount}" step="0.01" oninput="calcRowProfit()" style="width:80px" onkeydown="if(event.key==='Enter')saveIncRow('${e.id}')"></td>
           <td><select class="isel" id="ier-pay">${opt('Zelle',pay)}${opt('Cash',pay)}${opt('Check',pay)}${opt('Other',pay)}</select></td>
-          <td><select class="isel isel-status-${statusSlug(status)}" id="ier-status" onchange="this.className='isel isel-status-'+statusSlug(this.value)">${opt('Paid',status)}${opt('Pending',status)}${opt('Unpaid',status)}</select></td>
+          <td><select class="isel isel-status-${statusSlug(status)}" id="ier-status" onchange="this.className='isel isel-status-'+statusSlug(this.value)">${opt('Paid',status)}${opt('Pending',status)}${opt('Unpaid',status)}${opt('Written Off',status)}</select></td>
           <td><input type="number" class="isel" id="ier-travel" value="${travel}" min="0" step="0.01" oninput="calcRowProfit()" style="width:70px"></td>
           <td id="ier-profit"><span class="${profit>=0?'pos':'neg'}">${fmt(profit)}</span></td>
           <td><input type="text" class="isel" id="ier-desc" value="${esc(desc)}" style="width:130px" onkeydown="if(event.key==='Enter')saveIncRow('${e.id}')"></td>
@@ -1820,7 +1846,7 @@ function renderIncTable() {
         <td><strong>${esc(e.client)}</strong></td>
         <td><span class="pos">${fmt(e.amount)}</span></td>
         <td><select class="isel" onchange="updateIncField('${e.id}','pay',this.value)">${opt('Zelle',pay)}${opt('Cash',pay)}${opt('Check',pay)}${opt('Other',pay)}</select></td>
-        <td><select class="isel isel-status-${statusSlug(status)}" onchange="this.className='isel isel-status-'+statusSlug(this.value);updateIncField('${e.id}','status',this.value)">${opt('Paid',status)}${opt('Pending',status)}${opt('Unpaid',status)}</select></td>
+        <td><select class="isel isel-status-${statusSlug(status)}" onchange="this.className='isel isel-status-'+statusSlug(this.value);updateIncField('${e.id}','status',this.value)">${opt('Paid',status)}${opt('Pending',status)}${opt('Unpaid',status)}${opt('Written Off',status)}</select></td>
         <td>${travel>0?`<span class="bdg bdg-o">${fmt(travel)}</span>`:'<span style="color:var(--text-2)">—</span>'}</td>
         <td><span class="${+e.profit>=0?'pos':'neg'}">${fmt(e.profit)}</span></td>
         <td style="min-width:140px;white-space:normal;word-break:break-word">${esc(desc||'—')}</td>
@@ -1886,12 +1912,14 @@ let _quoteLines = []
 function _saveQuoteDraft() { try{localStorage.setItem('dt_quote_draft',JSON.stringify(_quoteLines))}catch(e){} }
 function _loadQuoteDraft() { try{const d=localStorage.getItem('dt_quote_draft');return d?JSON.parse(d):[]}catch(e){return []} }
 
-function initQuoteBuilder() {
+async function initQuoteBuilder() {
   // Set today's date
   const qd=document.getElementById('quote-date'); if(qd&&!qd.value) qd.value=today()
   // Prepopulate biz name
   const bn=document.getElementById('quote-biz')
-  if(bn&&!bn.value){const n=localStorage.getItem('dt_biz_name')||localStorage.getItem('dt_app_name')||''; bn.value=n}
+  if(bn&&!bn.value){const n=localStorage.getItem('dt_biz_name')||'Kore Aerials'; bn.value=n}
+  // Load clients if not yet loaded
+  if(_clients===null) await loadClientsFromSheets()
   // Populate client dropdown from CRM only
   const sel=document.getElementById('quote-client')
   if(sel){
@@ -1994,8 +2022,8 @@ function quoteToJob() {
   if(!total){toast('Add at least one line item before converting');return}
   // Switch to Jobs tab and open new job form pre-filled
   document.querySelector('[data-tab="jobs"]').click()
-  setTimeout(()=>{
-    openJobForm()
+  setTimeout(async ()=>{
+    await openJobForm()
     if(client) document.getElementById('job-client').value=client
     document.getElementById('job-amount').value=total.toFixed(2)
     document.getElementById('job-stage').value='Quoted'
@@ -2007,9 +2035,11 @@ function quoteToJob() {
 const JOB_STAGES = ['Lead','Quoted','Booked','Shooting','Editing','Delivered','Invoiced','Paid']
 let _expandedJob = null
 
-function openJobForm(id) {
+async function openJobForm(id) {
   const overlay=document.getElementById('job-form-overlay'); if(!overlay)return
   overlay.classList.add('open')
+  // Load clients if not yet loaded
+  if(_clients===null) await loadClientsFromSheets()
   // Populate client dropdown from CRM only
   const sel=document.getElementById('job-client')
   if(sel){
