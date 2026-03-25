@@ -1019,20 +1019,22 @@ const SHEET_SCHEMA = {
   },
   [K.sub]: {
     tab:  'Subscriptions',
-    cols: ['id','name','amount','billingType','status','startDate','lastProcessed','totalSpent','description','calendarEventId','autoRenew'],
+    cols: ['id','name','amount','billingType','status','startDate','lastProcessed','totalSpent','description','calendarEventId','autoRenew','endDate'],
     toRow: o => [
       o.id, o.name, o.amount, o.billingType, o.status, o.startDate,
       o.lastProcessed||'',
       o.totalSpent||'',
       o.desc||o.description||'',
       o.calendarEventId||'',
-      o.autoRenew===false?'Manual':'Auto'
+      o.autoRenew===false?'Manual':'Auto',
+      o.endDate||''
     ],
     toObj: r => ({
       id: r[0], name: r[1], amount: r[2], billingType: r[3], status: r[4],
       startDate: r[5], lastProcessed: r[6]||null, totalSpent: r[7], desc: r[8],
       calendarEventId: r[9]||'',
-      autoRenew: r[10]==='Manual'?false:true
+      autoRenew: r[10]==='Manual'?false:true,
+      endDate: r[11]||null
     }),
   },
   [K.subx]: {
