@@ -434,9 +434,12 @@ body.privacy-mode #privacy-banner{display:block}
 /* ── PRINT / QUOTE ── */
 .quote-print-area{display:none}
 @media print {
-  body > *:not(.quote-print-area){display:none !important}
+  body > *:not(.quote-print-area):not(#agr-preview-overlay){display:none !important}
   .quote-print-area{display:block !important;position:static}
   .quote-print-area *{color:#000 !important}
+  #agr-preview-overlay{position:static !important;display:block !important;background:none !important}
+  #agr-preview-overlay .smod{box-shadow:none !important;border:none !important;max-height:none !important;overflow:visible !important}
+  #agr-preview-overlay .smod-hdr,#agr-preview-overlay .smod-footer{display:none !important}
 }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.7/dist/pizzip.js"></script>
@@ -852,6 +855,7 @@ body.privacy-mode #privacy-banner{display:block}
         </div>
         <div style="display:flex;gap:10px;align-items:center">
           <button class="btn btn-p" onclick="openInvoiceModal()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Generate Invoice</button>
+          <button class="btn btn-s" onclick="openAgrForm(null)"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Generate Agreement</button>
           <button class="btn btn-g" onclick="openJobForm()">+ New Job</button>
         </div>
       </div>
@@ -965,7 +969,7 @@ function icon(name, size=16) {
 }
 
 // ── STORAGE ──────────────────────────────────────────────────
-const K = { inc:'dt_income', pur:'dt_purchases', sub:'dt_subs', subx:'dt_subx', links:'dt_links', prc:'dt_pricing', jobs:'dt_jobs' }
+const K = { inc:'dt_income', pur:'dt_purchases', sub:'dt_subs', subx:'dt_subx', links:'dt_links', prc:'dt_pricing', jobs:'dt_jobs', agr:'dt_agr' }
 const DEFAULT_LINKS = [
   {id:'l1', name:'Kore Aerials Website', url:'https://www.koreaerials.com'},
   {id:'l2', name:'FAA DroneZone', url:'https://faadronezone-operator.faa.gov/#/part107'}
@@ -1058,9 +1062,15 @@ const SHEET_SCHEMA = {
   },
   [K.jobs]: {
     tab: 'Jobs',
-    cols: ['id','name','clientName','clientId','stage','filmingDate','filmingTime','amount','notes','incomeId','createdAt','calendarEventId'],
-    toRow: o => [o.id,o.name,o.clientName||'',o.clientId||'',o.stage||'Lead',o.filmingDate||'',o.filmingTime||'',o.amount||0,o.notes||'',o.incomeId||'',o.createdAt||'',o.calendarEventId||''],
-    toObj: r => ({id:r[0]||'',name:r[1]||'',clientName:r[2]||'',clientId:r[3]||'',stage:r[4]||'Lead',filmingDate:r[5]||'',filmingTime:r[6]||'',amount:r[7]||0,notes:r[8]||'',incomeId:r[9]||'',createdAt:r[10]||'',calendarEventId:r[11]||''})
+    cols: ['id','name','clientName','clientId','stage','filmingDate','filmingTime','amount','notes','incomeId','createdAt','calendarEventId','agrId'],
+    toRow: o => [o.id,o.name,o.clientName||'',o.clientId||'',o.stage||'Lead',o.filmingDate||'',o.filmingTime||'',o.amount||0,o.notes||'',o.incomeId||'',o.createdAt||'',o.calendarEventId||'',o.agrId||''],
+    toObj: r => ({id:r[0]||'',name:r[1]||'',clientName:r[2]||'',clientId:r[3]||'',stage:r[4]||'Lead',filmingDate:r[5]||'',filmingTime:r[6]||'',amount:r[7]||0,notes:r[8]||'',incomeId:r[9]||'',createdAt:r[10]||'',calendarEventId:r[11]||'',agrId:r[12]||''})
+  },
+  [K.agr]: {
+    tab: 'Agreements',
+    cols: ['id','jobId','clientName','jobType','date','amount','deposit','createdAt','driveFileId','status'],
+    toRow: o => [o.id, o.jobId||'', o.clientName||'', o.jobType||'', o.date||'', o.amount||0, o.deposit||0, o.createdAt||'', o.driveFileId||'', o.status||'draft'],
+    toObj: r => ({id:r[0], jobId:r[1]||'', clientName:r[2]||'', jobType:r[3]||'', date:r[4]||'', amount:r[5]||0, deposit:r[6]||0, createdAt:r[7]||'', driveFileId:r[8]||'', status:r[9]||'draft'})
   },
 }
 const today = () => toStr(new Date())
@@ -2210,7 +2220,8 @@ async function saveJob() {
     id:id||uid(),name,clientName,clientId,stage,filmingDate,filmingTime,amount,notes,
     incomeId:existing?.incomeId||'',
     createdAt:existing?.createdAt||today(),
-    calendarEventId:existing?.calendarEventId||''
+    calendarEventId:existing?.calendarEventId||'',
+    agrId:existing?.agrId||''
   }
   // Handle calendar event: create if filming date set, delete old if date/time changed
   if(filmingDate && gsGetToken()) {
@@ -2800,6 +2811,7 @@ function importJSON(input) {
 
 // ── GOOGLE SHEETS BACKUP ───────────────────────────────────────
 const GD_BACKUP_PATH = ['Files', 'Kore Aerials Tool', 'Data Backups']
+const GD_AGR_PATH = ['Files', 'Kore Aerials Tool', 'Agreements']
 const GD_BACKUP_MAX  = 5
 
 // ── GOOGLE CALENDAR ───────────────────────────────────────────
@@ -3593,6 +3605,48 @@ async function gdUploadLogo(file, filename, folderId, existingId) {
   return resp.ok ? (await resp.json()).id : null
 }
 
+// Walk or create each folder in pathArr, returns final folderId or null.
+async function gdEnsurePath(pathArr) {
+  const token = gsGetToken(); if(!token) return null
+  let parentId = 'root'
+  for(const name of pathArr) {
+    const q = encodeURIComponent(`name='${name}' and '${parentId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`)
+    const resp = await gsReq(`${GD_DRIVE_API}/files?q=${q}&fields=files(id)`)
+    if(!resp?.ok) return null
+    const data = await resp.json()
+    if(data.files?.length) { parentId = data.files[0].id; continue }
+    // Folder not found — create it
+    const createResp = await gsReq(`${GD_DRIVE_API}/files`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, mimeType: 'application/vnd.google-apps.folder', parents: [parentId] })
+    })
+    if(!createResp?.ok) return null
+    const created = await createResp.json()
+    parentId = created.id
+  }
+  return parentId
+}
+
+// Upload text/html content to folderId. If existingId set, PATCHes that file; otherwise creates new. Returns fileId or null.
+async function gdUploadFile(name, content, mimeType, folderId, existingId) {
+  const token = gsGetToken(); if(!token) return null
+  const meta = existingId
+    ? JSON.stringify({ name })
+    : JSON.stringify({ name, parents: [folderId] })
+  const boundary = 'kore_boundary_' + Date.now()
+  const body = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${meta}\r\n--${boundary}\r\nContent-Type: ${mimeType}\r\n\r\n${content}\r\n--${boundary}--`
+  const url = existingId
+    ? `${GD_UPLOAD_API}/files/${existingId}?uploadType=multipart`
+    : `${GD_UPLOAD_API}/files?uploadType=multipart`
+  const resp = await fetch(url, {
+    method: existingId ? 'PATCH' : 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': `multipart/related; boundary="${boundary}"` },
+    body
+  })
+  return resp.ok ? (await resp.json()).id : null
+}
+
 // Load logo-dark.png and logo-light.png from Drive, cache each in localStorage.
 async function gdLoadLogo() {
   if (!gsGetToken()) return
@@ -3643,6 +3697,7 @@ function openSettings() {
   _pendingLogos.dark = null; _pendingLogos.light = null
   refreshLogoPreview('dark')
   refreshLogoPreview('light')
+  const akEl = document.getElementById('smod-anthropic-key'); if(akEl) akEl.value = localStorage.getItem('dt_anthropic_key')||''
   document.getElementById('settings-overlay').classList.add('open')
 }
 
@@ -3672,6 +3727,7 @@ async function saveSettings() {
       }
     } catch (err) { console.warn('Logo upload:', err) }
   }
+  const ak = document.getElementById('smod-anthropic-key')?.value.trim(); if(ak !== undefined) localStorage.setItem('dt_anthropic_key', ak)
   closeSettings()
   toast('Settings saved!')
 }
@@ -4515,6 +4571,192 @@ async function attDownloadRow(btn) {
   }
 }
 
+// ── AGREEMENT GENERATOR ───────────────────────────────────────
+function fmtDateLong(dateStr) {
+  if(!dateStr) return ''
+  const [y,m,d] = dateStr.split('-').map(Number)
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December']
+  const s = d===1||d===21||d===31?'st':d===2||d===22?'nd':d===3||d===23?'rd':'th'
+  return `${months[m-1]} ${d}${s}, ${y}`
+}
+
+function openAgrForm(jobId) {
+  const overlay = document.getElementById('agr-gen-overlay')
+  document.getElementById('agrf-job-id').value = jobId||''
+  document.getElementById('agrf-status').textContent = ''
+  const btn = document.getElementById('agrf-generate-btn')
+  btn.disabled = false; btn.textContent = 'Generate Agreement'
+  if(jobId) {
+    const job = load(K.jobs).find(j=>j.id===jobId)
+    if(job) {
+      document.getElementById('agrf-client').value = job.clientName||''
+      document.getElementById('agrf-date').value = job.filmingDate||''
+      if(+job.amount>0) document.getElementById('agrf-amount').value = job.amount
+    }
+  }
+  overlay.classList.add('open')
+}
+
+function closeAgrForm() {
+  document.getElementById('agr-gen-overlay').classList.remove('open')
+}
+
+async function generateAgreement() {
+  const apiKey = localStorage.getItem('dt_anthropic_key')
+  if(!apiKey) { toast('Add your Anthropic API key in Settings first'); return }
+  const jobId = document.getElementById('agrf-job-id').value
+  const jobType = document.getElementById('agrf-type').value
+  const clientName = document.getElementById('agrf-client').value.trim()
+  const location = document.getElementById('agrf-location').value.trim()
+  const date = document.getElementById('agrf-date').value
+  const amount = parseFloat(document.getElementById('agrf-amount').value)||0
+  const deposit = parseFloat(document.getElementById('agrf-deposit').value)||0
+  const hours = parseFloat(document.getElementById('agrf-hours').value)||1
+  const overtime = parseFloat(document.getElementById('agrf-overtime').value)||200
+  const deliverables = document.getElementById('agrf-deliverables').value.trim()
+  const deliveryDays = parseInt(document.getElementById('agrf-delivery').value)||3
+  if(!clientName||!location||!date||amount<=0) { toast('Fill in Client, Location, Date, and Amount'); return }
+  const depositPct = deposit>0&&amount>0 ? Math.round((deposit/amount)*100) : 0
+  const dateStr = fmtDateLong(date)
+  const hoursLabel = hours===1 ? '1 hour' : `${hours} hours`
+  const statusEl = document.getElementById('agrf-status')
+  const btn = document.getElementById('agrf-generate-btn')
+  btn.disabled = true; btn.textContent = 'Generating…'; statusEl.textContent = 'Calling Claude API…'
+
+  const SYSTEM_PROMPT = `You are a legal agreement generator for Kore Aerials, LLC, a professional drone photography and videography business in New York. Generate a drone services agreement that exactly follows this style, tone, structure, and formatting.
+
+STYLE REFERENCE:
+Drone Services Agreement - [DATE]
+
+This Agreement is entered into on [DATE], by and between the following parties:
+Service Provider: Kore Aerials, LLC (hereinafter referred to as "Operator")
+Client: [CLIENT NAME] (hereinafter referred to as "Client")
+Location: [LOCATION]
+
+1. Services Provided
+Operator agrees to provide drone video and/or photography services for Client on [DATE], at the agreed-upon time and location.
+
+2. Payment
+Client agrees to pay Operator a flat fee of $[AMOUNT] USD for the services rendered, which includes up to [HOURS] of on-site shooting. A deposit of [DEPOSIT_PCT]% ($[DEPOSIT]) is due immediately upon receipt of the invoice to secure the scheduled date. This deposit is non-refundable except in the event that the Operator cancels, or if weather conditions or other circumstances beyond the Operator's control make the scheduled operation unsafe or impossible and a reschedule cannot be arranged. The remaining balance shall be due upon delivery of the final footage, unless otherwise agreed to in writing and signed by both parties.
+If Client requests that Operator remains on-site beyond the initial [HOURS], additional time will be billed at $[OVERTIME] per hour, with any partial hours rounded up to the next full hour.
+
+3. Ownership and Delivery
+Operator will deliver [DELIVERABLES]. Delivery will be made digitally within [DELIVERY_DAYS] business days after the shoot. Client is granted full rights to use the delivered content for personal, commercial, and promotional purposes. Operator retains ownership of all raw footage and reserves the right to use both the raw footage and the final edit for portfolio, promotional, and marketing purposes, unless otherwise agreed in writing.
+
+4. Governing Law
+This Agreement shall be governed by and construed in accordance with the laws of the State of New York.
+
+IN WITNESS WHEREOF, the parties have executed this Agreement as of the date first written above.
+__________________________                __________________________
+Operator Signature                        Client Signature
+Name: Kore Aerials, LLC                   Name: [CLIENT NAME]
+Date: ______________                      Date: ______________
+END STYLE REFERENCE
+
+RULES:
+- Always use "Kore Aerials, LLC" as the Operator
+- Always governed by New York law
+- Match the professional but accessible tone exactly — formal without being overly complex
+- Adjust Section 3 deliverables per job type:
+  * Real Estate: aerial photos and/or video highlighting the property; client may use for property listing, marketing, and promotional purposes
+  * Event / Wedding: event coverage footage and highlight reel; delivery within the specified business days; note that coverage is subject to venue and weather conditions
+  * Commercial: deliverables as specified; commercial usage rights fully granted to client
+- Keep Section 2 payment terms intact: deposit non-refundable except operator cancellation or weather
+- Output ONLY the agreement text — no preamble, no explanation, no markdown formatting, no code blocks`
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 2000,
+        system: SYSTEM_PROMPT,
+        messages: [{
+          role: 'user',
+          content: `Generate a drone services agreement with these details:
+- Client: ${clientName}
+- Job Type: ${jobType}
+- Location: ${location}
+- Date: ${dateStr}
+- Total Amount: $${amount} USD
+- Deposit: ${depositPct > 0 ? depositPct + '% ($' + deposit + ')' : 'None'}
+- Hours Included: ${hoursLabel}
+- Overtime Rate: $${overtime}/hour
+- Deliverables: ${deliverables || 'standard deliverables for ' + jobType}
+- Delivery: within ${deliveryDays} business days after shoot`
+        }]
+      })
+    })
+    if(!resp.ok) {
+      const errData = await resp.json().catch(()=>({}))
+      throw new Error(errData.error?.message || `API error ${resp.status}`)
+    }
+    const data = await resp.json()
+    const text = data.content?.[0]?.text || ''
+    if(!text) throw new Error('Empty response from API')
+    statusEl.textContent = ''
+    closeAgrForm()
+    showAgrPreview(text, { jobId, clientName, jobType, location, date, amount, deposit, deliverables, deliveryDays })
+  } catch(err) {
+    statusEl.textContent = 'Error: ' + err.message
+    statusEl.style.color = 'var(--red)'
+    btn.disabled = false; btn.textContent = 'Generate Agreement'
+  }
+}
+
+let _agrPreviewData = null
+function showAgrPreview(text, meta) {
+  _agrPreviewData = { text, ...meta }
+  document.getElementById('agr-preview-text').textContent = text
+  document.getElementById('agr-preview-overlay').classList.add('open')
+}
+function closeAgrPreview() {
+  document.getElementById('agr-preview-overlay').classList.remove('open')
+  _agrPreviewData = null
+}
+
+async function saveAgreement() {
+  if(!_agrPreviewData) return
+  const { text, jobId, clientName, jobType, location, date, amount, deposit, deliverables, deliveryDays } = _agrPreviewData
+  const agr = {
+    id: uid(), jobId: jobId||'', clientName, jobType, location, date, amount, deposit: deposit||0,
+    deliverables: deliverables||'', deliveryDays, text,
+    createdAt: today(), driveFileId: '', status: 'draft'
+  }
+  const list = load(K.agr); list.push(agr); save(K.agr, list)
+  if(gsGetToken()) gsQueueSync(K.agr)
+  // Link to job if jobId provided
+  if(jobId) {
+    const jobs = load(K.jobs), ji = jobs.findIndex(j=>j.id===jobId)
+    if(ji>=0) { jobs[ji].agrId = agr.id; save(K.jobs, jobs); gsQueueSync(K.jobs) }
+  }
+  closeAgrPreview()
+  toast('Agreement saved!')
+  // Auto-upload to Drive
+  if(gsGetToken()) {
+    toast('Uploading to Drive…')
+    try {
+      const folderId = await gdEnsurePath(GD_AGR_PATH)
+      if(folderId) {
+        const safeName = `${(clientName||'Client').replace(/[^a-zA-Z0-9 ]/g,'')}-${date}-Agreement.html`
+        const htmlContent = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:Georgia,serif;font-size:13pt;line-height:1.8;margin:40px 60px;max-width:700px}pre{white-space:pre-wrap;font-family:inherit}</style></head><body><pre>${text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre></body></html>`
+        const fileId = await gdUploadFile(safeName, htmlContent, 'text/html', folderId, null)
+        if(fileId) {
+          const list2 = load(K.agr), ai = list2.findIndex(a=>a.id===agr.id)
+          if(ai>=0) { list2[ai].driveFileId = fileId; save(K.agr, list2) }
+          toast('Agreement saved & uploaded to Drive!')
+        }
+      }
+    } catch(err) { console.warn('Agreement Drive upload:', err); toast('Saved locally — Drive upload failed') }
+  }
+}
+
 // ── CLIENTS / CRM ─────────────────────────────────────────────
 const CLI_TAB = 'Clients'
 const CLI_COLS = ['id','name','company','clientType','notes','followUpDate','contacts','calendarEventId']
@@ -5083,6 +5325,11 @@ async function downloadInvFromDetail(invNum, btn) {
         </label>
       </div>
     </div>
+    <div class="smod-row">
+      <div class="smod-lbl">Anthropic API Key</div>
+      <input type="password" id="smod-anthropic-key" class="isel" style="width:100%;box-sizing:border-box" placeholder="sk-ant-api03-...">
+      <div style="font-size:11px;color:var(--text-2);margin-top:5px">Used for AI agreement generation. Stored locally, never synced.</div>
+    </div>
     <div class="smod-footer">
       <button class="btn btn-p" onclick="saveSettings()" style="flex:1">Save Changes</button>
       <button class="btn btn-s" onclick="closeSettings()">Cancel</button>
@@ -5221,6 +5468,84 @@ async function downloadInvFromDetail(invNum, btn) {
     <div class="smod-footer">
       <button class="btn btn-p" onclick="saveAttachments()" style="flex:1"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:4px"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>Save Attachments</button>
       <button class="btn btn-s" onclick="closeAgrModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- AGREEMENT GENERATOR MODAL -->
+<div class="smod-overlay" id="agr-gen-overlay" onclick="if(event.target===this)closeAgrForm()">
+  <div class="smod" style="max-width:520px;max-height:92vh;overflow-y:auto">
+    <div class="smod-hdr">
+      <span class="smod-ttl">Generate Agreement</span>
+      <button class="smod-close" onclick="closeAgrForm()">&#x2715;</button>
+    </div>
+    <input type="hidden" id="agrf-job-id">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 14px">
+      <div class="smod-row" style="grid-column:1/-1">
+        <div class="smod-lbl">Job Type <span style="color:var(--red)">*</span></div>
+        <select class="isel" id="agrf-type" style="width:100%">
+          <option>Real Estate</option>
+          <option>Event / Wedding</option>
+          <option>Commercial</option>
+        </select>
+      </div>
+      <div class="smod-row">
+        <div class="smod-lbl">Client Name <span style="color:var(--red)">*</span></div>
+        <input class="inp" id="agrf-client" placeholder="Full name">
+      </div>
+      <div class="smod-row">
+        <div class="smod-lbl">Shoot Date <span style="color:var(--red)">*</span></div>
+        <input class="inp" type="date" id="agrf-date">
+      </div>
+      <div class="smod-row" style="grid-column:1/-1">
+        <div class="smod-lbl">Location <span style="color:var(--red)">*</span></div>
+        <input class="inp" id="agrf-location" placeholder="Full address">
+      </div>
+      <div class="smod-row">
+        <div class="smod-lbl">Total Amount (USD) <span style="color:var(--red)">*</span></div>
+        <input class="inp" type="number" id="agrf-amount" placeholder="600" step="0.01">
+      </div>
+      <div class="smod-row">
+        <div class="smod-lbl">Deposit Amount (USD)</div>
+        <input class="inp" type="number" id="agrf-deposit" placeholder="150" step="0.01">
+      </div>
+      <div class="smod-row">
+        <div class="smod-lbl">Hours Included</div>
+        <input class="inp" type="number" id="agrf-hours" value="1" min="0.5" step="0.5">
+      </div>
+      <div class="smod-row">
+        <div class="smod-lbl">Overtime Rate ($/hr)</div>
+        <input class="inp" type="number" id="agrf-overtime" value="200" step="10">
+      </div>
+      <div class="smod-row">
+        <div class="smod-lbl">Delivery (business days)</div>
+        <input class="inp" type="number" id="agrf-delivery" value="3" min="1">
+      </div>
+      <div class="smod-row" style="grid-column:1/-1">
+        <div class="smod-lbl">Deliverables</div>
+        <textarea class="inp" id="agrf-deliverables" rows="2" placeholder="e.g. one edited video (30–60 sec) + 10 aerial photos"></textarea>
+      </div>
+    </div>
+    <div id="agrf-status" style="font-size:12px;color:var(--text-2);min-height:16px;margin-bottom:8px"></div>
+    <div class="smod-footer">
+      <button class="btn btn-p" id="agrf-generate-btn" onclick="generateAgreement()" style="flex:1">Generate Agreement</button>
+      <button class="btn btn-s" onclick="closeAgrForm()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- AGREEMENT PREVIEW MODAL -->
+<div class="smod-overlay" id="agr-preview-overlay" onclick="if(event.target===this)closeAgrPreview()">
+  <div class="smod" style="max-width:680px;max-height:92vh;overflow-y:auto">
+    <div class="smod-hdr">
+      <span class="smod-ttl">Agreement Preview</span>
+      <button class="smod-close" onclick="closeAgrPreview()">&#x2715;</button>
+    </div>
+    <div id="agr-preview-text" style="font-family:Georgia,serif;font-size:13px;line-height:1.8;white-space:pre-wrap;padding:8px 4px;color:var(--text)"></div>
+    <div class="smod-footer" style="margin-top:16px">
+      <button class="btn btn-p" onclick="saveAgreement()" style="flex:1">Save &amp; Upload to Drive</button>
+      <button class="btn btn-s" onclick="window.print()">Print / PDF</button>
+      <button class="btn btn-s" onclick="closeAgrPreview()">Discard</button>
     </div>
   </div>
 </div>
