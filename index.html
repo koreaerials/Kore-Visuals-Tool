@@ -663,7 +663,7 @@ body.privacy-mode #privacy-banner{display:block}
             <div class="ff"><label>Amount ($)</label><input type="number" id="sub-amount" placeholder="0.00" min="0" step="0.01"></div>
             <div class="ff"><label>Billing Type</label>
               <select id="sub-billing">
-                <option>Monthly</option><option>Annual</option><option>Every 3 Years</option><option>One-Time</option>
+                <option>Monthly</option><option>Annual</option><option>Every 2 Years</option><option>Every 3 Years</option><option>One-Time</option>
               </select>
             </div>
             <div class="ff"><label>Status</label>
@@ -687,6 +687,7 @@ body.privacy-mode #privacy-banner{display:block}
         <button class="fbtn cat-on" data-bt="all">All</button>
         <button class="fbtn" data-bt="Monthly">Monthly</button>
         <button class="fbtn" data-bt="Annual">Annual</button>
+        <button class="fbtn" data-bt="Every 2 Years">Every 2 Years</button>
         <button class="fbtn" data-bt="Every 3 Years">Every 3 Years</button>
         <button class="fbtn" data-bt="One-Time">One-Time</button>
         <span class="lbl" style="margin-left:8px">Service:</span>
@@ -1093,6 +1094,7 @@ function addY(date,n) { const d=new Date(date); d.setFullYear(d.getFullYear()+n)
 function advance(date, type) {
   if(type==='Monthly') return addM(date,1)
   if(type==='Annual') return addY(date,1)
+  if(type==='Every 2 Years') return addY(date,2)
   if(type==='Every 3 Years') return addY(date,3)
   return date
 }
@@ -2460,7 +2462,7 @@ async function saveSub() {
     const ex=list.find(e=>e.id===id)
     entry={...ex,name,amount,billingType:billing,status,startDate:start,endDate,desc,autoRenew}
   } else {
-    entry={id:uid(),name,amount,billingType:billing,status,startDate:start,endDate,lastProcessed:null,desc,autoRenew}
+    entry={id:uid(),name,amount,billingType:billing,status,startDate:start,endDate,lastProcessed:null,totalSpent:0,desc,autoRenew}
     if(privacyMode()) entry._priv = true
   }
   if(id){const i=list.findIndex(e=>e.id===id);if(i>=0)list[i]=entry}else list.push(entry)
@@ -2579,7 +2581,7 @@ function renderSubSummary() {
   const el=document.getElementById('sub-summary'); if(!el)return
   const subs=filterSubs(loadP(K.sub))
   if(!subs.length){el.innerHTML='';return}
-  const spent=s=>s.totalSpent!==undefined?+s.totalSpent:(+s.amount||0)
+  const spent=s=>(s.totalSpent!==undefined&&s.totalSpent!=='')?+s.totalSpent:(s.lastProcessed?(+s.amount||0):0)
   const sumBy=(pred)=>subs.filter(pred).reduce((s,e)=>s+spent(e),0)
   const total      =subs.reduce((s,e)=>s+spent(e),0)
   const activeAmt  =sumBy(s=>s.status==='Active'  &&s.billingType!=='One-Time')
@@ -2619,8 +2621,8 @@ function renderSubTable() {
   })
   renderSubSummary()
   if(!allFiltered.length){el.innerHTML=`<div class="empty"><div class="ei">${icon('refresh',40)}</div><p>No subscriptions yet. Add your first one above!</p></div>`;return}
-  const bBdg={Monthly:'bdg-b',Annual:'bdg-g','Every 3 Years':'bdg-v','One-Time':'bdg-gr'}
-  const spent=s=>s.totalSpent!==undefined?+s.totalSpent:(+s.amount||0)
+  const bBdg={Monthly:'bdg-b',Annual:'bdg-g','Every 2 Years':'bdg-o','Every 3 Years':'bdg-v','One-Time':'bdg-gr'}
+  const spent=s=>(s.totalSpent!==undefined&&s.totalSpent!=='')?+s.totalSpent:(s.lastProcessed?(+s.amount||0):0)
   const active=allFiltered.filter(s=>s.status==='Active'&&s.billingType!=='One-Time').sort((a,b)=>a.name.localeCompare(b.name))
   const inactive=allFiltered.filter(s=>s.status!=='Active'||s.billingType==='One-Time').sort((a,b)=>a.name.localeCompare(b.name))
   function buildSubRows(list){return list.map(s=>{
@@ -2632,7 +2634,7 @@ function renderSubTable() {
         return `<tr class="editing-row">
           <td><input type="text" class="isel" id="ser-name" value="${esc(s.name)}" style="width:120px" onkeydown="if(event.key==='Enter')saveSubRow('${s.id}')"></td>
           <td><input type="number" class="isel" id="ser-amount" value="${s.amount}" step="0.01" style="width:70px" onkeydown="if(event.key==='Enter')saveSubRow('${s.id}')"></td>
-          <td><select class="isel" id="ser-billing">${optB('Monthly')}${optB('Annual')}${optB('Every 3 Years')}${optB('One-Time')}</select></td>
+          <td><select class="isel" id="ser-billing">${optB('Monthly')}${optB('Annual')}${optB('Every 2 Years')}${optB('Every 3 Years')}${optB('One-Time')}</select></td>
           <td><select class="isel" id="ser-autorenew"><option value="Auto"${!isManual?' selected':''}>Auto</option><option value="Manual"${isManual?' selected':''}>Manual</option></select></td>
           <td><input type="date" class="isel" id="ser-start" value="${s.startDate||''}" style="width:130px"></td>
           <td><div style="display:flex;flex-direction:column;gap:4px"><select class="isel" id="ser-status"><option${s.status==='Active'?' selected':''}>Active</option><option${s.status==='Inactive'?' selected':''}>Inactive</option></select><input type="date" class="isel" id="ser-end" value="${s.endDate||''}" style="width:130px" title="Deactivation date"></div></td>
