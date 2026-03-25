@@ -433,13 +433,16 @@ body.privacy-mode #privacy-banner{display:block}
 
 /* ── PRINT / QUOTE ── */
 .quote-print-area{display:none}
-@media print {
-  body > *:not(.quote-print-area):not(#agr-preview-overlay){display:none !important}
+@page{margin:1in}
+@media print{
+  body>*:not(.quote-print-area):not(#agr-preview-overlay){display:none !important}
   .quote-print-area{display:block !important;position:static}
   .quote-print-area *{color:#000 !important}
-  #agr-preview-overlay{position:static !important;display:block !important;background:none !important}
-  #agr-preview-overlay .smod{box-shadow:none !important;border:none !important;max-height:none !important;overflow:visible !important}
+  #agr-preview-overlay{position:static !important;display:block !important;background:none !important;backdrop-filter:none !important;-webkit-backdrop-filter:none !important;padding:0 !important}
+  #agr-preview-overlay .smod{box-shadow:none !important;border:none !important;border-radius:0 !important;max-height:none !important;max-width:none !important;width:100% !important;overflow:visible !important;padding:0 !important;background:#fff !important}
   #agr-preview-overlay .smod-hdr,#agr-preview-overlay .smod-footer{display:none !important}
+  #agr-preview-text,#agr-preview-text *{color:#000 !important;font-family:Georgia,serif !important}
+  #agr-preview-text{font-size:12pt !important;line-height:1.8 !important;padding:0 !important}
 }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.7/dist/pizzip.js"></script>
@@ -4615,6 +4618,8 @@ async function generateAgreement() {
   const overtime = parseFloat(document.getElementById('agrf-overtime').value)||200
   const deliverables = document.getElementById('agrf-deliverables').value.trim()
   const deliveryDays = parseInt(document.getElementById('agrf-delivery').value)||3
+  const inclTravel = document.getElementById('agrf-travel-expenses').checked
+  const inclFines = document.getElementById('agrf-fines-liability').checked
   if(!clientName||!location||!date||amount<=0) { toast('Fill in Client, Location, Date, and Amount'); return }
   const depositPct = deposit>0&&amount>0 ? Math.round((deposit/amount)*100) : 0
   const dateStr = fmtDateLong(date)
@@ -4662,6 +4667,9 @@ RULES:
   * Event / Wedding: event coverage footage and highlight reel; delivery within the specified business days; note that coverage is subject to venue and weather conditions
   * Commercial: deliverables as specified; commercial usage rights fully granted to client
 - Keep Section 2 payment terms intact: deposit non-refundable except operator cancellation or weather
+- If optional sections are requested, append them after Section 4 (Governing Law) as additional numbered sections, before the signature block. Maintain the same formal tone.
+- Travel Expenses section template: "X. Travel Expenses — If the shoot location requires Operator to travel a significant distance, a travel expense fee may apply. Any applicable travel expenses will be communicated to Client prior to the shoot and reflected as a separate line item on the invoice."
+- Fines & Legal Liability section template: "X. Fines, Permits & Legal Liability — Client is responsible for obtaining any required permits, authorizations, or approvals for drone operations at the specified location. Operator shall not be held liable for any fines, penalties, or legal consequences arising from Client's failure to secure the necessary permits. Client agrees to indemnify and hold harmless Kore Aerials, LLC from any claims, losses, or damages resulting from such failure."
 - Output ONLY the agreement text — no preamble, no explanation, no markdown formatting, no code blocks`
 
   try {
@@ -4689,7 +4697,7 @@ RULES:
 - Hours Included: ${hoursLabel}
 - Overtime Rate: $${overtime}/hour
 - Deliverables: ${deliverables || 'standard deliverables for ' + jobType}
-- Delivery: within ${deliveryDays} business days after shoot`
+- Delivery: within ${deliveryDays} business days after shoot${inclTravel ? '\n- Include Travel Expenses clause' : ''}${inclFines ? '\n- Include Fines & Legal Liability clause' : ''}`
         }]
       })
     })
@@ -4710,10 +4718,40 @@ RULES:
   }
 }
 
+// Build inner HTML for agreement preview and Drive upload.
+// Renders body as pre-wrap and replaces the signature block with a proper two-column layout.
+function agrBodyHTML(text, clientName) {
+  const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  const sigMarker = 'IN WITNESS WHEREOF'
+  const sigIdx = text.indexOf(sigMarker)
+  if(sigIdx === -1) {
+    return `<pre style="white-space:pre-wrap;font-family:inherit;margin:0">${esc(text)}</pre>`
+  }
+  const bodyText = text.substring(0, sigIdx).trimEnd()
+  return `<pre style="white-space:pre-wrap;font-family:inherit;margin:0">${esc(bodyText)}</pre>
+<div style="margin-top:2.5em">
+  <p style="margin:0 0 2em 0">IN WITNESS WHEREOF, the parties have executed this Agreement as of the date first written above.</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:1.5em">
+    <div>
+      <div style="border-top:2px solid currentColor;margin-bottom:12px;width:220px"></div>
+      <div style="margin-bottom:8px"><strong>Operator Signature</strong></div>
+      <div style="margin-bottom:8px"><strong>Name:</strong> Kore Aerials, LLC</div>
+      <div><strong>Date:</strong> _______________</div>
+    </div>
+    <div>
+      <div style="border-top:2px solid currentColor;margin-bottom:12px;width:220px"></div>
+      <div style="margin-bottom:8px"><strong>Client Signature</strong></div>
+      <div style="margin-bottom:8px"><strong>Name:</strong> ${esc(clientName||'')}</div>
+      <div><strong>Date:</strong> _______________</div>
+    </div>
+  </div>
+</div>`
+}
+
 let _agrPreviewData = null
 function showAgrPreview(text, meta) {
   _agrPreviewData = { text, ...meta }
-  document.getElementById('agr-preview-text').textContent = text
+  document.getElementById('agr-preview-text').innerHTML = agrBodyHTML(text, meta.clientName||'')
   document.getElementById('agr-preview-overlay').classList.add('open')
 }
 function closeAgrPreview() {
@@ -4745,7 +4783,7 @@ async function saveAgreement() {
       const folderId = await gdEnsurePath(GD_AGR_PATH)
       if(folderId) {
         const safeName = `${(clientName||'Client').replace(/[^a-zA-Z0-9 ]/g,'')}-${date}-Agreement.html`
-        const htmlContent = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:Georgia,serif;font-size:13pt;line-height:1.8;margin:40px 60px;max-width:700px}pre{white-space:pre-wrap;font-family:inherit}</style></head><body><pre>${text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre></body></html>`
+        const htmlContent = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:Georgia,serif;font-size:13pt;line-height:1.8;margin:1in;max-width:none;color:#000}pre{white-space:pre-wrap;font-family:inherit;margin:0}strong{font-weight:700}</style></head><body>${agrBodyHTML(text, clientName)}</body></html>`
         const fileId = await gdUploadFile(safeName, htmlContent, 'text/html', folderId, null)
         if(fileId) {
           const list2 = load(K.agr), ai = list2.findIndex(a=>a.id===agr.id)
@@ -5524,6 +5562,15 @@ async function downloadInvFromDetail(invNum, btn) {
       <div class="smod-row" style="grid-column:1/-1">
         <div class="smod-lbl">Deliverables</div>
         <textarea class="inp" id="agrf-deliverables" rows="2" placeholder="e.g. one edited video (30–60 sec) + 10 aerial photos"></textarea>
+      </div>
+      <div class="smod-row" style="grid-column:1/-1">
+        <div class="smod-lbl">Optional Clauses</div>
+        <label style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px;cursor:pointer">
+          <input type="checkbox" id="agrf-travel-expenses"> Include Travel Expenses clause
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+          <input type="checkbox" id="agrf-fines-liability"> Include Fines &amp; Legal Liability clause
+        </label>
       </div>
     </div>
     <div id="agrf-status" style="font-size:12px;color:var(--text-2);min-height:16px;margin-bottom:8px"></div>
