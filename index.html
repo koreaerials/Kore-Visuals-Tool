@@ -2243,15 +2243,40 @@ async function delJob(id) {
 async function jobSetStage(id, stage) {
   const list=load(K.jobs); const i=list.findIndex(j=>j.id===id); if(i<0)return
   list[i].stage=stage
+  if(stage==='Booked' && list[i].filmingDate && !list[i].calendarEventId && gsGetToken()) {
+    const calTitle=`${list[i].name}${list[i].clientName?' — '+list[i].clientName:''}`
+    const evLink=await gcCreateEvent(list[i].filmingDate, calTitle, list[i].notes||'', list[i].filmingTime||undefined)
+    if(evLink){ list[i].calendarEventId=evLink; toast('Booked — Calendar event created') }
+  }
   save(K.jobs,list); gsQueueSync(K.jobs)
   if(stage==='Invoiced') await jobCreateIncomeIfNeeded(list[i])
   renderJobsBoard(); renderDash()
 }
 
+async function jobMarkPaid(id) {
+  const list=load(K.jobs); const i=list.findIndex(j=>j.id===id); if(i<0)return
+  const job=list[i]
+  if(job.incomeId) {
+    // Income entry already exists — just mark it Paid
+    const incList=load(K.inc); const ii=incList.findIndex(e=>e.id===job.incomeId)
+    if(ii>=0){ incList[ii].status='Paid'; if(!incList[ii].date) incList[ii].date=today(); save(K.inc,incList); gsQueueSync(K.inc) }
+  } else {
+    // No income entry yet — create one as Paid
+    const incEntry={id:uid(),date:today(),filmingDate:job.filmingDate||'',client:job.clientName||'Unknown',
+      amount:job.amount||0,pay:'Other',travel:0,profit:job.amount||0,status:'Paid',
+      desc:job.name,invoiceNum:'',agreementId:'',calendarEventId:'',jobTime:''}
+    const incList=load(K.inc); incList.push(incEntry); save(K.inc,incList); gsQueueSync(K.inc)
+    list[i].incomeId=incEntry.id
+  }
+  list[i].stage='Paid'
+  save(K.jobs,list); gsQueueSync(K.jobs)
+  renderJobsBoard(); renderIncTable(); renderDash(); toast(`${job.name} marked as paid`)
+}
+
 async function jobCreateIncomeIfNeeded(job) {
   if(job.incomeId){toast('Income entry already exists');return}
   const incEntry={
-    id:uid(),date:'',filmingDate:job.filmingDate||'',client:job.clientName||'Unknown',
+    id:uid(),date:today(),filmingDate:job.filmingDate||'',client:job.clientName||'Unknown',
     amount:job.amount||0,pay:'Other',travel:0,profit:job.amount||0,status:'Pending',
     desc:job.name,invoiceNum:'',agreementId:'',calendarEventId:'',jobTime:''
   }
@@ -2297,7 +2322,8 @@ function renderJobsBoard() {
           <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">
             ${JOB_STAGES.filter(s=>s!==stage&&s!=='Paid'&&s!=='Written Off').map(s=>`<button class="btn btn-sm btn-s" style="font-size:10px;padding:3px 7px" onclick="event.stopPropagation();jobSetStage('${job.id}','${s}')">${s}</button>`).join('')}
           </div>
-          <div style="display:flex;gap:6px;margin-top:4px">
+          <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap">
+            <button class="btn btn-sm btn-g" onclick="event.stopPropagation();jobMarkPaid('${job.id}')">${icon('check-circle',12)} Mark Paid</button>
             <button class="btn btn-sm btn-s" onclick="event.stopPropagation();openJobForm('${job.id}')">${icon('pencil',12)} Edit</button>
             <button class="btn btn-sm btn-d" onclick="event.stopPropagation();delJob('${job.id}')">${icon('trash',12)} Delete</button>
           </div>
