@@ -157,6 +157,8 @@ tfoot td{font-weight:700;background:rgba(255,255,255,0.45);border-top:2px solid 
 [data-theme=dark] .ms-panel{background:rgba(30,30,42,0.98);border-color:rgba(255,255,255,0.1);box-shadow:0 8px 28px rgba(0,0,0,0.45)}
 [data-theme=dark] .ms-actions{border-color:rgba(255,255,255,0.08)}
 [data-theme=dark] .ms-item:hover{background:rgba(255,255,255,0.07)}
+.ms-item-sel{background:rgba(0,122,255,0.08);color:var(--blue);font-weight:600}
+[data-theme=dark] .ms-item-sel{background:rgba(96,180,255,0.12);color:#60b4ff}
 
 /* RENEWALS */
 .ren-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.06)}
@@ -404,9 +406,17 @@ body.privacy-mode #privacy-banner{display:block}
 .cli-ct-row{border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;background:rgba(0,0,0,0.02)}
 [data-theme=dark] .cli-ct-row{background:rgba(255,255,255,0.03)}
 
+/* ── JOBS SUB-NAV ── */
+.jobs-subnav{display:flex;gap:4px;background:rgba(255,255,255,0.4);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:12px;border:1px solid rgba(255,255,255,0.65);padding:4px;margin-bottom:20px;width:fit-content}
+.jobs-subnav-btn{padding:7px 18px;border:none;background:transparent;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text-2);transition:all .2s;font-family:inherit}
+.jobs-subnav-btn.on{background:rgba(255,255,255,0.9);color:var(--blue);box-shadow:0 2px 8px rgba(0,0,0,0.1);font-weight:600}
+.jobs-subnav-btn:hover:not(.on){background:rgba(255,255,255,0.5);color:var(--text)}
+[data-theme=dark] .jobs-subnav{background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.1)}
+[data-theme=dark] .jobs-subnav-btn.on{background:rgba(255,255,255,0.15);color:#60b4ff}
+
 /* ── KANBAN BOARD ── */
 .kanban-board{display:flex;gap:12px;overflow-x:auto;padding-bottom:16px}
-.kanban-col{flex:0 0 165px;background:rgba(255,255,255,0.45);border-radius:var(--r);border:1px solid var(--card-border);padding:12px}
+.kanban-col{flex:0 0 195px;background:rgba(255,255,255,0.45);border-radius:var(--r);border:1px solid var(--card-border);padding:12px}
 .kanban-col-hdr{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
 .job-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--r-sm);padding:10px 12px;margin-bottom:8px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.05)}
 .job-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.1)}
@@ -494,7 +504,7 @@ body.privacy-mode #privacy-banner{display:block}
     </div>
 
     <div class="fbar" id="dash-filter">
-      <span class="lbl">Filter:</span>
+      <span class="lbl">View:</span>
       <button class="fbtn on" data-r="all">All Time</button>
       <button class="fbtn" data-r="month">This Month</button>
       <button class="fbtn" data-r="year">This Year</button>
@@ -516,7 +526,6 @@ body.privacy-mode #privacy-banner{display:block}
       <div class="form-toggle-hdr">
         <span class="form-ttl" id="inc-form-ttl">Add New Job</span>
         <div style="display:flex;gap:8px;align-items:center">
-          <button class="btn btn-p" onclick="openInvoiceModal()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Generate Invoice</button>
           <button class="btn btn-g" id="inc-toggle-btn" onclick="toggleForm('inc')">+ Add Job</button>
         </div>
       </div>
@@ -526,7 +535,7 @@ body.privacy-mode #privacy-banner{display:block}
           <div class="fg">
             <div class="ff"><label>Filming Date <span style="font-weight:400;color:var(--text-2)">(optional)</span></label><input type="date" id="inc-filming-date"></div>
             <div class="ff"><label>Payment Date</label><input type="date" id="inc-date"></div>
-            <div class="ff"><label>Time <span style="font-weight:400;color:var(--text-2)">(optional)</span></label><input type="time" id="inc-time"></div>
+
             <div class="ff"><label>Client Name</label><input type="text" id="inc-client" placeholder="Client or company"></div>
             <div class="ff"><label>Amount Earned ($)</label><input type="number" id="inc-amount" placeholder="0.00" min="0" step="0.01" oninput="calcProfit()"></div>
             <div class="ff"><label>Payment Type</label>
@@ -674,11 +683,7 @@ body.privacy-mode #privacy-banner{display:block}
         </div>
       </div>
       <div class="fbar" id="sub-filter">
-        <span class="lbl">Status:</span>
-        <button class="fbtn on" data-s="all">All</button>
-        <button class="fbtn" data-s="Active">Active</button>
-        <button class="fbtn" data-s="Inactive">Inactive</button>
-        <span class="lbl" style="margin-left:8px">Billing:</span>
+        <span class="lbl">Billing:</span>
         <button class="fbtn cat-on" data-bt="all">All</button>
         <button class="fbtn" data-bt="Monthly">Monthly</button>
         <button class="fbtn" data-bt="Annual">Annual</button>
@@ -770,67 +775,87 @@ body.privacy-mode #privacy-banner{display:block}
 
   <!-- PRICING -->
   <!-- JOBS & PRICING (combined) -->
+  <!-- JOBS & PRICING (combined) -->
   <section class="panel" id="panel-jobs">
-    <div class="sec-hdr"><h2>Pricing & Quotes</h2><p>Manage your service rates and build quotes</p></div>
-    <div class="card" style="margin-bottom:16px">
-      <div class="form-toggle-hdr">
-        <span class="card-ttl" style="margin-bottom:0">Services</span>
-        <button class="btn btn-g btn-sm" onclick="openPrcForm()">+ Add Service</button>
-      </div>
-      <div class="form-wrap" id="prc-form-wrap" style="margin-top:12px">
-        <div class="form-inner">
-          <input type="hidden" id="prc-edit-id">
-          <div class="fg">
-            <div class="ff"><label>Service Name</label><input type="text" id="prc-name" placeholder="e.g. Aerial Photography"></div>
-            <div class="ff"><label>Type</label>
-              <select id="prc-type"><option value="Hourly">Hourly</option><option value="Flat Rate">Flat Rate</option></select>
+    <!-- Sub-nav -->
+    <div class="jobs-subnav">
+      <button class="jobs-subnav-btn on" data-section="pipeline" onclick="switchJobsSection('pipeline')">Pipeline</button>
+      <button class="jobs-subnav-btn" data-section="pricing" onclick="switchJobsSection('pricing')">Pricing & Quotes</button>
+    </div>
+
+    <!-- Pricing & Quotes section (hidden by default) -->
+    <div id="jobs-pq-section" style="display:none">
+      <div class="sec-hdr"><h2>Pricing & Quotes</h2><p>Manage your service rates and build quotes</p></div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="form-toggle-hdr">
+          <span class="card-ttl" style="margin-bottom:0">Services</span>
+          <button class="btn btn-g btn-sm" onclick="openPrcForm()">+ Add Service</button>
+        </div>
+        <div class="form-wrap" id="prc-form-wrap" style="margin-top:12px">
+          <div class="form-inner">
+            <input type="hidden" id="prc-edit-id">
+            <div class="fg">
+              <div class="ff"><label>Service Name</label><input type="text" id="prc-name" placeholder="e.g. Aerial Photography"></div>
+              <div class="ff"><label>Type</label>
+                <select id="prc-type"><option value="Hourly">Hourly</option><option value="Flat Rate">Flat Rate</option></select>
+              </div>
+              <div class="ff"><label>Rate ($)</label><input type="number" id="prc-rate" placeholder="0.00" min="0" step="0.01"></div>
             </div>
-            <div class="ff"><label>Rate ($)</label><input type="number" id="prc-rate" placeholder="0.00" min="0" step="0.01"></div>
-          </div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <button class="btn btn-g" onclick="savePricing()">Save Service</button>
-            <button class="btn btn-s" onclick="closePrcForm()">Cancel</button>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn btn-g" onclick="savePricing()">Save Service</button>
+              <button class="btn btn-s" onclick="closePrcForm()">Cancel</button>
+            </div>
           </div>
         </div>
+        <div class="pricing-list" id="prc-list"></div>
       </div>
-      <div class="pricing-list" id="prc-list"></div>
-    </div>
-    <div class="card" id="quote-builder-card">
-      <div class="card-ttl">Quote Builder</div>
-      <div class="fg" style="margin-bottom:16px">
-        <div class="ff"><label>Client <span style="font-weight:400;color:var(--text-2)">(optional)</span></label>
-          <input id="quote-client" list="quote-client-list" placeholder="Type or select client..." autocomplete="off">
-          <datalist id="quote-client-list"></datalist>
+      <div class="card" id="quote-builder-card">
+        <div class="card-ttl">Quote Builder</div>
+        <div class="fg" style="margin-bottom:16px">
+          <div class="ff"><label>Client <span style="font-weight:400;color:var(--text-2)">(optional)</span></label>
+            <input type="hidden" id="quote-client">
+            <div class="ms-wrap" id="quote-client-ms" style="width:100%">
+              <button class="ms-btn" type="button" onclick="toggleMs('quote-client-ms');setTimeout(()=>{const s=document.getElementById('quote-client-search');if(s&&document.getElementById('quote-client-ms').querySelector('.ms-panel.open')){s.value='';_renderQuoteClientItems('');s.focus()}},0)" style="width:100%;text-align:left">Select Client</button>
+              <div class="ms-panel" style="min-width:0;width:100%">
+                <input type="text" id="quote-client-search" placeholder="Type to search or add new..." autocomplete="off" style="margin-bottom:8px;font-size:13px" oninput="_filterQuoteClients(this.value)" onclick="event.stopPropagation()">
+                <div class="ms-items"></div>
+              </div>
+            </div>
+          </div>
+          <div class="ff"><label>Quote Date</label><input type="date" id="quote-date"></div>
+          <div class="ff"><label>Business Name</label><input type="text" id="quote-biz" placeholder="Your business name"></div>
         </div>
-        <div class="ff"><label>Quote Date</label><input type="date" id="quote-date"></div>
-        <div class="ff"><label>Business Name</label><input type="text" id="quote-biz" placeholder="Your business name"></div>
-      </div>
-      <div style="margin-bottom:12px">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:10px">Line Items</div>
-        <div id="quote-items"></div>
-        <button class="btn btn-s btn-sm" onclick="quoteAddLine()" style="margin-top:6px">+ Add Line Item</button>
-      </div>
-      <div style="text-align:right;padding:14px;background:rgba(52,199,89,0.08);border-radius:12px;border:1px solid rgba(52,199,89,0.2);margin-bottom:16px">
-        <span style="font-size:12px;font-weight:600;color:var(--text-2);margin-right:12px">Grand Total</span>
-        <span id="quote-total" style="font-size:24px;font-weight:700;color:var(--green)">$0.00</span>
-      </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn btn-p" onclick="quotePrint()">Print / Export PDF</button>
-        <button class="btn btn-g" onclick="quoteToJob()">Convert to Job</button>
-        <button class="btn btn-s" onclick="quoteClear()">Clear Quote</button>
+        <div style="margin-bottom:12px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:10px">Line Items</div>
+          <div id="quote-items"></div>
+          <button class="btn btn-s btn-sm" onclick="quoteAddLine()" style="margin-top:6px">+ Add Line Item</button>
+        </div>
+        <div style="text-align:right;padding:14px;background:rgba(52,199,89,0.08);border-radius:12px;border:1px solid rgba(52,199,89,0.2);margin-bottom:16px">
+          <span style="font-size:12px;font-weight:600;color:var(--text-2);margin-right:12px">Grand Total</span>
+          <span id="quote-total" style="font-size:24px;font-weight:700;color:var(--green)">$0.00</span>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-p" onclick="quotePrint()">Print / Export PDF</button>
+          <button class="btn btn-g" onclick="quoteToJob()">Convert to Job</button>
+          <button class="btn btn-s" onclick="quoteClear()">Clear Quote</button>
+        </div>
       </div>
     </div>
-    <hr style="border:none;border-top:1px solid var(--card-border);margin:24px 0">
-    <div class="sec-hdr" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
-      <div>
-        <h2>Jobs</h2>
-        <p>Manage your pipeline from lead to payment</p>
+
+    <!-- Pipeline section (shown by default) -->
+    <div id="jobs-pipeline-section">
+      <div class="sec-hdr" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+        <div>
+          <h2>Jobs</h2>
+          <p>Manage your pipeline from lead to payment</p>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <button class="btn btn-p" onclick="openInvoiceModal()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Generate Invoice</button>
+          <button class="btn btn-g" onclick="openJobForm()">+ New Job</button>
+        </div>
       </div>
-      <div style="display:flex;gap:10px;align-items:center">
-        <button class="btn btn-g" onclick="openJobForm()">+ New Job</button>
-      </div>
+      <div class="kanban-board" id="jobs-board"></div>
     </div>
-    <div class="kanban-board" id="jobs-board"></div>
   </section>
 
   <!-- JOB FORM MODAL -->
@@ -1726,7 +1751,7 @@ function calcProfit() {
 async function saveIncome() {
   const id=document.getElementById('inc-edit-id').value
   const date=document.getElementById('inc-date').value
-  const jobTime=document.getElementById('inc-time').value  // 'HH:MM' or ''
+  const jobTime=document.getElementById('inc-time')?.value||''  // field removed from form; preserved for backward compat
   const filmingDate=document.getElementById('inc-filming-date').value||''
   const client=document.getElementById('inc-client').value.trim()
   const amount=parseFloat(document.getElementById('inc-amount').value)||0
@@ -1761,7 +1786,7 @@ function editInc(id) {
   document.getElementById('inc-edit-id').value=e.id
   document.getElementById('inc-filming-date').value=e.filmingDate||''
   document.getElementById('inc-date').value=e.date
-  document.getElementById('inc-time').value=e.jobTime||''
+  const _t=document.getElementById('inc-time'); if(_t) _t.value=e.jobTime||''
   document.getElementById('inc-client').value=e.client||''
   document.getElementById('inc-amount').value=e.amount||''
   document.getElementById('inc-pay').value=e.pay||e.paymentType||e.payment_type||'Zelle'
@@ -1871,7 +1896,7 @@ function renderIncTable() {
         <td>${travel>0?`<span class="bdg bdg-o">${fmt(travel)}</span>`:'<span style="color:var(--text-2)">—</span>'}</td>
         <td><span class="${+e.profit>=0?'pos':'neg'}">${fmt(e.profit)}</span></td>
         <td style="min-width:140px;white-space:normal;word-break:break-word">${esc(desc||'—')}</td>
-        <td style="white-space:nowrap"><button class="btn btn-sm btn-s" style="${e.invoiceNum?'color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)':'opacity:0.45'}" title="${e.invoiceNum?'Invoice: '+e.invoiceNum:'Link Invoice'}" onclick="openInvLinkModal('${e.id}')">${icon('receipt',13)}</button> <button class="btn btn-sm btn-s" style="${attCount?'color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)':'opacity:0.45'}" title="${attCount?'Attachments: '+attCount:'Link Attachment'}" onclick="openAgrModal('${e.id}')">${icon('paperclip',13)}</button>${(e.calendarEventId&&e.date>=today()&&gcEventLink(e.calendarEventId))?` <button class="btn btn-sm btn-s" style="color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)" title="View in Google Calendar" data-href="${esc(gcEventLink(e.calendarEventId))}" onclick="window.open(this.dataset.href,'_blank')">${icon('calendar',13)}</button>`:''} <button class="btn btn-sm btn-s" onclick="editIncRow('${e.id}')">${icon('pencil',13)}</button> <button class="btn btn-sm btn-d" onclick="delInc('${e.id}')">${icon('trash',13)}</button></td>
+        <td><div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;width:fit-content"><button class="btn btn-sm btn-s" style="${e.invoiceNum?'color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)':'opacity:0.45'}" title="${e.invoiceNum?'Invoice: '+e.invoiceNum:'Link Invoice'}" onclick="openInvLinkModal('${e.id}')">${icon('receipt',13)}</button><button class="btn btn-sm btn-s" style="${attCount?'color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)':'opacity:0.45'}" title="${attCount?'Attachments: '+attCount:'Link Attachment'}" onclick="openAgrModal('${e.id}')">${icon('paperclip',13)}</button><button class="btn btn-sm btn-s" onclick="editIncRow('${e.id}')">${icon('pencil',13)}</button><button class="btn btn-sm btn-d" onclick="delInc('${e.id}')">${icon('trash',13)}</button>${(e.calendarEventId&&e.date>=today()&&gcEventLink(e.calendarEventId))?`<button class="btn btn-sm btn-s" style="color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28);grid-column:span 2" title="View in Google Calendar" data-href="${esc(gcEventLink(e.calendarEventId))}" onclick="window.open(this.dataset.href,'_blank')">${icon('calendar',13)}</button>`:''}</div></td>
       </tr>`
     }).join('')}</tbody>
     <tfoot><tr><td></td><td colspan="2">Total (${list.length} jobs)</td><td><span class="pos">${fmt(totRev)}</span></td><td colspan="2"></td><td>${totTravel>0?`<span class="neg">${fmt(totTravel)}</span>`:''}</td><td><span class="${totProfit>=0?'pos':'neg'}">${fmt(totProfit)}</span></td><td colspan="2"></td></tr></tfoot>
@@ -1941,18 +1966,70 @@ async function initQuoteBuilder() {
   if(bn&&!bn.value){const n=localStorage.getItem('dt_biz_name')||'Kore Aerials'; bn.value=n}
   // Load clients if not yet loaded
   if(_clients===null) await loadClientsFromSheets()
-  // Populate client datalist — CRM names + fallback from income entries
-  const dl=document.getElementById('quote-client-list')
-  if(dl){
-    const crmNames=(_clients||[]).map(c=>c.name).filter(Boolean)
-    const incNames=load(K.inc).map(e=>e.client).filter(Boolean)
-    const names=[...new Set([...crmNames,...incNames])].sort()
-    dl.innerHTML=names.map(n=>`<option value="${esc(n)}">`).join('')
-  }
+  // Populate client dropdown — CRM names + fallback from income entries
+  const crmNames=(_clients||[]).map(c=>c.name).filter(Boolean)
+  const incNames=load(K.inc).map(e=>e.client).filter(Boolean)
+  const clientNames=[...new Set([...crmNames,...incNames])].sort()
+  _buildQuoteClientDropdown(clientNames)
   renderQuoteServiceOptions()
   // Restore draft if exists, else start with one blank line
   if(!_quoteLines.length){const draft=_loadQuoteDraft();_quoteLines=draft.length?draft:[{svcId:'',qty:1,total:0}]}
   renderQuoteLines()
+}
+
+let _quoteClientNames = []
+function _buildQuoteClientDropdown(names) {
+  _quoteClientNames = names
+  _renderQuoteClientItems('')
+}
+function _renderQuoteClientItems(filter) {
+  const wrap=document.getElementById('quote-client-ms'); if(!wrap) return
+  const current=document.getElementById('quote-client').value||''
+  const itemsEl=wrap.querySelector('.ms-items')
+  const q=filter.trim().toLowerCase()
+  const filtered=_quoteClientNames.filter(n=>!q||n.toLowerCase().includes(q))
+  const clearRow=current&&!q?`<div class="ms-item" onclick="selectQuoteClient('')" style="cursor:pointer;color:var(--text-2);font-style:italic">— clear —</div>`:''
+  const matchRows=filtered.map(n=>`<div class="ms-item${n===current?' ms-item-sel':''}" onclick="selectQuoteClient('${esc(n)}')" style="cursor:pointer">${esc(n)}</div>`).join('')
+  const exactMatch=_quoteClientNames.some(n=>n.toLowerCase()===filter.trim().toLowerCase())
+  const addRow=filter.trim()&&!exactMatch?`<div class="ms-item" onclick="selectQuoteClient('${esc(filter.trim())}')" style="cursor:pointer;color:var(--blue)">Use "<strong>${esc(filter.trim())}</strong>"</div>`:''
+  itemsEl.innerHTML=clearRow+matchRows+addRow
+}
+function _filterQuoteClients(val) { _renderQuoteClientItems(val) }
+function selectQuoteClient(name) {
+  const inp=document.getElementById('quote-client'); if(inp) inp.value=name
+  const btn=document.querySelector('#quote-client-ms .ms-btn'); if(btn) btn.textContent=name||'Select Client'
+  btn.classList.toggle('ms-active', !!name)
+  const panel=document.querySelector('#quote-client-ms .ms-panel'); if(panel) panel.classList.remove('open')
+  const search=document.getElementById('quote-client-search'); if(search) search.value=''
+  _renderQuoteClientItems('')
+}
+
+let _invClientNames = []
+function _buildInvClientDropdown(names) {
+  _invClientNames = names
+  _renderInvClientItems('')
+}
+function _renderInvClientItems(filter) {
+  const wrap=document.getElementById('inv-client-ms'); if(!wrap) return
+  const current=document.getElementById('inv-client').value||''
+  const itemsEl=wrap.querySelector('.ms-items')
+  const q=filter.trim().toLowerCase()
+  const filtered=_invClientNames.filter(n=>!q||n.toLowerCase().includes(q))
+  const clearRow=current&&!q?`<div class="ms-item" onclick="selectInvClient('')" style="cursor:pointer;color:var(--text-2);font-style:italic">— clear —</div>`:''
+  const matchRows=filtered.map(n=>`<div class="ms-item${n===current?' ms-item-sel':''}" onclick="selectInvClient('${esc(n)}')" style="cursor:pointer">${esc(n)}</div>`).join('')
+  const exactMatch=_invClientNames.some(n=>n.toLowerCase()===filter.trim().toLowerCase())
+  const addRow=filter.trim()&&!exactMatch?`<div class="ms-item" onclick="selectInvClient('${esc(filter.trim())}')" style="cursor:pointer;color:var(--blue)">Use "<strong>${esc(filter.trim())}</strong>"</div>`:''
+  itemsEl.innerHTML=clearRow+matchRows+addRow
+}
+function _filterInvClients(val) { _renderInvClientItems(val) }
+function selectInvClient(name) {
+  const inp=document.getElementById('inv-client'); if(inp) inp.value=name
+  const btn=document.querySelector('#inv-client-ms .ms-btn'); if(btn) btn.textContent=name||'Select Client'
+  btn.classList.toggle('ms-active', !!name)
+  const panel=document.querySelector('#inv-client-ms .ms-panel'); if(panel) panel.classList.remove('open')
+  const search=document.getElementById('inv-client-search'); if(search) search.value=''
+  _renderInvClientItems('')
+  invUpdateNumber()
 }
 
 function renderQuoteServiceOptions() {
@@ -2035,7 +2112,7 @@ function quotePrint() {
 function quoteClear() {
   _quoteLines=[]; localStorage.removeItem('dt_quote_draft'); renderQuoteLines()
   const qd=document.getElementById('quote-date'); if(qd) qd.value=today()
-  const qc=document.getElementById('quote-client'); if(qc) qc.value=''
+  selectQuoteClient('')
 }
 
 function quoteToJob() {
@@ -2044,6 +2121,7 @@ function quoteToJob() {
   if(!total){toast('Add at least one line item before converting');return}
   // Switch to Jobs tab and open new job form pre-filled
   document.querySelector('[data-tab="jobs"]').click()
+  switchJobsSection('pipeline')
   setTimeout(async ()=>{
     await openJobForm()
     if(client) document.getElementById('job-client').value=client
@@ -2095,6 +2173,20 @@ async function openJobForm(id) {
 }
 function closeJobForm() {
   const overlay=document.getElementById('job-form-overlay'); if(overlay)overlay.classList.remove('open')
+}
+function switchJobsSection(section) {
+  const pq = document.getElementById('jobs-pq-section')
+  const pl = document.getElementById('jobs-pipeline-section')
+  const btns = document.querySelectorAll('.jobs-subnav-btn')
+  if (section === 'pricing') {
+    if(pq) pq.style.display = ''
+    if(pl) pl.style.display = 'none'
+    btns.forEach(b => b.classList.toggle('on', b.dataset.section === 'pricing'))
+  } else {
+    if(pq) pq.style.display = 'none'
+    if(pl) pl.style.display = ''
+    btns.forEach(b => b.classList.toggle('on', b.dataset.section === 'pipeline'))
+  }
 }
 
 async function saveJob() {
@@ -2159,7 +2251,7 @@ async function jobSetStage(id, stage) {
 async function jobCreateIncomeIfNeeded(job) {
   if(job.incomeId){toast('Income entry already exists');return}
   const incEntry={
-    id:uid(),date:today(),filmingDate:job.filmingDate||'',client:job.clientName||'Unknown',
+    id:uid(),date:'',filmingDate:job.filmingDate||'',client:job.clientName||'Unknown',
     amount:job.amount||0,pay:'Other',travel:0,profit:job.amount||0,status:'Pending',
     desc:job.name,invoiceNum:'',agreementId:'',calendarEventId:'',jobTime:''
   }
@@ -2167,6 +2259,15 @@ async function jobCreateIncomeIfNeeded(job) {
   // Store incomeId on job
   const jobList=load(K.jobs); const ji=jobList.findIndex(j=>j.id===job.id)
   if(ji>=0){jobList[ji].incomeId=incEntry.id; save(K.jobs,jobList)}
+  // Auto-add to CRM if client is new
+  if(job.clientName){
+    if(_clients===null) await loadClientsFromSheets()
+    if(!(_clients||[]).find(c=>c.name===job.clientName)){
+      if(!_clients) _clients=[]
+      _clients.push({id:uid(),name:job.clientName,company:'',contacts:[],clientType:'',notes:'',followUpDate:''})
+      try{await writeClientsToSheets()}catch(_){}
+    }
+  }
   renderIncTable(); renderDash(); toast(`Income entry created for ${job.name}`)
 }
 
@@ -2174,6 +2275,15 @@ function renderJobsBoard() {
   const el=document.getElementById('jobs-board'); if(!el)return
   const allJobs=load(K.jobs)
   const stages=JOB_STAGES.filter(s=>s!=='Paid'&&s!=='Written Off')
+  const STAGE_COLORS = {
+    Lead: '#8e8e93',
+    Quoted: '#007AFF',
+    Booked: '#AF52DE',
+    Shooting: '#FF9500',
+    Editing: '#FF9F0A',
+    Delivered: '#30B0C7',
+    Invoiced: '#34C759'
+  }
   el.innerHTML=stages.map(stage=>{
     const jobs=allJobs.filter(j=>j.stage===stage)
     const cards=jobs.map(job=>{
@@ -2194,7 +2304,8 @@ function renderJobsBoard() {
         </div>`:''}
       </div>`
     }).join('')
-    return `<div class="kanban-col">
+    const stageColor = STAGE_COLORS[stage] || 'var(--text-2)'
+    return `<div class="kanban-col" style="border-left:3px solid ${stageColor}">
       <div class="kanban-col-hdr"><span>${stage}</span><span style="background:rgba(0,0,0,0.08);border-radius:8px;padding:1px 6px;font-size:10px">${jobs.length}</span></div>
       ${cards||`<div style="font-size:11px;color:var(--text-2);padding:8px 0;text-align:center">—</div>`}
     </div>`
@@ -2467,23 +2578,24 @@ function renderSubSummary() {
 
 function renderSubTable() {
   const el=document.getElementById('sub-table')
-  // build service multi-select from pre-svc-filtered list so all matching names appear
   const preSvc=load(K.sub).filter(s=>{
-    if(FS.sub.status!=='all'&&s.status!==FS.sub.status) return false
     if(FS.sub.bt!=='all'&&s.billingType!==FS.sub.bt) return false
     return true
   })
   const svcs=[...new Set(preSvc.map(s=>s.name||'').filter(Boolean))].sort()
   buildMs('sub-svc-ms', svcs, FS.sub.svcs)
-  const list=filterSubs(loadP(K.sub)).sort((a,b)=>a.name.localeCompare(b.name))
+  const allFiltered=loadP(K.sub).filter(s=>{
+    if(FS.sub.bt!=='all'&&s.billingType!==FS.sub.bt) return false
+    if(FS.sub.svcs.length&&!FS.sub.svcs.includes(s.name)) return false
+    return true
+  })
   renderSubSummary()
-  if(!list.length){el.innerHTML=`<div class="empty"><div class="ei">${icon('refresh',40)}</div><p>No subscriptions yet. Add your first one above!</p></div>`;return}
+  if(!allFiltered.length){el.innerHTML=`<div class="empty"><div class="ei">${icon('refresh',40)}</div><p>No subscriptions yet. Add your first one above!</p></div>`;return}
   const bBdg={Monthly:'bdg-b',Annual:'bdg-g','Every 3 Years':'bdg-v','One-Time':'bdg-gr'}
   const spent=s=>s.totalSpent!==undefined?+s.totalSpent:(+s.amount||0)
-  const total=list.reduce((s,e)=>s+spent(e),0)
-  el.innerHTML=`<table>
-    <thead><tr><th style="min-width:120px">Service</th><th>Amount</th><th>Billing</th><th>Renewal</th><th>Start</th><th>Status</th><th>Next Renewal</th><th>Total Spent</th><th>Actions</th></tr></thead>
-    <tbody>${list.map(s=>{
+  const active=allFiltered.filter(s=>s.status==='Active'&&s.billingType!=='One-Time').sort((a,b)=>a.name.localeCompare(b.name))
+  const inactive=allFiltered.filter(s=>s.status!=='Active'||s.billingType==='One-Time').sort((a,b)=>a.name.localeCompare(b.name))
+  function buildSubRows(list){return list.map(s=>{
       const nr=(s.status==='Active'&&s.billingType!=='One-Time')?fmtDate(nextCharge(s)):'—'
       const optB=(val)=>`<option${val===s.billingType?' selected':''}>${val}</option>`
       const isManual=s.autoRenew===false
@@ -2522,9 +2634,22 @@ function renderSubTable() {
         <td><span class="neg">${fmt(spent(s))}</span></td>
         <td style="white-space:nowrap"><button class="btn btn-sm btn-s" onclick="editSubRow('${s.id}')">${icon('pencil',13)}</button> <button class="btn btn-sm btn-s" onclick="dupSub('${s.id}')" title="Duplicate">${icon('copy',13)}</button> <button class="btn btn-sm btn-d" onclick="delSub('${s.id}')">${icon('trash',13)}</button></td>
       </tr>`
-    }).join('')}</tbody>
-    <tfoot><tr><td>Total spent (${list.length} subscription${list.length!==1?'s':''})</td><td colspan="5"></td><td><span class="neg">${fmt(total)}</span></td><td></td></tr></tfoot>
-  </table>`
+    }).join('')}
+  function buildSubTable(list){
+    const tot=list.reduce((s,e)=>s+spent(e),0)
+    const amtTot=list.reduce((s,e)=>s+(+e.amount||0),0)
+    return `<table>
+    <thead><tr><th style="min-width:120px">Service</th><th>Amount</th><th>Billing</th><th>Renewal</th><th>Start</th><th>Status</th><th>Next Renewal</th><th>Total Spent</th><th>Actions</th></tr></thead>
+    <tbody>${buildSubRows(list)}</tbody>
+    <tfoot><tr><td>Total (${list.length} subscription${list.length!==1?'s':''})</td><td><span class="neg">${fmt(amtTot)}</span></td><td colspan="4"></td><td></td><td><span class="neg">${fmt(tot)}</span></td><td></td></tr></tfoot>
+  </table>`}
+  const inactiveOpen=localStorage.getItem('dt_sub_inactive_open')!=='false'
+  let html=''
+  if(active.length) html+=`<div style="font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Active (${active.length})</div>${buildSubTable(active)}`
+  if(inactive.length) html+=`<details id="sub-inactive-det"${inactiveOpen?' open':''} style="margin-top:${active.length?'20px':'0'}"><summary style="cursor:pointer;font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:0.05em;padding:6px 0;user-select:none">Inactive &amp; One-Time (${inactive.length})</summary>${buildSubTable(inactive)}</details>`
+  el.innerHTML=html
+  const det=el.querySelector('#sub-inactive-det')
+  if(det) det.addEventListener('toggle',()=>localStorage.setItem('dt_sub_inactive_open',det.open))
 }
 
 function renderSubxTable() {
@@ -2845,7 +2970,7 @@ function toggleForm(type) {
 function cancelForm(type) {
   const w=document.getElementById(wrapIds[type]); if(w)w.classList.remove('open')
   if(type==='inc'){
-    ['inc-edit-id','inc-filming-date','inc-date','inc-time','inc-client','inc-amount','inc-desc'].forEach(id=>document.getElementById(id).value='')
+    ['inc-edit-id','inc-filming-date','inc-date','inc-client','inc-amount','inc-desc'].forEach(id=>document.getElementById(id).value='')
     document.getElementById('inc-pay').value='Zelle'
     document.getElementById('inc-status').value='Paid'
     document.getElementById('inc-travel').value='0'
@@ -3779,8 +3904,7 @@ function invSelectJob(id) {
   const desc = (e.desc||e.description||'').substring(0,50)
   document.getElementById('inv-job-search').value = `${d} · ${e.client}${desc?' · '+desc:''}`
   document.getElementById('inv-job-dropdown').style.display = 'none'
-  document.getElementById('inv-client').value = e.client||''
-  invUpdateNumber()
+  selectInvClient(e.client||'')
   // Show warning if job already has an invoice linked
   const warnEl = document.getElementById('inv-job-replace-warn')
   if(e.invoiceNum) {
@@ -3798,7 +3922,12 @@ function openInvoiceModal() {
   const yyyy = now.getFullYear()
   document.getElementById('inv-date').value = `${mm}/${dd}/${yyyy}`
   document.getElementById('inv-due').value = 'Due on receipt'
+  // Reset client dropdown
+  const invClientBtn=document.querySelector('#inv-client-ms .ms-btn'); if(invClientBtn){invClientBtn.textContent='Select Client';invClientBtn.classList.remove('ms-active')}
   document.getElementById('inv-client').value = ''
+  const incNames=load(K.inc).map(e=>e.client).filter(Boolean)
+  const crmNamesInv=(_clients||[]).map(c=>c.name).filter(Boolean)
+  _buildInvClientDropdown([...new Set([...crmNamesInv,...incNames])].sort())
   // Reset job picker
   _invJobs = load(K.inc).sort((a,b)=>b.date.localeCompare(a.date))
   document.getElementById('inv-job-search').value = ''
@@ -4955,7 +5084,14 @@ async function downloadInvFromDetail(invNum, btn) {
     <div class="fg" style="margin-bottom:16px">
       <div class="ff">
         <label>Client Name</label>
-        <input type="text" id="inv-client" placeholder="Client or company" oninput="invUpdateNumber()">
+        <input type="hidden" id="inv-client">
+        <div class="ms-wrap" id="inv-client-ms" style="width:100%">
+          <button class="ms-btn" type="button" onclick="toggleMs('inv-client-ms');setTimeout(()=>{const s=document.getElementById('inv-client-search');if(s&&document.getElementById('inv-client-ms').querySelector('.ms-panel.open')){s.value='';_renderInvClientItems('');s.focus()}},0)" style="width:100%;text-align:left">Select Client</button>
+          <div class="ms-panel" style="min-width:0;width:100%">
+            <input type="text" id="inv-client-search" placeholder="Type to search or add new..." autocomplete="off" style="margin-bottom:8px;font-size:13px" oninput="_filterInvClients(this.value)" onclick="event.stopPropagation()">
+            <div class="ms-items"></div>
+          </div>
+        </div>
       </div>
       <div class="ff">
         <label>Invoice Date</label>
