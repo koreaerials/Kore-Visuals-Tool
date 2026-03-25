@@ -1099,8 +1099,8 @@ function advance(date, type) {
   return date
 }
 function nextCharge(sub) {
-  const base = sub.lastProcessed || sub.startDate
-  return toStr(advance(toDate(base), sub.billingType))
+  if (!sub.lastProcessed) return sub.startDate
+  return toStr(advance(toDate(sub.lastProcessed), sub.billingType))
 }
 function fmtDate(s) {
   if(!s) return '—'
