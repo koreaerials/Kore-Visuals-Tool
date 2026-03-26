@@ -104,6 +104,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sa
 .ff.wide{grid-column:1/-1}
 input,select,textarea{width:100%;padding:9px 13px;border:1px solid rgba(0,0,0,0.11);border-radius:var(--r-sm);background:rgba(255,255,255,0.75);font-family:inherit;font-size:14px;color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s}
 input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,122,255,0.14);background:rgba(255,255,255,0.95)}
+.date-wrap{display:block;border:1px solid rgba(0,0,0,0.11);border-radius:var(--r-sm);background:rgba(255,255,255,0.75);overflow:hidden;transition:border-color .2s,box-shadow .2s}
+.date-wrap:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,122,255,0.14)}
+.date-wrap input[type="date"]{border:none!important;background:transparent!important;box-shadow:none!important;border-radius:0!important;width:100%;min-width:0}
 .profit-preview{padding:9px 13px;border-radius:var(--r-sm);border:1px solid rgba(52,199,89,0.25);background:rgba(52,199,89,0.08);font-size:15px;font-weight:700;color:var(--green)}
 
 /* BUTTONS */
@@ -258,6 +261,7 @@ svg{flex-shrink:0}
 [data-theme="dark"] .smod-logo-row{background:rgba(255,255,255,0.06)}
 [data-theme="dark"] .smod-close:hover{background:rgba(255,255,255,0.1)}
 [data-theme="dark"] input,[data-theme="dark"] select,[data-theme="dark"] textarea{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.12);color:var(--text)}
+[data-theme="dark"] .date-wrap{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.12)}
 [data-theme="dark"] input:focus,[data-theme="dark"] select:focus,[data-theme="dark"] textarea:focus{background:rgba(255,255,255,0.13);border-color:var(--blue)}
 [data-theme="dark"] .form-inner{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.09)}
 [data-theme="dark"] .profit-preview{background:rgba(52,199,89,0.15);border-color:rgba(52,199,89,0.22)}
@@ -860,7 +864,7 @@ body.privacy-mode #privacy-banner{display:block}
               </div>
             </div>
           </div>
-          <div class="ff" style="overflow:hidden;border-radius:var(--r-sm)"><label>Quote Date</label><input type="date" id="quote-date" style="width:100%"></div>
+          <div class="ff"><label>Quote Date</label><div class="date-wrap"><input type="date" id="quote-date"></div></div>
           <div class="ff"><label>Business Name</label><input type="text" id="quote-biz" placeholder="Your business name"></div>
         </div>
         <div style="margin-bottom:12px">
