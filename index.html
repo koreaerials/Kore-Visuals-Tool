@@ -442,7 +442,7 @@ body.privacy-mode #privacy-banner{display:block}
   #agr-preview-overlay{position:static !important;display:block !important;background:none !important;backdrop-filter:none !important;-webkit-backdrop-filter:none !important;padding:0 !important}
   #agr-preview-overlay .smod{box-shadow:none !important;border:none !important;border-radius:0 !important;max-height:none !important;max-width:none !important;width:100% !important;overflow:visible !important;padding:0 !important;background:#fff !important}
   #agr-preview-overlay .smod-hdr,#agr-preview-overlay .smod-footer{display:none !important}
-  #agr-preview-text,#agr-preview-text *{color:#000 !important;font-family:Georgia,serif !important}
+  #agr-preview-text,#agr-preview-text *{color:#000 !important;font-family:Arial,sans-serif !important}
   #agr-preview-text{font-size:9pt !important;line-height:1.35 !important;padding:0 !important;white-space:pre-wrap !important}
 }
 </style>
@@ -4663,7 +4663,7 @@ function openAgrForm(jobId) {
   const incNames = load(K.inc).map(e=>e.client).filter(Boolean)
   _buildAgrClientDropdown([...new Set([...crmNames,...incNames])].sort())
   selectAgrClient('')
-  selectAgrType('Real Estate')
+  selectAgrType('')
   _renderAgrTypeItems('')
   document.getElementById('agrf-has-deposit').checked = false
   toggleAgrDeposit()
@@ -4804,13 +4804,21 @@ RULES:
 // Renders body as pre-wrap and replaces the signature block with a proper two-column layout.
 function agrBodyHTML(text, clientName) {
   const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  // Extract first line ("Drone Services Agreement - DATE") as bold centered heading
+  const firstNL = text.indexOf('\n')
+  const firstLine = firstNL !== -1 ? text.substring(0, firstNL).trim() : text.trim()
+  const remainder = firstNL !== -1 ? text.substring(firstNL + 1) : ''
+  const heading = firstLine.toLowerCase().includes('drone services agreement')
+    ? `<div style="text-align:center;font-weight:700;font-size:1.05em;margin-bottom:10px">${esc(firstLine)}</div>`
+    : ''
+  const bodySource = heading ? remainder : text
   const sigMarker = 'IN WITNESS WHEREOF'
-  const sigIdx = text.indexOf(sigMarker)
+  const sigIdx = bodySource.indexOf(sigMarker)
   if(sigIdx === -1) {
-    return `<pre style="white-space:pre-wrap;font-family:inherit;margin:0">${esc(text)}</pre>`
+    return heading + `<pre style="white-space:pre-wrap;font-family:inherit;margin:0">${esc(bodySource)}</pre>`
   }
-  const bodyText = text.substring(0, sigIdx).trimEnd()
-  return `<pre style="white-space:pre-wrap;font-family:inherit;margin:0">${esc(bodyText)}</pre>
+  const bodyText = bodySource.substring(0, sigIdx).trimEnd()
+  return heading + `<pre style="white-space:pre-wrap;font-family:inherit;margin:0">${esc(bodyText)}</pre>
 <div style="margin-top:14px">
   <p style="margin:0 0 8px 0">IN WITNESS WHEREOF, the parties have executed this Agreement as of the date first written above.</p>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:8px">
@@ -4858,19 +4866,42 @@ async function saveAgreement() {
   }
   closeAgrPreview()
   toast('Agreement saved!')
-  // Auto-upload to Drive
+  // Auto-upload to Drive as PDF
   if(gsGetToken()) {
     toast('Uploading to Drive…')
     try {
+      const token = gsGetToken()
       const folderId = await gdEnsurePath(GD_AGR_PATH)
       if(folderId) {
-        const safeName = `${(clientName||'Client').replace(/[^a-zA-Z0-9 ]/g,'')}-${date}-Agreement.html`
-        const htmlContent = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:Georgia,serif;font-size:13pt;line-height:1.8;margin:1in;max-width:none;color:#000}pre{white-space:pre-wrap;font-family:inherit;margin:0}strong{font-weight:700}</style></head><body>${agrBodyHTML(text, clientName)}</body></html>`
-        const fileId = await gdUploadFile(safeName, htmlContent, 'text/html', folderId, null)
-        if(fileId) {
-          const list2 = load(K.agr), ai = list2.findIndex(a=>a.id===agr.id)
-          if(ai>=0) { list2[ai].driveFileId = fileId; save(K.agr, list2) }
-          toast('Agreement saved & uploaded to Drive!')
+        const safeName = `${(clientName||'Client').replace(/[^a-zA-Z0-9 ]/g,'')}-${date}-Agreement`
+        const htmlContent = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:Arial,sans-serif;font-size:13pt;line-height:1.8;margin:1in;max-width:none;color:#000}pre{white-space:pre-wrap;font-family:inherit;margin:0}strong{font-weight:700}</style></head><body>${agrBodyHTML(text, clientName)}</body></html>`
+        const enc = new TextEncoder()
+        // Upload HTML → convert to Google Doc
+        const tempDoc = await invUploadToDrive(enc.encode(htmlContent), 'text/html', safeName, 'application/vnd.google-apps.document', folderId, token)
+        if(tempDoc) {
+          // Export Google Doc as PDF
+          const pdfResp = await fetch(`https://www.googleapis.com/drive/v3/files/${tempDoc.id}/export?mimeType=application/pdf`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+          if(pdfResp.ok) {
+            const pdfBlob = await pdfResp.blob()
+            // Upload PDF
+            const pdfFile = await invUploadToDrive(pdfBlob, 'application/pdf', safeName + '.pdf', 'application/pdf', folderId, token)
+            // Delete temp Google Doc
+            await fetch(`https://www.googleapis.com/drive/v3/files/${tempDoc.id}`, {
+              method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
+            })
+            if(pdfFile) {
+              const list2 = load(K.agr), ai = list2.findIndex(a=>a.id===agr.id)
+              if(ai>=0) { list2[ai].driveFileId = pdfFile.id; save(K.agr, list2) }
+              toast('Agreement saved & uploaded to Drive!')
+            }
+          } else {
+            // Fallback: keep the Google Doc if PDF export fails
+            const list2 = load(K.agr), ai = list2.findIndex(a=>a.id===agr.id)
+            if(ai>=0) { list2[ai].driveFileId = tempDoc.id; save(K.agr, list2) }
+            toast('Saved to Drive (PDF export failed, saved as Doc)')
+          }
         }
       }
     } catch(err) { console.warn('Agreement Drive upload:', err); toast('Saved locally — Drive upload failed') }
@@ -5687,7 +5718,7 @@ async function downloadInvFromDetail(invNum, btn) {
       <span class="smod-ttl">Agreement Preview</span>
       <button class="smod-close" onclick="closeAgrPreview()">&#x2715;</button>
     </div>
-    <div id="agr-preview-text" style="font-family:Georgia,serif;font-size:13px;line-height:1.8;white-space:pre-wrap;padding:8px 4px;color:var(--text)"></div>
+    <div id="agr-preview-text" style="font-family:Arial,sans-serif;font-size:13px;line-height:1.8;white-space:pre-wrap;padding:8px 4px;color:var(--text)"></div>
     <div class="smod-footer" style="margin-top:16px">
       <button class="btn btn-p" onclick="saveAgreement()" style="flex:1">Save &amp; Upload to Drive</button>
       <button class="btn btn-s" onclick="window.print()">Print / PDF</button>
