@@ -474,7 +474,6 @@ body.privacy-mode #privacy-banner{display:block}
       <button class="tab" data-tab="subscriptions"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg> Subscriptions</button>
       <button class="tab" data-tab="clients"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Clients</button>
       <button class="tab" data-tab="jobs"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Jobs & Pricing</button>
-      <button class="tab" data-tab="taxes"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/><line x1="16" y1="8" x2="8" y2="8"/><line x1="16" y1="12" x2="8" y2="12"/><line x1="13" y1="16" x2="8" y2="16"/></svg> Tax Summary</button>
       <button class="tab" data-tab="export"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Export</button>
     </nav>
     <div class="hdr-right">
@@ -495,7 +494,6 @@ body.privacy-mode #privacy-banner{display:block}
   <button class="tab" data-tab="subscriptions" onclick="mobNavTo('subscriptions')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg> Subscriptions</button>
   <button class="tab" data-tab="clients" onclick="mobNavTo('clients')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Clients</button>
   <button class="tab" data-tab="jobs" onclick="mobNavTo('jobs')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Jobs & Pricing</button>
-  <button class="tab" data-tab="taxes" onclick="mobNavTo('taxes')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/><line x1="16" y1="8" x2="8" y2="8"/><line x1="16" y1="12" x2="8" y2="12"/><line x1="13" y1="16" x2="8" y2="16"/></svg> Tax Summary</button>
   <button class="tab" data-tab="export" onclick="mobNavTo('export')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Export</button>
 </div>
 
@@ -714,14 +712,17 @@ body.privacy-mode #privacy-banner{display:block}
     </div>
   </section>
 
-  <!-- TAX SUMMARY -->
+  <!-- TAX SUMMARY (kept in DOM for JS fallback, content moved to export sub-tab) -->
   <section class="panel" id="panel-taxes">
-    <div class="sec-hdr"><h2>Tax Summary</h2><p>Annual breakdown of revenue, expenses, and net profit — one year per card</p></div>
-    <div id="tax-content"></div>
   </section>
 
   <!-- EXPORT -->
   <section class="panel" id="panel-export">
+    <div class="jobs-subnav" id="export-subnav">
+      <button class="jobs-subnav-btn on" data-section="export-main" onclick="switchExportSection('export-main')">Export & Backup</button>
+      <button class="jobs-subnav-btn" data-section="export-taxes" onclick="switchExportSection('export-taxes')">Tax Summary</button>
+    </div>
+    <div id="export-main-section">
     <div class="sec-hdr"><h2>Export & Backup</h2><p>Download your data or restore from a backup</p></div>
     <div class="exp-grid">
       <div class="card exp-card">
@@ -773,6 +774,11 @@ body.privacy-mode #privacy-banner{display:block}
       </div>
     </div>
     <div class="card" style="margin-top:16px" id="data-summary"></div>
+    </div><!-- end export-main-section -->
+    <div id="export-taxes-section" style="display:none">
+      <div class="sec-hdr"><h2>Tax Summary</h2><p>Annual breakdown of revenue, expenses, and net profit — one year per card</p></div>
+      <div id="tax-content"></div>
+    </div><!-- end export-taxes-section -->
   </section>
 
   <!-- CLIENTS -->
@@ -807,7 +813,7 @@ body.privacy-mode #privacy-banner{display:block}
               <div class="ff"><label>Type</label>
                 <select id="prc-type"><option value="Hourly">Hourly</option><option value="Flat Rate">Flat Rate</option></select>
               </div>
-              <div class="ff"><label>Rate ($)</label><input type="number" id="prc-rate" placeholder="0.00" min="0" step="0.01"></div>
+              <div class="ff"><label>Rate ($)</label><input type="number" id="prc-rate" placeholder="0.00" step="0.01"></div>
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap">
               <button class="btn btn-g" onclick="savePricing()">Save Service</button>
@@ -878,8 +884,14 @@ body.privacy-mode #privacy-banner{display:block}
       <input type="hidden" id="job-edit-id">
       <div class="smod-row">
         <div class="smod-lbl">Client</div>
-        <input id="job-client" list="job-client-list" placeholder="Type or select client..." autocomplete="off">
-        <datalist id="job-client-list"></datalist>
+        <input type="hidden" id="job-client">
+        <div class="ms-wrap" id="job-client-ms" style="width:100%">
+          <button class="ms-btn" type="button" onclick="toggleMs('job-client-ms');setTimeout(()=>{const s=document.getElementById('job-client-search');if(s&&document.getElementById('job-client-ms').querySelector('.ms-panel.open')){s.value='';_renderJobClientItems('');s.focus()}},0)" style="width:100%;text-align:left">Select or type client</button>
+          <div class="ms-panel" style="min-width:0;width:100%">
+            <input type="text" id="job-client-search" placeholder="Type to search or add new..." autocomplete="off" style="margin-bottom:8px;font-size:13px" oninput="_filterJobClients(this.value)" onclick="event.stopPropagation()">
+            <div class="ms-items"></div>
+          </div>
+        </div>
       </div>
       <div class="smod-row">
         <div class="smod-lbl">Stage</div>
@@ -1946,7 +1958,7 @@ function savePricing() {
   const name=document.getElementById('prc-name').value.trim()
   const type=document.getElementById('prc-type').value
   const rate=parseFloat(document.getElementById('prc-rate').value)||0
-  if(!name||rate<=0){toast('Please fill in name and rate');return}
+  if(!name||document.getElementById('prc-rate').value.trim()===''){toast('Please fill in name and rate');return}
   const list=load(K.prc)
   const entry={id:id||uid(),name,type,rate}
   if(id){const i=list.findIndex(p=>p.id===id);if(i>=0)list[i]=entry}else list.push(entry)
@@ -2065,6 +2077,28 @@ function onAgrAmountChange() {
 }
 
 let _agrClientNames = []
+function _buildJobClientDropdown(names) {
+  window._jobClientNames = names
+  _renderJobClientItems('')
+}
+function _renderJobClientItems(filter) {
+  const wrap = document.getElementById('job-client-ms'); if(!wrap) return
+  const current = document.getElementById('job-client').value
+  const q = filter.trim().toLowerCase()
+  const filtered = (window._jobClientNames||[]).filter(n => !q || n.toLowerCase().includes(q))
+  const clearRow = current && !q ? `<div class="ms-item" onclick="selectJobClient('')" style="cursor:pointer;color:var(--text-2);font-style:italic">— clear —</div>` : ''
+  const matchRows = filtered.map(n => `<div class="ms-item${n===current?' ms-item-sel':''}" onclick="selectJobClient('${esc(n)}')" style="cursor:pointer">${esc(n)}</div>`).join('')
+  const exactMatch = filtered.some(n=>n.toLowerCase()===q)
+  const addRow = filter.trim() && !exactMatch ? `<div class="ms-item" onclick="selectJobClient('${esc(filter.trim())}')" style="cursor:pointer;color:var(--blue)">Use "<strong>${esc(filter.trim())}</strong>"</div>` : ''
+  wrap.querySelector('.ms-items').innerHTML = clearRow + matchRows + addRow
+}
+function _filterJobClients(val) { _renderJobClientItems(val) }
+function selectJobClient(name) {
+  document.getElementById('job-client').value = name
+  const btn = document.querySelector('#job-client-ms .ms-btn'); if(btn) { btn.textContent = name || 'Select or type client'; btn.classList.toggle('ms-active', !!name) }
+  const panel = document.querySelector('#job-client-ms .ms-panel'); if(panel) panel.classList.remove('open')
+  _renderJobClientItems('')
+}
 function _buildAgrClientDropdown(names) {
   _agrClientNames = names
   _renderAgrClientItems('')
@@ -2226,19 +2260,16 @@ async function openJobForm(id) {
   overlay.classList.add('open')
   // Load clients if not yet loaded
   if(_clients===null) await loadClientsFromSheets()
-  // Populate client datalist — CRM names + fallback from income entries
-  const dl=document.getElementById('job-client-list')
-  if(dl){
-    const crmNames=(_clients||[]).map(c=>c.name).filter(Boolean)
-    const incNames=load(K.inc).map(e=>e.client).filter(Boolean)
-    const names=[...new Set([...crmNames,...incNames])].sort()
-    dl.innerHTML=names.map(n=>`<option value="${esc(n)}">`).join('')
-  }
+  // Populate client ms-wrap dropdown — CRM names + fallback from income entries
+  const crmNames=(_clients||[]).map(c=>c.name).filter(Boolean)
+  const incNames=load(K.inc).map(e=>e.client).filter(Boolean)
+  const sortedNames=[...new Set([...crmNames,...incNames])].sort()
+  _buildJobClientDropdown(sortedNames)
   if(id){
     const e=load(K.jobs).find(j=>j.id===id); if(!e)return
     document.getElementById('job-edit-id').value=e.id
     document.getElementById('job-name').value=e.name
-    document.getElementById('job-client').value=e.clientName||''
+    selectJobClient(e.clientName||'')
     document.getElementById('job-stage').value=e.stage||'Lead'
     document.getElementById('job-filming-date').value=e.filmingDate||''
     document.getElementById('job-filming-time').value=e.filmingTime||''
@@ -2248,7 +2279,7 @@ async function openJobForm(id) {
   } else {
     document.getElementById('job-edit-id').value=''
     document.getElementById('job-name').value=''
-    document.getElementById('job-client').value=''
+    selectJobClient('')
     document.getElementById('job-stage').value='Lead'
     document.getElementById('job-filming-date').value=''
     document.getElementById('job-filming-time').value=''
@@ -2259,6 +2290,12 @@ async function openJobForm(id) {
 }
 function closeJobForm() {
   const overlay=document.getElementById('job-form-overlay'); if(overlay)overlay.classList.remove('open')
+}
+function switchExportSection(section) {
+  document.querySelectorAll('#export-subnav .jobs-subnav-btn').forEach(b => b.classList.toggle('on', b.dataset.section === section))
+  document.getElementById('export-main-section').style.display = section === 'export-main' ? '' : 'none'
+  document.getElementById('export-taxes-section').style.display = section === 'export-taxes' ? '' : 'none'
+  if(section === 'export-taxes') renderTaxes()
 }
 function switchJobsSection(section) {
   const pq = document.getElementById('jobs-pq-section')
@@ -2368,10 +2405,15 @@ async function jobMarkPaid(id) {
 
 async function jobCreateIncomeIfNeeded(job) {
   if(job.incomeId){toast('Income entry already exists');return}
+  let _jobAgrId = ''
+  if(job.agrId) {
+    const agrRec = load(K.agr).find(a=>a.id===job.agrId)
+    if(agrRec && agrRec.driveFileId) _jobAgrId = JSON.stringify([{label:'Agreement',fileId:agrRec.driveFileId}])
+  }
   const incEntry={
     id:uid(),date:today(),filmingDate:job.filmingDate||'',client:job.clientName||'Unknown',
     amount:job.amount||0,pay:'Other',travel:0,profit:job.amount||0,status:'Pending',
-    desc:job.name,invoiceNum:'',agreementId:'',calendarEventId:'',jobTime:''
+    desc:job.name,invoiceNum:'',agreementId:_jobAgrId,calendarEventId:'',jobTime:''
   }
   const incList=load(K.inc); incList.push(incEntry); save(K.inc,incList)
   // Store incomeId on job
@@ -3853,7 +3895,7 @@ function toggleTheme() {
 }
 
 // ── TAB SWITCHING ─────────────────────────────────────────────
-const tabRenders={dashboard:renderDash,income:renderIncTable,purchases:renderPurTable,subscriptions:()=>{renderSubTable()},taxes:renderTaxes,export:renderDataSummary,clients:renderClientsTab,jobs:()=>{renderPricingList();initQuoteBuilder();renderJobsBoard()}}
+const tabRenders={dashboard:renderDash,income:renderIncTable,purchases:renderPurTable,subscriptions:()=>{renderSubTable()},taxes:renderTaxes,export:()=>{renderDataSummary();switchExportSection('export-main')},clients:renderClientsTab,jobs:()=>{renderPricingList();initQuoteBuilder();renderJobsBoard()}}
 
 function openTab(t) {
   const tab=document.querySelector(`#nav [data-tab="${t}"]`); if(!tab)return
