@@ -435,6 +435,7 @@ body.privacy-mode #privacy-banner{display:block}
 .quote-print-area{display:none}
 @page{margin:1in}
 @media print{
+  @page{margin:10mm 10mm 4mm 10mm}
   body>*:not(.quote-print-area):not(#agr-preview-overlay){display:none !important}
   .quote-print-area{display:block !important;position:static}
   .quote-print-area *{color:#000 !important}
@@ -442,7 +443,7 @@ body.privacy-mode #privacy-banner{display:block}
   #agr-preview-overlay .smod{box-shadow:none !important;border:none !important;border-radius:0 !important;max-height:none !important;max-width:none !important;width:100% !important;overflow:visible !important;padding:0 !important;background:#fff !important}
   #agr-preview-overlay .smod-hdr,#agr-preview-overlay .smod-footer{display:none !important}
   #agr-preview-text,#agr-preview-text *{color:#000 !important;font-family:Georgia,serif !important}
-  #agr-preview-text{font-size:12pt !important;line-height:1.8 !important;padding:0 !important}
+  #agr-preview-text{font-size:9pt !important;line-height:1.35 !important;padding:0 !important;white-space:pre-wrap !important}
 }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.7/dist/pizzip.js"></script>
@@ -3820,6 +3821,8 @@ document.addEventListener('click', e=>{
   if(!e.target.closest('.ms-wrap')) document.querySelectorAll('.ms-panel.open').forEach(p=>p.classList.remove('open'))
 })
 
+window.addEventListener('beforeprint',()=>{if(document.getElementById('agr-preview-overlay').classList.contains('open')){_prevTitle=document.title;document.title=''}})
+window.addEventListener('afterprint',()=>{if(typeof _prevTitle!=='undefined'){document.title=_prevTitle;_prevTitle=undefined}})
 document.addEventListener('DOMContentLoaded', ()=>{
   applyTheme(localStorage.getItem('dt_theme')||'light')
   if (privacyMode()) document.body.classList.add('privacy-mode')
