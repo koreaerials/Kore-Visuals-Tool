@@ -2244,7 +2244,7 @@ function quoteToJob() {
   switchJobsSection('pipeline')
   setTimeout(async ()=>{
     await openJobForm()
-    if(client) document.getElementById('job-client').value=client
+    if(client) selectJobClient(client)
     document.getElementById('job-amount').value=total.toFixed(2)
     document.getElementById('job-stage').value='Quoted'
     document.getElementById('job-name').focus()
