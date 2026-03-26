@@ -402,6 +402,7 @@ body.privacy-mode #privacy-banner{display:block}
   input[type="date"]{min-width:0;width:100%!important}
   .ff{min-width:0}
   #jobs-hdr-btns .btn{flex:1 1 calc(50% - 5px);justify-content:center;text-align:center}
+  #inc-toggle-btn,#pur-toggle-btn,#sub-toggle-btn{min-height:36px;padding:7px 16px;font-size:13px}
 }
 
 /* ── CLIENTS TAB ── */
@@ -859,7 +860,7 @@ body.privacy-mode #privacy-banner{display:block}
               </div>
             </div>
           </div>
-          <div class="ff"><label>Quote Date</label><input type="date" id="quote-date"></div>
+          <div class="ff" style="overflow:hidden"><label>Quote Date</label><input type="date" id="quote-date" style="width:100%"></div>
           <div class="ff"><label>Business Name</label><input type="text" id="quote-biz" placeholder="Your business name"></div>
         </div>
         <div style="margin-bottom:12px">
