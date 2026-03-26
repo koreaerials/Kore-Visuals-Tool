@@ -2140,7 +2140,7 @@ function renderQuoteLines() {
       <option value="">— Select Service —</option>
       ${services.map(s=>`<option value="${s.id}"${line.svcId===s.id?' selected':''}>${esc(s.name)} (${s.type})</option>`).join('')}
     </select>
-    <input type="number" min="0" step="0.01" placeholder="${svcMap[line.svcId]?.type==='Hourly'?'Hours':'Qty'}" value="${line.qty}" oninput="quoteUpdateLine(${i},'qty',this.value)" style="padding:7px 10px">
+    <input type="number" step="0.01" placeholder="${svcMap[line.svcId]?.type==='Hourly'?'Hours':'Qty'}" value="${line.qty}" oninput="quoteUpdateLine(${i},'qty',this.value)" style="padding:7px 10px">
     <div style="font-weight:700;color:var(--green);padding:7px 0;text-align:right">${fmt(line.total)}</div>
     <button class="btn btn-sm btn-d" onclick="quoteRemoveLine(${i})">${icon('trash',12)}</button>
   </div>`).join('')
@@ -4812,12 +4812,14 @@ function agrBodyHTML(text, clientName) {
     ? `<div style="text-align:center;font-weight:700;font-size:1.05em;margin-bottom:10px">${esc(firstLine)}</div>`
     : ''
   const bodySource = heading ? remainder : text
-  // Render body lines: bold numbered section headings and party label lines
+  // Render body lines: bold numbered section headings; bold only the label prefix for party lines
   const isSectionHeading = line => /^\d+\.\s+\S/.test(line.trim()) && line.trim().length < 80
-  const isPartyLabel = line => /^(Service Provider:|Client:|Location:)\s*/i.test(line.trim())
+  const partyLabelMatch = line => line.match(/^(Service Provider:|Client:|Location:)(.*)/i)
   function renderLines(src) {
     return src.split('\n').map(line => {
-      if(isSectionHeading(line) || isPartyLabel(line)) return `<div style="font-weight:700;white-space:pre-wrap">${esc(line)}</div>`
+      const partyMatch = partyLabelMatch(line)
+      if(partyMatch) return `<div style="white-space:pre-wrap"><strong>${esc(partyMatch[1])}</strong>${esc(partyMatch[2])}</div>`
+      if(isSectionHeading(line)) return `<div style="font-weight:700;white-space:pre-wrap">${esc(line)}</div>`
       return `<span style="white-space:pre-wrap">${esc(line)}</span>\n`
     }).join('')
   }
