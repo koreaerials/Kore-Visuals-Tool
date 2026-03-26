@@ -4750,8 +4750,8 @@ RULES:
 - Keep Section 2 payment terms intact: deposit non-refundable except operator cancellation or weather
 - GOVERNING LAW MUST ALWAYS BE THE FINAL NUMBERED SECTION, immediately before the signature block. Never place anything after it except the signature.
 - If optional sections are requested, insert them BEFORE the Governing Law section as additional numbered sections. Renumber Governing Law to be the last section. Example: if no optional sections, Governing Law is Section 4. If one optional section, it becomes Section 4 and Governing Law becomes Section 5. If two optional sections, they become Sections 4 and 5 and Governing Law becomes Section 6.
-- Travel & Parking Expenses section template: "X. Travel & Parking Expenses — If the shoot location requires Operator to travel a significant distance, a travel expense fee may apply. Any applicable travel expenses, including parking fees, will be communicated to Client prior to the shoot and reflected as a separate line item on the invoice."
-- Fines & Legal Liability section template: "X. Fines, Permits & Legal Liability — Client is responsible for obtaining any required permits, authorizations, or approvals for drone operations at the specified location. Operator shall not be held liable for any fines, penalties, or legal consequences arising from Client's failure to secure the necessary permits. Client agrees to indemnify and hold harmless Kore Aerials, LLC from any claims, losses, or damages resulting from such failure."
+- Travel & Parking Expenses section template: "X. Travel & Parking Expenses — If the shoot location requires Operator to travel beyond a reasonable distance, a travel fee may apply and will be clearly outlined in the invoice. Client agrees to reimburse Operator for any additional expenses incurred during the performance of services, including but not limited to parking fees, garage charges, and tolls."
+- Fines & Legal Liability section template: "X. Fines, Permits & Legal Liability — Client understands and agrees that certain locations may be subject to airspace restrictions, permitting requirements, or other regulatory limitations for drone operations. If Operator incurs any fines, violations, or penalties arising directly from the location or nature of the requested shoot—including but not limited to FAA violations or local law enforcement penalties—Client agrees to fully reimburse Operator for the total cost of such fines or penalties."
 - Output ONLY the agreement text — no preamble, no explanation, no markdown formatting, no code blocks`
 
   try {
@@ -4812,26 +4812,34 @@ function agrBodyHTML(text, clientName) {
     ? `<div style="text-align:center;font-weight:700;font-size:1.05em;margin-bottom:10px">${esc(firstLine)}</div>`
     : ''
   const bodySource = heading ? remainder : text
+  // Render body lines: bold numbered section headings (e.g. "1. Services Provided")
+  const isSectionHeading = line => /^\d+\.\s+\S/.test(line.trim()) && line.trim().length < 80
+  function renderLines(src) {
+    return src.split('\n').map(line => {
+      if(isSectionHeading(line)) return `<div style="font-weight:700;white-space:pre-wrap">${esc(line)}</div>`
+      return `<span style="white-space:pre-wrap">${esc(line)}</span>\n`
+    }).join('')
+  }
   const sigMarker = 'IN WITNESS WHEREOF'
   const sigIdx = bodySource.indexOf(sigMarker)
   if(sigIdx === -1) {
-    return heading + `<pre style="white-space:pre-wrap;font-family:inherit;margin:0">${esc(bodySource)}</pre>`
+    return heading + `<div style="font-family:inherit">${renderLines(bodySource)}</div>`
   }
   const bodyText = bodySource.substring(0, sigIdx).trimEnd()
-  return heading + `<pre style="white-space:pre-wrap;font-family:inherit;margin:0">${esc(bodyText)}</pre>
+  return heading + `<div style="font-family:inherit">${renderLines(bodyText)}</div>
 <div style="margin-top:14px">
   <p style="margin:0 0 8px 0">IN WITNESS WHEREOF, the parties have executed this Agreement as of the date first written above.</p>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:8px">
-    <div>
-      <div style="border-top:2px solid currentColor;margin-bottom:4px;width:200px"></div>
-      <div style="margin-bottom:2px"><strong>Operator Signature</strong></div>
-      <div style="margin-bottom:2px"><strong>Name:</strong> Kore Aerials, LLC</div>
+    <div style="line-height:1.3">
+      <div style="border-top:2px solid currentColor;margin-bottom:3px;width:200px"></div>
+      <div style="margin-bottom:1px"><strong>Operator Signature</strong></div>
+      <div style="margin-bottom:1px"><strong>Name:</strong> Kore Aerials, LLC</div>
       <div><strong>Date:</strong> _______________</div>
     </div>
-    <div>
-      <div style="border-top:2px solid currentColor;margin-bottom:4px;width:200px"></div>
-      <div style="margin-bottom:2px"><strong>Client Signature</strong></div>
-      <div style="margin-bottom:2px"><strong>Name:</strong> ${esc(clientName||'')}</div>
+    <div style="line-height:1.3">
+      <div style="border-top:2px solid currentColor;margin-bottom:3px;width:200px"></div>
+      <div style="margin-bottom:1px"><strong>Client Signature</strong></div>
+      <div style="margin-bottom:1px"><strong>Name:</strong> ${esc(clientName||'')}</div>
       <div><strong>Date:</strong> _______________</div>
     </div>
   </div>
