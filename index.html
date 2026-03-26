@@ -533,6 +533,7 @@ body.privacy-mode #privacy-banner{display:block}
       <div class="form-toggle-hdr">
         <span class="form-ttl" id="inc-form-ttl">Add New Job</span>
         <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-s" onclick="openAgrUploadModal()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg> Upload/Link Agreement</button>
           <button class="btn btn-g" id="inc-toggle-btn" onclick="toggleForm('inc')">+ Add Job</button>
         </div>
       </div>
@@ -4653,6 +4654,140 @@ function fmtDateLong(dateStr) {
   return `${months[m-1]} ${d}${s}, ${y}`
 }
 
+// ── AGREEMENT UPLOAD / LINK ────────────────────────────────────
+let _agrUploadFile = null
+let _agrUploadedFileId = null
+
+function openAgrUploadModal() {
+  _agrUploadFile = null
+  _agrUploadedFileId = null
+  document.getElementById('agr-file-name').textContent = ''
+  document.getElementById('agr-upload-status').textContent = ''
+  document.getElementById('agr-upload-btn').disabled = true
+  document.getElementById('agr-save-link-btn').disabled = true
+  document.getElementById('agr-link-section').style.display = 'none'
+  document.getElementById('agr-drop-zone').style.borderColor = 'var(--border)'
+  // Populate link target dropdown
+  const sel = document.getElementById('agr-link-target')
+  sel.innerHTML = '<option value="">— No link —</option>'
+  const incList = load(K.inc).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,50)
+  if(incList.length) {
+    const og1 = document.createElement('optgroup'); og1.label = 'Income Entries'
+    incList.forEach(e => {
+      const o = document.createElement('option')
+      o.value = 'inc:' + e.id
+      o.textContent = (e.client||'(no client)') + ' — ' + fmtDate(e.date)
+      og1.appendChild(o)
+    })
+    sel.appendChild(og1)
+  }
+  const jobList = load(K.jobs).filter(j=>j.stage!=='Paid'&&j.stage!=='Written Off')
+  if(jobList.length) {
+    const og2 = document.createElement('optgroup'); og2.label = 'Pipeline Jobs'
+    jobList.forEach(j => {
+      const o = document.createElement('option')
+      o.value = 'job:' + j.id
+      o.textContent = (j.name||'(no name)') + ' — ' + (j.stage||'Lead')
+      og2.appendChild(o)
+    })
+    sel.appendChild(og2)
+  }
+  document.getElementById('agr-upload-modal').classList.add('open')
+}
+
+function closeAgrUploadModal() {
+  document.getElementById('agr-upload-modal').classList.remove('open')
+}
+
+function agrHandleDrop(event) {
+  event.preventDefault()
+  document.getElementById('agr-drop-zone').style.borderColor = 'var(--border)'
+  const file = event.dataTransfer.files[0]
+  if(file && file.type === 'application/pdf') {
+    agrSetFile(file)
+  } else {
+    toast('Only PDF files are supported')
+  }
+}
+
+function agrFileSelected(input) {
+  if(input.files[0]) agrSetFile(input.files[0])
+}
+
+function agrSetFile(file) {
+  _agrUploadFile = file
+  document.getElementById('agr-file-name').textContent = file.name
+  document.getElementById('agr-upload-btn').disabled = false
+}
+
+async function agrUploadToDrive() {
+  if(!_agrUploadFile) return
+  if(!gsGetToken()) { toast('Sign in with Google to upload to Drive'); return }
+  const statusEl = document.getElementById('agr-upload-status')
+  const uploadBtn = document.getElementById('agr-upload-btn')
+  statusEl.textContent = 'Uploading…'
+  statusEl.style.color = 'var(--text-2)'
+  uploadBtn.disabled = true
+  try {
+    const token = gsGetToken()
+    const folderId = await gdEnsurePath(GD_AGR_PATH)
+    if(!folderId) throw new Error('Could not access Drive folder')
+    const buf = await _agrUploadFile.arrayBuffer()
+    const result = await invUploadToDrive(new Uint8Array(buf), 'application/pdf', _agrUploadFile.name, 'application/pdf', folderId, token)
+    if(!result || !result.id) throw new Error('Upload returned no file ID')
+    _agrUploadedFileId = result.id
+    statusEl.textContent = '✓ Uploaded: ' + _agrUploadFile.name
+    statusEl.style.color = 'var(--green)'
+    document.getElementById('agr-link-section').style.display = 'block'
+    document.getElementById('agr-save-link-btn').disabled = false
+    toast('PDF uploaded to Drive!')
+  } catch(err) {
+    console.warn('agrUploadToDrive:', err)
+    statusEl.textContent = 'Upload failed'
+    statusEl.style.color = 'var(--red)'
+    uploadBtn.disabled = false
+    toast('Drive upload failed')
+  }
+}
+
+async function agrSaveLink() {
+  if(!_agrUploadedFileId) { toast('Upload to Drive first'); return }
+  const val = document.getElementById('agr-link-target').value
+  if(val.startsWith('inc:')) {
+    const incId = val.slice(4)
+    const list = load(K.inc)
+    const idx = list.findIndex(e=>e.id===incId)
+    if(idx<0) { toast('Income entry not found'); return }
+    const atts = parseAttachments(list[idx].agreementId)
+    atts.push({label:'Agreement', fileId:_agrUploadedFileId})
+    list[idx].agreementId = JSON.stringify(atts)
+    save(K.inc, list)
+    if(gsGetToken()) gsQueueSync(K.inc)
+    renderIncTable()
+    toast('Agreement linked to income entry!')
+  } else if(val.startsWith('job:')) {
+    const jobId = val.slice(4)
+    const jobs = load(K.jobs)
+    const ji = jobs.findIndex(j=>j.id===jobId)
+    if(ji<0) { toast('Job not found'); return }
+    const job = jobs[ji]
+    const agrRec = {
+      id: uid(), jobId, clientName: job.clientName||'', jobType:'', location:'',
+      date: job.filmingDate||today(), amount: job.amount||0, deposit:0,
+      deliverables:'', deliveryDays:0, text:'', createdAt: today(),
+      driveFileId: _agrUploadedFileId, status:'uploaded'
+    }
+    const agrList = load(K.agr); agrList.push(agrRec); save(K.agr, agrList)
+    jobs[ji].agrId = agrRec.id; save(K.jobs, jobs)
+    if(gsGetToken()) { gsQueueSync(K.agr); gsQueueSync(K.jobs) }
+    renderJobsBoard()
+    toast('Agreement linked to pipeline job!')
+  } else {
+    toast('Agreement uploaded to Drive (no link saved)')
+  }
+  closeAgrUploadModal()
+}
+
 function openAgrForm(jobId) {
   const overlay = document.getElementById('agr-gen-overlay')
   document.getElementById('agrf-job-id').value = jobId||''
@@ -5630,6 +5765,40 @@ async function downloadInvFromDetail(invNum, btn) {
     <div class="smod-footer">
       <button class="btn btn-p" onclick="saveAttachments()" style="flex:1"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:4px"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>Save Attachments</button>
       <button class="btn btn-s" onclick="closeAgrModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- AGREEMENT UPLOAD / LINK MODAL -->
+<div class="smod-overlay" id="agr-upload-modal" onclick="if(event.target===this)closeAgrUploadModal()">
+  <div class="smod" style="max-width:480px">
+    <div class="smod-hdr">
+      <span class="smod-ttl">Upload / Link Agreement</span>
+      <button class="smod-close" onclick="closeAgrUploadModal()">&#x2715;</button>
+    </div>
+    <div id="agr-drop-zone" style="border:2px dashed var(--border);border-radius:10px;padding:28px 16px;text-align:center;cursor:pointer;margin-bottom:16px;transition:border-color .15s"
+      onclick="document.getElementById('agr-file-input').click()"
+      ondragover="event.preventDefault();this.style.borderColor='var(--blue)'"
+      ondragleave="this.style.borderColor='var(--border)'"
+      ondrop="agrHandleDrop(event)">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-2);margin-bottom:8px"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>
+      <div style="font-size:13px;color:var(--text-2)">Drag a PDF here, or click to browse</div>
+      <div id="agr-file-name" style="font-size:12px;color:var(--green);margin-top:8px;font-weight:600"></div>
+    </div>
+    <input type="file" id="agr-file-input" accept=".pdf,application/pdf" style="display:none" onchange="agrFileSelected(this)">
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px">
+      <button class="btn btn-p" id="agr-upload-btn" onclick="agrUploadToDrive()" disabled style="flex:1">Upload to Drive</button>
+      <div id="agr-upload-status" style="font-size:12px;color:var(--text-2);flex:1"></div>
+    </div>
+    <div id="agr-link-section" style="display:none;margin-bottom:16px">
+      <div class="smod-lbl" style="margin-bottom:6px">Link to (optional):</div>
+      <select class="inp" id="agr-link-target" style="width:100%;font-size:13px">
+        <option value="">— No link —</option>
+      </select>
+    </div>
+    <div class="smod-footer">
+      <button class="btn btn-p" id="agr-save-link-btn" onclick="agrSaveLink()" disabled style="flex:1">Save Link</button>
+      <button class="btn btn-s" onclick="closeAgrUploadModal()">Close</button>
     </div>
   </div>
 </div>
