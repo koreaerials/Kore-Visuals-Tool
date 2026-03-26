@@ -4751,7 +4751,7 @@ RULES:
 - GOVERNING LAW MUST ALWAYS BE THE FINAL NUMBERED SECTION, immediately before the signature block. Never place anything after it except the signature.
 - If optional sections are requested, insert them BEFORE the Governing Law section as additional numbered sections. Renumber Governing Law to be the last section. Example: if no optional sections, Governing Law is Section 4. If one optional section, it becomes Section 4 and Governing Law becomes Section 5. If two optional sections, they become Sections 4 and 5 and Governing Law becomes Section 6.
 - Travel & Parking Expenses section template: "X. Travel & Parking Expenses — If the shoot location requires Operator to travel beyond a reasonable distance, a travel fee may apply and will be clearly outlined in the invoice. Client agrees to reimburse Operator for any additional expenses incurred during the performance of services, including but not limited to parking fees, garage charges, and tolls."
-- Fines & Legal Liability section template: "X. Fines, Permits & Legal Liability — Client understands and agrees that certain locations may be subject to airspace restrictions, permitting requirements, or other regulatory limitations for drone operations. If Operator incurs any fines, violations, or penalties arising directly from the location or nature of the requested shoot—including but not limited to FAA violations or local law enforcement penalties—Client agrees to fully reimburse Operator for the total cost of such fines or penalties."
+- Fines & Legal Liability section template: "X. Fines, Permits & Legal Liability. Client understands and agrees that certain locations may be subject to airspace restrictions, permitting requirements, or other regulatory limitations for drone operations. If Operator incurs any fines, violations, or penalties arising directly from the location or nature of the requested shoot, including but not limited to FAA violations or local law enforcement penalties, Client agrees to fully reimburse Operator for the total cost of such fines or penalties."
 - Output ONLY the agreement text — no preamble, no explanation, no markdown formatting, no code blocks`
 
   try {
@@ -4812,11 +4812,12 @@ function agrBodyHTML(text, clientName) {
     ? `<div style="text-align:center;font-weight:700;font-size:1.05em;margin-bottom:10px">${esc(firstLine)}</div>`
     : ''
   const bodySource = heading ? remainder : text
-  // Render body lines: bold numbered section headings (e.g. "1. Services Provided")
+  // Render body lines: bold numbered section headings and party label lines
   const isSectionHeading = line => /^\d+\.\s+\S/.test(line.trim()) && line.trim().length < 80
+  const isPartyLabel = line => /^(Service Provider:|Client:|Location:)\s*/i.test(line.trim())
   function renderLines(src) {
     return src.split('\n').map(line => {
-      if(isSectionHeading(line)) return `<div style="font-weight:700;white-space:pre-wrap">${esc(line)}</div>`
+      if(isSectionHeading(line) || isPartyLabel(line)) return `<div style="font-weight:700;white-space:pre-wrap">${esc(line)}</div>`
       return `<span style="white-space:pre-wrap">${esc(line)}</span>\n`
     }).join('')
   }
