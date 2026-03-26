@@ -61,14 +61,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sa
 .dw[data-span="4"]{grid-column:span 4}
 .dw[data-span="6"]{grid-column:span 6}
 @media(max-width:880px){
-  #dash-widgets{grid-template-columns:1fr 1fr 1fr}
-  #dash-widgets .dw[data-span="2"]{grid-column:span 1}
-  #dash-widgets .dw[data-span="4"]{grid-column:span 2}
-  #dash-widgets .dw[data-span="6"]{grid-column:1/-1}
-  #dash-widgets .sum-card{padding:12px 14px}
+  #dash-widgets{grid-template-columns:1fr 1fr 1fr;align-items:start}
+  #dash-widgets .sum-card{grid-column:span 1;padding:12px 14px}
   #dash-widgets .sum-card .val{font-size:20px}
-  #dash-widgets .sum-sub-card{padding:10px 12px}
+  #dash-widgets .sum-sub-card{grid-column:span 1;padding:10px 12px}
   #dash-widgets .sum-sub-card .val{font-size:15px}
+  #dash-widgets .card{grid-column:span 3}
+  #dash-widgets .dw[data-span="6"]{grid-column:1/-1}
+  #dash-widgets .dw[data-wi="10"]{grid-column:1/-1}
 }
 .dw{cursor:grab;user-select:none;min-width:0}
 .dw.dw-drag{opacity:.4;cursor:grabbing}
