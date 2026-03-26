@@ -860,7 +860,7 @@ body.privacy-mode #privacy-banner{display:block}
               </div>
             </div>
           </div>
-          <div class="ff" style="overflow:hidden"><label>Quote Date</label><input type="date" id="quote-date" style="width:100%"></div>
+          <div class="ff" style="overflow:hidden;border-radius:var(--r-sm)"><label>Quote Date</label><input type="date" id="quote-date" style="width:100%"></div>
           <div class="ff"><label>Business Name</label><input type="text" id="quote-biz" placeholder="Your business name"></div>
         </div>
         <div style="margin-bottom:12px">
@@ -2589,7 +2589,7 @@ function renderPurTable() {
         </tr>`
       }
       return `<tr>
-      <td>${fmtDate(e.date)}</td>
+      <td style="white-space:nowrap">${fmtDate(e.date)}</td>
       <td><strong>${esc(store)}</strong></td>
       <td><select class="isel" onchange="updatePurField('${e.id}','cat',this.value)">${optC('Drone Equipment')}${optC('Camera Equipment')}${optC('Misc')}</select></td>
       <td><span class="${+e.price<0?'pos':'neg'}">${fmt(e.price)}</span></td>
