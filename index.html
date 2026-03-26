@@ -2022,6 +2022,32 @@ function selectQuoteClient(name) {
   _renderQuoteClientItems('')
 }
 
+let _agrClientNames = []
+function _buildAgrClientDropdown(names) {
+  _agrClientNames = names
+  _renderAgrClientItems('')
+}
+function _renderAgrClientItems(filter) {
+  const wrap = document.getElementById('agrf-client-ms'); if(!wrap) return
+  const current = document.getElementById('agrf-client').value || ''
+  const itemsEl = wrap.querySelector('.ms-items')
+  const q = filter.trim().toLowerCase()
+  const filtered = _agrClientNames.filter(n => !q || n.toLowerCase().includes(q))
+  const clearRow = current && !q ? `<div class="ms-item" onclick="selectAgrClient('')" style="cursor:pointer;color:var(--text-2);font-style:italic">— clear —</div>` : ''
+  const matchRows = filtered.map(n => `<div class="ms-item${n===current?' ms-item-sel':''}" onclick="selectAgrClient('${esc(n)}')" style="cursor:pointer">${esc(n)}</div>`).join('')
+  const exactMatch = _agrClientNames.some(n => n.toLowerCase() === filter.trim().toLowerCase())
+  const addRow = filter.trim() && !exactMatch ? `<div class="ms-item" onclick="selectAgrClient('${esc(filter.trim())}')" style="cursor:pointer;color:var(--blue)">Use "<strong>${esc(filter.trim())}</strong>"</div>` : ''
+  itemsEl.innerHTML = clearRow + matchRows + addRow
+}
+function _filterAgrClients(val) { _renderAgrClientItems(val) }
+function selectAgrClient(name) {
+  const inp = document.getElementById('agrf-client'); if(inp) inp.value = name
+  const btn = document.querySelector('#agrf-client-ms .ms-btn'); if(btn) { btn.textContent = name || 'Select or type client'; btn.classList.toggle('ms-active', !!name) }
+  const panel = document.querySelector('#agrf-client-ms .ms-panel'); if(panel) panel.classList.remove('open')
+  const search = document.getElementById('agrf-client-search'); if(search) search.value = ''
+  _renderAgrClientItems('')
+}
+
 let _invClientNames = []
 function _buildInvClientDropdown(names) {
   _invClientNames = names
@@ -4592,10 +4618,15 @@ function openAgrForm(jobId) {
   document.getElementById('agrf-status').textContent = ''
   const btn = document.getElementById('agrf-generate-btn')
   btn.disabled = false; btn.textContent = 'Generate Agreement'
+  const crmNames = (_clients||[]).map(c=>c.name).filter(Boolean)
+  const incNames = load(K.inc).map(e=>e.client).filter(Boolean)
+  _buildAgrClientDropdown([...new Set([...crmNames,...incNames])].sort())
+  selectAgrClient('')
+  document.getElementById('agrf-type').value = 'Real Estate'
   if(jobId) {
     const job = load(K.jobs).find(j=>j.id===jobId)
     if(job) {
-      document.getElementById('agrf-client').value = job.clientName||''
+      selectAgrClient(job.clientName||'')
       document.getElementById('agrf-date').value = job.filmingDate||''
       if(+job.amount>0) document.getElementById('agrf-amount').value = job.amount
     }
@@ -4732,19 +4763,19 @@ function agrBodyHTML(text, clientName) {
   }
   const bodyText = text.substring(0, sigIdx).trimEnd()
   return `<pre style="white-space:pre-wrap;font-family:inherit;margin:0">${esc(bodyText)}</pre>
-<div style="margin-top:2.5em">
-  <p style="margin:0 0 2em 0">IN WITNESS WHEREOF, the parties have executed this Agreement as of the date first written above.</p>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:1.5em">
+<div style="margin-top:1.2em">
+  <p style="margin:0 0 1em 0">IN WITNESS WHEREOF, the parties have executed this Agreement as of the date first written above.</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:0.8em">
     <div>
-      <div style="border-top:2px solid currentColor;margin-bottom:12px;width:220px"></div>
-      <div style="margin-bottom:8px"><strong>Operator Signature</strong></div>
-      <div style="margin-bottom:8px"><strong>Name:</strong> Kore Aerials, LLC</div>
+      <div style="border-top:2px solid currentColor;margin-bottom:6px;width:220px"></div>
+      <div style="margin-bottom:4px"><strong>Operator Signature</strong></div>
+      <div style="margin-bottom:4px"><strong>Name:</strong> Kore Aerials, LLC</div>
       <div><strong>Date:</strong> _______________</div>
     </div>
     <div>
-      <div style="border-top:2px solid currentColor;margin-bottom:12px;width:220px"></div>
-      <div style="margin-bottom:8px"><strong>Client Signature</strong></div>
-      <div style="margin-bottom:8px"><strong>Name:</strong> ${esc(clientName||'')}</div>
+      <div style="border-top:2px solid currentColor;margin-bottom:6px;width:220px"></div>
+      <div style="margin-bottom:4px"><strong>Client Signature</strong></div>
+      <div style="margin-bottom:4px"><strong>Name:</strong> ${esc(clientName||'')}</div>
       <div><strong>Date:</strong> _______________</div>
     </div>
   </div>
@@ -5524,15 +5555,26 @@ async function downloadInvFromDetail(invNum, btn) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 14px">
       <div class="smod-row" style="grid-column:1/-1">
         <div class="smod-lbl">Job Type <span style="color:var(--red)">*</span></div>
-        <select class="isel" id="agrf-type" style="width:100%">
-          <option>Real Estate</option>
-          <option>Event / Wedding</option>
-          <option>Commercial</option>
-        </select>
+        <input class="inp" list="agrf-type-list" id="agrf-type" placeholder="Select or type job type" autocomplete="off" style="width:100%">
+        <datalist id="agrf-type-list">
+          <option value="Real Estate">
+          <option value="Event / Wedding">
+          <option value="Commercial">
+          <option value="Music Video">
+          <option value="Social Media Content">
+          <option value="Business Flythrough">
+        </datalist>
       </div>
       <div class="smod-row">
         <div class="smod-lbl">Client Name <span style="color:var(--red)">*</span></div>
-        <input class="inp" id="agrf-client" placeholder="Full name">
+        <input type="hidden" id="agrf-client">
+        <div class="ms-wrap" id="agrf-client-ms" style="width:100%">
+          <button class="ms-btn" type="button" onclick="toggleMs('agrf-client-ms');setTimeout(()=>{const s=document.getElementById('agrf-client-search');if(s&&document.getElementById('agrf-client-ms').querySelector('.ms-panel.open')){s.value='';_renderAgrClientItems('');s.focus()}},0)" style="width:100%;text-align:left">Select or type client</button>
+          <div class="ms-panel">
+            <input type="text" id="agrf-client-search" placeholder="Type to search or add new..." autocomplete="off" style="margin-bottom:8px;font-size:13px" oninput="_filterAgrClients(this.value)" onclick="event.stopPropagation()">
+            <div class="ms-items"></div>
+          </div>
+        </div>
       </div>
       <div class="smod-row">
         <div class="smod-lbl">Shoot Date <span style="color:var(--red)">*</span></div>
@@ -5568,12 +5610,14 @@ async function downloadInvFromDetail(invNum, btn) {
       </div>
       <div class="smod-row" style="grid-column:1/-1">
         <div class="smod-lbl">Optional Clauses</div>
-        <label style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px;cursor:pointer">
-          <input type="checkbox" id="agrf-travel-expenses"> Include Travel Expenses clause
-        </label>
-        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
-          <input type="checkbox" id="agrf-fines-liability"> Include Fines &amp; Legal Liability clause
-        </label>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;user-select:none">
+            <input type="checkbox" id="agrf-travel-expenses"> Travel &amp; Parking Expenses
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;user-select:none">
+            <input type="checkbox" id="agrf-fines-liability"> Fines &amp; Legal Liability
+          </label>
+        </div>
       </div>
     </div>
     <div id="agrf-status" style="font-size:12px;color:var(--text-2);min-height:16px;margin-bottom:8px"></div>
