@@ -62,13 +62,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sa
 .dw[data-span="6"]{grid-column:span 6}
 @media(max-width:880px){
   #dash-widgets{grid-template-columns:1fr 1fr 1fr;align-items:start}
-  #dash-widgets .sum-card{grid-column:span 1;padding:12px 14px}
+  #dash-widgets .sum-card{grid-column:1/-1;padding:12px 14px}
   #dash-widgets .sum-card .val{font-size:20px}
   #dash-widgets .sum-sub-card{grid-column:span 1;padding:10px 12px}
   #dash-widgets .sum-sub-card .val{font-size:15px}
   #dash-widgets .card{grid-column:span 3}
   #dash-widgets .dw[data-span="6"]{grid-column:1/-1}
   #dash-widgets .dw[data-wi="10"]{grid-column:1/-1}
+  #dash-widgets .dw[data-wi="8"]{order:999}
 }
 .dw{cursor:grab;user-select:none;min-width:0}
 .dw.dw-drag{opacity:.4;cursor:grabbing}
@@ -393,7 +394,8 @@ body.privacy-mode #privacy-banner{display:block}
   .quote-line-item>select{grid-column:1/-1}
   .kanban-board{flex-direction:column;overflow-x:visible}
   .kanban-col{flex:none;width:100%}
-  input[type="date"]{min-width:0}
+  input[type="date"]{min-width:0;width:100%!important}
+  .ff{min-width:0}
   #jobs-hdr-btns .btn{flex:1 1 calc(50% - 5px);justify-content:center;text-align:center}
 }
 
@@ -1332,7 +1334,7 @@ function renderDash() {
   ]
   const subCards = [
     `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('bag',11)} Purchases</div><div class="val r">${fmt(purAmt)}</div>`,
-    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('repeat',11)} Subscription Charges</div><div class="val r">${fmt(subAmt)}</div>`,
+    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('repeat',11)} Subscriptions</div><div class="val r">${fmt(subAmt)}</div>`,
     `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('plane',11)} Job Expenses</div><div class="val r">${fmt(trav)}</div>`,
   ]
   // Jobs pipeline widget
