@@ -65,10 +65,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sa
   #dash-widgets .dw[data-span="2"]{grid-column:span 1}
   #dash-widgets .dw[data-span="4"]{grid-column:span 2}
   #dash-widgets .dw[data-span="6"]{grid-column:1/-1}
-}
-@media(max-width:480px){
-  #dash-widgets{grid-template-columns:1fr}
-  #dash-widgets .dw{grid-column:1/-1!important}
+  #dash-widgets .sum-card{padding:12px 14px}
+  #dash-widgets .sum-card .val{font-size:20px}
+  #dash-widgets .sum-sub-card{padding:10px 12px}
+  #dash-widgets .sum-sub-card .val{font-size:15px}
 }
 .dw{cursor:grab;user-select:none;min-width:0}
 .dw.dw-drag{opacity:.4;cursor:grabbing}
@@ -376,7 +376,6 @@ body.privacy-mode #privacy-banner{display:block}
   #hdr-title{display:none}
   .main{padding:16px 12px}
   .sec-hdr h2{font-size:18px}
-  #dash-widgets .dw{grid-column:1/-1!important}
   .sum-grid{grid-template-columns:1fr}
   .sum-sub-grid{grid-template-columns:1fr 1fr}
   .fg{grid-template-columns:1fr}
@@ -394,7 +393,7 @@ body.privacy-mode #privacy-banner{display:block}
   .quote-line-item>select{grid-column:1/-1}
   .kanban-board{flex-direction:column;overflow-x:visible}
   .kanban-col{flex:none;width:100%}
-  input[type="date"]{width:100%;max-width:100%;box-sizing:border-box}
+  input[type="date"]{min-width:0}
   #jobs-hdr-btns .btn{flex:1 1 calc(50% - 5px);justify-content:center;text-align:center}
 }
 
