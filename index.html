@@ -1170,7 +1170,8 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2)
 
 // ── GOOGLE SHEETS CONFIG ──────────────────────────────────────
 const GS_CLIENT_ID      = '767039224660-kjc6t9ue5c3ickdosd2kqkhbn9dqa2n2.apps.googleusercontent.com'
-const GS_CLIENT_SECRET  = 'YOUR_CLIENT_SECRET_HEGOCSPX-8xIcsMz8VeprkFUiufdxBCdNRrZV'  // for reference
+// No client secret: this is a browser-only app using the GIS implicit token flow
+// (google.accounts.oauth2.initTokenClient). A secret here would be public and is unused.
 const GS_SPREADSHEET_ID = '16Qq8ggagfDl1fnGe2bnVQvLLlhtQAyNphYoDxSofpiM'
 const GS_SCOPE          = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/calendar'
 // Maps each localStorage data key → its Sheets tab name + column order
