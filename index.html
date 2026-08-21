@@ -538,6 +538,24 @@ body.privacy-mode #privacy-banner{display:block}
   #agr-preview-text,#agr-preview-text *{color:#000 !important;font-family:Arial,sans-serif !important}
   #agr-preview-text{font-size:9pt !important;line-height:1.35 !important;padding:0 !important;white-space:pre-wrap !important}
 }
+
+/* ── SOCIAL TAB ─────────────────────────────────────────────── */
+.soc-bucket-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.soc-bucket{padding:7px 13px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--text-2);font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit}
+.soc-bucket:hover{border-color:var(--blue);color:var(--text)}
+.soc-bucket.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.soc-idea{border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:10px;background:var(--card)}
+.soc-idea-tag{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--blue);background:rgba(0,122,255,0.1);padding:3px 8px;border-radius:5px;margin-bottom:9px}
+.soc-idea-fld{margin-top:9px}
+.soc-idea-fld .k{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--text-2);margin-bottom:3px;display:flex;align-items:center;gap:6px}
+.soc-idea-fld .v{font-size:13.5px;line-height:1.45;color:var(--text);white-space:pre-wrap}
+.soc-copy{border:none;background:transparent;color:var(--text-2);cursor:pointer;padding:2px;border-radius:4px;display:inline-flex;align-items:center;font-family:inherit}
+.soc-copy:hover{color:var(--blue);background:rgba(0,122,255,0.1)}
+.soc-conn{display:flex;align-items:flex-start;gap:11px;padding:13px 15px;border-radius:10px;border:1px solid var(--line);background:rgba(255,149,0,0.07);margin-bottom:14px}
+.soc-conn .t{font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px}
+.soc-conn .d{font-size:12.5px;color:var(--text-2);line-height:1.45}
+.soc-cap{max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:middle}
+@media(max-width:760px){.soc-cap{max-width:140px}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.7/dist/pizzip.js"></script>
 <script>
@@ -569,6 +587,7 @@ body.privacy-mode #privacy-banner{display:block}
       <button class="tab" data-tab="clients"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Clients</button>
       <button class="tab" data-tab="jobs"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Jobs & Pricing</button>
       <button class="tab" data-tab="export"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Export</button>
+      <button class="tab" data-tab="social"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg> Social</button>
     </nav>
     <div class="hdr-right">
       <button id="qa-btn" onclick="openQuickAdd()" title="Quick add (Cmd/Ctrl + K)"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>Add</span><kbd id="qa-kbd">⌘K</kbd></button>
@@ -590,6 +609,7 @@ body.privacy-mode #privacy-banner{display:block}
   <button class="tab" data-tab="clients" onclick="mobNavTo('clients')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Clients</button>
   <button class="tab" data-tab="jobs" onclick="mobNavTo('jobs')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Jobs & Pricing</button>
   <button class="tab" data-tab="export" onclick="mobNavTo('export')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Export</button>
+  <button class="tab" data-tab="social" onclick="mobNavTo('social')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg> Social</button>
 </div>
 
 <div id="privacy-banner"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px;margin-top:-1px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Privacy Mode — monetary values are hidden &nbsp;·&nbsp; new entries are temporary and will be discarded when disabled</div>
@@ -882,6 +902,58 @@ body.privacy-mode #privacy-banner{display:block}
     <div id="cli-detail-view" style="display:none"></div>
   </section>
 
+  <!-- SOCIAL -->
+  <section class="panel" id="panel-social">
+    <div class="jobs-subnav" id="social-subnav">
+      <button class="jobs-subnav-btn on" data-section="stats" onclick="switchSocialSection('stats')">Stats</button>
+      <button class="jobs-subnav-btn" data-section="ideas" onclick="switchSocialSection('ideas')">Content Ideas</button>
+    </div>
+
+    <!-- Stats section (shown by default) -->
+    <div id="social-stats-section">
+      <div class="sec-hdr">
+        <h2>Instagram Stats</h2>
+        <p>Follower growth, reach, and what's working</p>
+      </div>
+      <div id="soc-conn-banner"></div>
+      <div id="soc-summary" style="margin-bottom:14px"></div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="form-toggle-hdr">
+          <span class="card-ttl" style="margin-bottom:0">Followers Over Time</span>
+          <button class="btn btn-s btn-sm" id="soc-sync-btn" onclick="socialSyncNow()">Sync now</button>
+        </div>
+        <div class="chart-wrap" id="soc-chart"></div>
+      </div>
+      <div class="card">
+        <div class="card-ttl">Top Reels</div>
+        <div class="tbl-wrap" id="soc-reels-table"></div>
+      </div>
+    </div>
+
+    <!-- Content Ideas section (hidden by default) -->
+    <div id="social-ideas-section" style="display:none">
+      <div class="sec-hdr">
+        <h2>Content Ideas</h2>
+        <p>AI-generated hooks, captions, and CTAs for your content buckets</p>
+      </div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-ttl">What are we making?</div>
+        <div class="soc-bucket-row" id="soc-buckets"></div>
+        <div class="fg" style="margin-bottom:12px">
+          <div class="ff wide">
+            <label>Context <span style="font-weight:400;color:var(--text-2)">(optional)</span></label>
+            <input type="text" id="soc-context" placeholder="e.g. lake shot in Switzerland, golden hour">
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <button class="btn btn-g" id="soc-gen-btn" onclick="generateIdeas()">Generate ideas</button>
+          <span style="font-size:12px;color:var(--text-2)" id="soc-gen-note"></span>
+        </div>
+      </div>
+      <div id="soc-ideas-out"></div>
+    </div>
+  </section>
+
   <!-- PRICING -->
   <!-- JOBS & PRICING (combined) -->
   <!-- JOBS & PRICING (combined) -->
@@ -1159,7 +1231,7 @@ function toggleKebab(ev, btn) {
 }
 
 // ── STORAGE ──────────────────────────────────────────────────
-const K = { inc:'dt_income', pur:'dt_purchases', sub:'dt_subs', subx:'dt_subx', links:'dt_links', prc:'dt_pricing', jobs:'dt_jobs', agr:'dt_agr' }
+const K = { inc:'dt_income', pur:'dt_purchases', sub:'dt_subs', subx:'dt_subx', links:'dt_links', prc:'dt_pricing', jobs:'dt_jobs', agr:'dt_agr', socSnap:'dt_soc_snapshots', socReels:'dt_soc_reels', socCfg:'dt_soc_config' }
 const DEFAULT_LINKS = [
   {id:'l1', name:'Kore Aerials Website', url:'https://www.koreaerials.com'},
   {id:'l2', name:'FAA DroneZone', url:'https://faadronezone-operator.faa.gov/#/part107'}
@@ -1262,6 +1334,32 @@ const SHEET_SCHEMA = {
     cols: ['id','jobId','clientName','jobType','date','amount','deposit','createdAt','driveFileId','status'],
     toRow: o => [o.id, o.jobId||'', o.clientName||'', o.jobType||'', o.date||'', o.amount||0, o.deposit||0, o.createdAt||'', o.driveFileId||'', o.status||'draft'],
     toObj: r => ({id:r[0], jobId:r[1]||'', clientName:r[2]||'', jobType:r[3]||'', date:r[4]||'', amount:r[5]||0, deposit:r[6]||0, createdAt:r[7]||'', driveFileId:r[8]||'', status:r[9]||'draft'})
+  },
+  [K.socSnap]: {
+    tab:  'Social Snapshots',
+    cols: ['id','date','followers','reach','views','profileVisits'],
+    toRow: o => [ o.id, o.date, o.followers||0, o.reach||0, o.views||0, o.profileVisits||0 ],
+    toObj: r => ({
+      id: r[0], date: r[1],
+      followers: +r[2]||0, reach: +r[3]||0, views: +r[4]||0, profileVisits: +r[5]||0
+    }),
+  },
+  [K.socReels]: {
+    tab:  'Social Reels',
+    cols: ['id','posted','caption','views','likes','shares','saves','permalink'],
+    toRow: o => [ o.id, o.posted||'', o.caption||'', o.views||0, o.likes||0, o.shares||0, o.saves||0, o.permalink||'' ],
+    toObj: r => ({
+      id: r[0], posted: r[1]||'', caption: r[2]||'',
+      views: +r[3]||0, likes: +r[4]||0, shares: +r[5]||0, saves: +r[6]||0, permalink: r[7]||''
+    }),
+  },
+  // Single-row config so it round-trips through the same array-based machinery.
+  // Worker URL only — never a token or API key (this file is public).
+  [K.socCfg]: {
+    tab:  'Social Config',
+    cols: ['id','workerUrl','igUsername','lastSync'],
+    toRow: o => [ o.id||'cfg', o.workerUrl||'', o.igUsername||'', o.lastSync||'' ],
+    toObj: r => ({ id: r[0]||'cfg', workerUrl: r[1]||'', igUsername: r[2]||'', lastSync: r[3]||'' }),
   },
 }
 const today = () => toStr(new Date())
@@ -2537,7 +2635,7 @@ function switchExportSection(section) {
 function switchJobsSection(section) {
   const pq = document.getElementById('jobs-pq-section')
   const pl = document.getElementById('jobs-pipeline-section')
-  const btns = document.querySelectorAll('.jobs-subnav-btn')
+  const btns = document.querySelectorAll('#panel-jobs .jobs-subnav-btn')
   if (section === 'pricing') {
     if(pq) pq.style.display = ''
     if(pl) pl.style.display = 'none'
@@ -4078,6 +4176,7 @@ function openSettings() {
   refreshLogoPreview('dark')
   refreshLogoPreview('light')
   const akEl = document.getElementById('smod-anthropic-key'); if(akEl) akEl.value = localStorage.getItem('dt_anthropic_key')||''
+  const wuEl = document.getElementById('smod-worker-url'); if(wuEl) wuEl.value = socialCfg().workerUrl || ''
   document.getElementById('settings-overlay').classList.add('open')
 }
 
@@ -4108,6 +4207,8 @@ async function saveSettings() {
     } catch (err) { console.warn('Logo upload:', err) }
   }
   const ak = document.getElementById('smod-anthropic-key')?.value.trim(); if(ak !== undefined) localStorage.setItem('dt_anthropic_key', ak)
+  const wu = document.getElementById('smod-worker-url')?.value.trim()
+  if (wu !== undefined && wu !== socialCfg().workerUrl) { saveSocialCfg({ workerUrl: wu }); renderSocial() }
   closeSettings()
   toast('Settings saved!')
 }
@@ -4154,7 +4255,7 @@ function toggleTheme() {
 }
 
 // ── TAB SWITCHING ─────────────────────────────────────────────
-const tabRenders={dashboard:renderDash,income:renderIncTable,purchases:renderPurTable,subscriptions:()=>{renderSubTable()},taxes:renderTaxes,export:()=>{renderDataSummary();switchExportSection('export-main')},clients:renderClientsTab,jobs:()=>{renderPricingList();initQuoteBuilder();renderJobsBoard()}}
+const tabRenders={social:renderSocial,dashboard:renderDash,income:renderIncTable,purchases:renderPurTable,subscriptions:()=>{renderSubTable()},taxes:renderTaxes,export:()=>{renderDataSummary();switchExportSection('export-main')},clients:renderClientsTab,jobs:()=>{renderPricingList();initQuoteBuilder();renderJobsBoard()}}
 
 function openTab(t) {
   const tab=document.querySelector(`#nav [data-tab="${t}"]`); if(!tab)return
@@ -6067,6 +6168,358 @@ async function downloadInvFromDetail(invNum, btn) {
   } catch(e) { toast('Download error: ' + (e.message||String(e))) }
   finally { btn.disabled = false; btn.innerHTML = prev }
 }
+
+// ── SOCIAL ────────────────────────────────────────────────────
+// Front end only. Every network call goes to the user's Cloudflare Worker,
+// which holds the Instagram and Claude credentials. No key or token is ever
+// stored or sent from this file — it ships public on GitHub Pages.
+const SOC_BUCKETS = [
+  'FPV drone',
+  'Mavic / cinematic aerial',
+  'Ground cinematic (stabilized travel)',
+  'Short travel edit'
+]
+let _socSel   = []      // selected bucket indexes
+let _socIdeas = []      // last generated ideas, kept for copy-to-clipboard
+let _socBusy  = false
+
+// socialConfig is stored as a single-element array so it round-trips through
+// the same SHEET_SCHEMA machinery every other data key uses.
+function socialCfg() {
+  const a = load(K.socCfg)
+  return (Array.isArray(a) && a[0]) ? a[0] : {}
+}
+function saveSocialCfg(patch) {
+  save(K.socCfg, [{ id:'cfg', workerUrl:'', igUsername:'', lastSync:'', ...socialCfg(), ...patch }])
+}
+function socWorker() {
+  return (socialCfg().workerUrl || '').trim().replace(/\/+$/, '')
+}
+function socNum(n) {
+  const v = +n || 0
+  if (Math.abs(v) >= 1000000) return (v/1000000).toFixed(1).replace(/\.0$/,'') + 'M'
+  if (Math.abs(v) >= 1000)    return (v/1000).toFixed(1).replace(/\.0$/,'') + 'k'
+  return String(v)
+}
+function socSnaps() {
+  return load(K.socSnap).slice().sort((a,b) => String(a.date).localeCompare(String(b.date)))
+}
+
+function switchSocialSection(section) {
+  const st = document.getElementById('social-stats-section')
+  const id = document.getElementById('social-ideas-section')
+  const btns = document.querySelectorAll('#social-subnav .jobs-subnav-btn')
+  const ideas = section === 'ideas'
+  if (st) st.style.display = ideas ? 'none' : ''
+  if (id) id.style.display = ideas ? '' : 'none'
+  btns.forEach(b => b.classList.toggle('on', b.dataset.section === (ideas ? 'ideas' : 'stats')))
+}
+
+function renderSocial() {
+  // Re-assert the sub-nav state on every tab open: another panel's switcher may
+  // have run while this panel was hidden.
+  const active = document.getElementById('social-ideas-section')?.style.display === '' ? 'ideas' : 'stats'
+  switchSocialSection(active)
+  renderSocConnBanner()
+  renderSocSummary()
+  renderSocChart()
+  renderSocReels()
+  renderSocBuckets()
+  renderSocIdeas()
+  const connected = !!socWorker()
+  const gen  = document.getElementById('soc-gen-btn')
+  const note = document.getElementById('soc-gen-note')
+  const sync = document.getElementById('soc-sync-btn')
+  if (gen)  gen.disabled = !connected || _socBusy
+  if (sync) {
+    sync.disabled = !connected
+    sync.title = connected ? 'Fetch the latest stats from your Worker' : 'Add your Worker URL in Settings first'
+  }
+  if (note) note.textContent = connected ? '' : 'Connect the backend in Settings to enable this.'
+}
+
+function renderSocConnBanner() {
+  const el = document.getElementById('soc-conn-banner'); if (!el) return
+  const cfg = socialCfg()
+  if (!socWorker()) {
+    el.innerHTML = `<div class="soc-conn">${icon('alert',17)}
+      <div><div class="t">Instagram not connected</div>
+      <div class="d">Stats sync and AI content ideas activate once your Cloudflare Worker is live. Paste its URL under
+      <b>Settings → Social backend URL</b>. Your Instagram token and Claude API key stay on the Worker — never in this app.</div></div></div>`
+    return
+  }
+  const last = cfg.lastSync ? new Date(cfg.lastSync) : null
+  el.innerHTML = `<div class="soc-conn" style="background:rgba(52,199,89,0.07)">${icon('check-circle',17)}
+    <div><div class="t">Connected${cfg.igUsername ? ' — @' + esc(cfg.igUsername) : ''}</div>
+    <div class="d">Last synced: ${last ? last.toLocaleString() : 'never'}</div></div></div>`
+}
+
+// Delta vs the previous snapshot. Never invents a comparison when there is no history.
+function socDelta(cur, prev) {
+  if (prev === undefined || prev === null || !isFinite(+prev)) return '<div class="sub">no prior data</div>'
+  const d = (+cur || 0) - (+prev || 0)
+  if (!d) return '<div class="sub">no change</div>'
+  const cls = d > 0 ? 'g' : 'r'
+  return `<div class="sub"><span class="${cls}">${d > 0 ? '+' : '−'}${socNum(Math.abs(d))}</span> vs previous</div>`
+}
+
+function renderSocSummary() {
+  const el = document.getElementById('soc-summary'); if (!el) return
+  const s = socSnaps()
+  const cur = s[s.length-1] || {}
+  const prv = s[s.length-2]
+  const has = s.length > 0
+  const card = (ic, label, key) => `<div class="sum-card">
+      <div class="lbl" style="display:flex;align-items:center;gap:5px">${icon(ic,13)} ${label}</div>
+      <div class="val">${has ? socNum(cur[key]) : '—'}</div>
+      ${has ? socDelta(cur[key], prv ? prv[key] : null) : '<div class="sub">awaiting first sync</div>'}
+    </div>`
+  el.innerHTML = `<div class="sum-grid">
+    ${card('users','Followers','followers')}
+    ${card('trending-up','Reach (30d)','reach')}
+    ${card('bar-chart','Views (30d)','views')}
+    ${card('search','Profile Visits (30d)','profileVisits')}
+  </div>`
+}
+
+function renderSocChart() {
+  const el = document.getElementById('soc-chart'); if (!el) return
+  const s = socSnaps()
+  if (s.length < 2) {
+    el.innerHTML = emptyState('trending-up',
+      s.length ? 'One snapshot so far — the trend line appears after the next sync.'
+               : 'No snapshots yet. Follower history appears here once syncing starts.',
+      null, {small:true, pad:'28px 20px'})
+    return
+  }
+  const pts = s.slice(-26)
+  const W=680, H=260, pad={t:20,r:20,b:44,l:58}
+  const cW=W-pad.l-pad.r, cH=H-pad.t-pad.b
+  const vals = pts.map(p => +p.followers || 0)
+  const yMax = Math.max(...vals, 1)
+  const yMin = Math.min(...vals)
+  const lo = yMin === yMax ? Math.max(0, yMin - 1) : yMin
+  const span = (yMax - lo) || 1
+  const Y = v => pad.t + cH * (1 - (v - lo) / span)
+  const X = i => pad.l + cW * i / (pts.length - 1)
+
+  let grid='', ylab=''
+  for (let i=0; i<=4; i++) {
+    const v = lo + span*i/4, y = Y(v)
+    grid += `<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="rgba(0,0,0,0.07)" stroke-width="1"/>`
+    // Abbreviating a narrow range collapses every tick to the same label (1.2k, 1.2k…)
+    const lv = span < 5000 ? Math.round(v).toLocaleString() : socNum(Math.round(v))
+    ylab += `<text x="${pad.l-5}" y="${y+4}" text-anchor="end" font-size="10" fill="var(--text-2)">${lv}</text>`
+  }
+  const line = pts.map((p,i) => `${X(i).toFixed(1)},${Y(+p.followers||0).toFixed(1)}`).join(' ')
+  const area = `${pad.l},${pad.t+cH} ${line} ${(pad.l+cW).toFixed(1)},${pad.t+cH}`
+  const colW = cW / pts.length
+  let dots='', hit='', xlab=''
+  pts.forEach((p,i) => {
+    const x = X(i), y = Y(+p.followers||0)
+    dots += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.8" fill="var(--dropdown-bg)" stroke="#007AFF" stroke-width="2"/>`
+    hit  += `<rect class="chart-col" x="${(x-colW/2).toFixed(1)}" y="${pad.t}" width="${colW.toFixed(1)}" height="${cH}" fill="rgba(0,0,0,0)" pointer-events="all" data-lbl="${esc(fmtDate(p.date))}" data-v="${+p.followers||0}"/>`
+    if (i === 0 || i === pts.length-1 || i % Math.ceil(pts.length/8) === 0) {
+      // Anchor the end labels inward so they can't be clipped by the viewBox
+      const anc = i === 0 ? 'start' : (i === pts.length-1 ? 'end' : 'middle')
+      xlab += `<text x="${x.toFixed(1)}" y="${H-8}" text-anchor="${anc}" font-size="9" fill="var(--text-2)">${esc(fmtDate(p.date))}</text>`
+    }
+  })
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+    ${grid}${ylab}
+    <polygon points="${area}" fill="rgba(0,122,255,0.10)"/>
+    <polyline points="${line}" fill="none" stroke="#007AFF" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots}${hit}${xlab}
+  </svg>`
+  el.querySelectorAll('.chart-col').forEach(r => {
+    r.addEventListener('mousemove', e => showSocTip(e, r.dataset.lbl, r.dataset.v))
+    r.addEventListener('mouseleave', hideChartTip)
+  })
+}
+
+// Followers-specific tooltip; reuses the shared #chart-tip element and positioner.
+function showSocTip(e, lbl, v) {
+  const tip = document.getElementById('chart-tip')
+  tip.innerHTML = `<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px">${lbl}</div>
+    <div style="display:flex;align-items:center;gap:7px;margin-top:4px">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#007AFF;flex-shrink:0"></span>
+      <span style="color:var(--text-2);font-size:12px">Followers</span>
+      <span style="margin-left:auto;font-weight:700;font-size:12px;color:var(--text)">${(+v||0).toLocaleString()}</span>
+    </div>`
+  tip.style.display = 'block'
+  posChartTip(e)
+}
+
+function renderSocReels() {
+  const el = document.getElementById('soc-reels-table'); if (!el) return
+  const list = load(K.socReels).slice().sort((a,b) => (+b.views||0) - (+a.views||0))
+  if (!list.length) {
+    el.innerHTML = emptyState('bar-chart',
+      socWorker() ? 'No reels yet — hit Sync now to pull your latest posts.'
+                  : 'Reel performance appears here once Instagram is connected.',
+      null, {small:true, pad:'28px 20px'})
+    return
+  }
+  el.innerHTML = `<table>
+    <thead><tr><th>Posted</th><th>Caption</th><th>Views</th><th>Likes</th><th>Shares</th><th>Saves</th><th>Actions</th></tr></thead>
+    <tbody>${list.map(r => `<tr>
+      <td>${r.posted ? fmtDate(r.posted) : '—'}</td>
+      <td><span class="soc-cap" title="${esc(r.caption||'')}">${esc(r.caption||'—')}</span></td>
+      <td class="amt">${socNum(r.views)}</td>
+      <td>${socNum(r.likes)}</td>
+      <td>${socNum(r.shares)}</td>
+      <td>${socNum(r.saves)}</td>
+      <td>${r.permalink ? kebab([{label:'Open on Instagram', icon:'link', fn:`window.open('${esc(r.permalink)}','_blank')`}]) : '—'}</td>
+    </tr>`).join('')}</tbody></table>`
+}
+
+async function socialSyncNow() {
+  const base = socWorker()
+  if (!base) { toast('Add your Worker URL in Settings first'); return }
+  const btn = document.getElementById('soc-sync-btn')
+  const prev = btn ? btn.textContent : ''
+  if (btn) { btn.disabled = true; btn.textContent = 'Syncing…' }
+  try {
+    const resp = await fetch(`${base}/instagram/stats`, { headers: { 'Accept': 'application/json' } })
+    if (!resp.ok) throw new Error(`Worker returned ${resp.status}`)
+    const data = socParseJSON(await resp.text())
+    if (!data) throw new Error('Could not parse the Worker response')
+
+    if (data.snapshot && typeof data.snapshot === 'object') {
+      const s = data.snapshot
+      const date = s.date || today()
+      const snaps = load(K.socSnap)
+      const rec = {
+        id: uid(), date,
+        followers: +s.followers||0, reach: +s.reach||0,
+        views: +s.views||0, profileVisits: +s.profileVisits||0
+      }
+      const at = snaps.findIndex(x => x.date === date)
+      if (at >= 0) { rec.id = snaps[at].id; snaps[at] = rec } else { snaps.push(rec) }
+      save(K.socSnap, snaps)
+    }
+    if (Array.isArray(data.reels)) {
+      const byId = new Map(load(K.socReels).map(r => [String(r.id), r]))
+      data.reels.forEach(r => {
+        if (!r || typeof r !== 'object') return
+        const id = String(r.id || r.permalink || uid())
+        byId.set(id, {
+          id,
+          caption:   String(r.caption || ''),
+          views:     +r.views||0, likes: +r.likes||0,
+          shares:    +r.shares||0, saves: +r.saves||0,
+          posted:    r.posted || r.timestamp || '',
+          permalink: r.permalink || ''
+        })
+      })
+      save(K.socReels, [...byId.values()])
+    }
+    saveSocialCfg({ lastSync: new Date().toISOString(), igUsername: data.username || socialCfg().igUsername || '' })
+    renderSocial()
+    toast('Instagram stats synced!')
+  } catch (err) {
+    console.warn('socialSyncNow:', err)
+    toast('Sync failed: ' + (err.message || String(err)))
+  } finally {
+    if (btn) { btn.disabled = !socWorker(); btn.textContent = prev || 'Sync now' }
+  }
+}
+
+// The Worker proxies a model response, so tolerate fences or prose around the JSON.
+function socParseJSON(text) {
+  if (!text) return null
+  try { return JSON.parse(text) } catch {}
+  const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/)
+  if (fence) { try { return JSON.parse(fence[1]) } catch {} }
+  const first = text.indexOf('{'), last = text.lastIndexOf('}')
+  if (first >= 0 && last > first) { try { return JSON.parse(text.slice(first, last+1)) } catch {} }
+  return null
+}
+
+function renderSocBuckets() {
+  const el = document.getElementById('soc-buckets'); if (!el) return
+  el.innerHTML = SOC_BUCKETS.map((b,i) =>
+    `<button class="soc-bucket${_socSel.includes(i) ? ' on' : ''}" onclick="socToggleBucket(${i})">${esc(b)}</button>`
+  ).join('')
+}
+function socToggleBucket(i) {
+  _socSel = _socSel.includes(i) ? _socSel.filter(x => x !== i) : [..._socSel, i]
+  renderSocBuckets()
+}
+
+async function generateIdeas() {
+  const base = socWorker()
+  if (!base) { toast('Connect the backend in Settings first'); return }
+  if (_socBusy) return
+  const buckets = _socSel.length ? _socSel.map(i => SOC_BUCKETS[i]) : SOC_BUCKETS
+  const context = (document.getElementById('soc-context')?.value || '').trim()
+  const btn = document.getElementById('soc-gen-btn')
+  _socBusy = true
+  if (btn) { btn.disabled = true; btn.textContent = 'Generating…' }
+  try {
+    const resp = await fetch(`${base}/ideas`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ buckets, context, goal: 'grow followers/brand' })
+    })
+    if (!resp.ok) throw new Error(`Worker returned ${resp.status}`)
+    const data = socParseJSON(await resp.text())
+    const raw = Array.isArray(data) ? data : (data && Array.isArray(data.ideas) ? data.ideas : null)
+    if (!raw) throw new Error('Unexpected response shape')
+    _socIdeas = raw.filter(x => x && typeof x === 'object').map(x => ({
+      bucket:  String(x.bucket  || 'Idea'),
+      hook:    String(x.hook    || ''),
+      caption: String(x.caption || ''),
+      cta:     String(x.cta     || '')
+    })).filter(x => x.hook || x.caption || x.cta)
+    if (!_socIdeas.length) throw new Error('No usable ideas came back')
+    renderSocIdeas()
+    toast(`${_socIdeas.length} idea${_socIdeas.length === 1 ? '' : 's'} generated!`)
+  } catch (err) {
+    console.warn('generateIdeas:', err)
+    toast('Idea generation failed: ' + (err.message || String(err)))
+  } finally {
+    _socBusy = false
+    if (btn) { btn.disabled = !socWorker(); btn.textContent = 'Generate ideas' }
+  }
+}
+
+function renderSocIdeas() {
+  const el = document.getElementById('soc-ideas-out'); if (!el) return
+  if (!socWorker()) {
+    el.innerHTML = `<div class="card">${emptyState('alert',
+      'The idea generator activates once your Cloudflare Worker is connected. Add its URL under Settings → Social backend URL.',
+      null, {small:true, pad:'28px 20px'})}</div>`
+    return
+  }
+  if (!_socIdeas.length) {
+    el.innerHTML = `<div class="card">${emptyState('plus',
+      'Pick your buckets and hit Generate ideas.', null, {small:true, pad:'28px 20px'})}</div>`
+    return
+  }
+  const fld = (i, key, label) => {
+    const v = _socIdeas[i][key]; if (!v) return ''
+    return `<div class="soc-idea-fld">
+      <div class="k">${label}
+        <button class="soc-copy" title="Copy ${label.toLowerCase()}" onclick="socCopy(${i},'${key}')">${icon('copy',12)}</button>
+      </div>
+      <div class="v">${esc(v)}</div>
+    </div>`
+  }
+  el.innerHTML = _socIdeas.map((idea,i) => `<div class="soc-idea">
+    <span class="soc-idea-tag">${esc(idea.bucket)}</span>
+    ${fld(i,'hook','Hook (frame 1)')}
+    ${fld(i,'caption','Caption')}
+    ${fld(i,'cta','Share CTA')}
+  </div>`).join('')
+}
+
+function socCopy(i, key) {
+  const v = _socIdeas[i]?.[key]; if (!v) return
+  navigator.clipboard?.writeText(v)
+    .then(() => toast('Copied!'))
+    .catch(() => toast('Copy failed — select the text manually'))
+}
 </script>
 <!-- SETTINGS MODAL -->
 <div class="smod-overlay" id="settings-overlay" onclick="if(event.target===this)closeSettings()">
@@ -6121,6 +6574,11 @@ async function downloadInvFromDetail(invNum, btn) {
       <div class="smod-lbl">Anthropic API Key</div>
       <input type="password" id="smod-anthropic-key" class="isel" style="width:100%;box-sizing:border-box" placeholder="sk-ant-api03-...">
       <div style="font-size:11px;color:var(--text-2);margin-top:5px">Used for AI agreement generation. Stored locally, never synced.</div>
+    </div>
+    <div class="smod-row">
+      <div class="smod-lbl">Social backend URL (Cloudflare Worker)</div>
+      <input type="url" id="smod-worker-url" class="isel" style="width:100%;box-sizing:border-box" placeholder="https://your-worker.workers.dev">
+      <div style="font-size:11px;color:var(--text-2);margin-top:5px">Base URL only — the app calls <code>/instagram/stats</code> and <code>/ideas</code> on it. No tokens are stored in this app; they live in the Worker.</div>
     </div>
     <div class="smod-footer">
       <button class="btn btn-p" onclick="saveSettings()" style="flex:1">Save Changes</button>
