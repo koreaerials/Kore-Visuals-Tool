@@ -36,8 +36,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sa
 .tab:hover{background:rgba(255,255,255,0.6);color:var(--text)}
 .tab.on{background:rgba(255,255,255,0.9);color:var(--blue);box-shadow:0 2px 12px rgba(0,0,0,0.1);font-weight:600}
 
+/* ANIMATED PARTICLE BACKGROUND
+   Sits above the body gradient but behind every piece of content. Never takes clicks.
+   All other body children are already positioned (header 100 … chart-tip 9999); .main
+   is the only unpositioned one, so it gets lifted to z-index 1 below. */
+#bg-canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block}
+
 /* MAIN */
-.main{max-width:1200px;margin:0 auto;padding:24px 20px}
+.main{max-width:1200px;margin:0 auto;padding:24px 20px;position:relative;z-index:1}
 .panel{display:none}.panel.on{display:block}
 
 /* CARD */
@@ -548,6 +554,7 @@ body.privacy-mode #privacy-banner{display:block}
 <script src="https://accounts.google.com/gsi/client" defer onload="gsOnLibraryLoad()" onerror="gsOnLibraryError()"></script>
 </head>
 <body>
+<canvas id="bg-canvas" aria-hidden="true"></canvas>
 <div id="chart-tip"></div>
 
 <header class="hdr">
@@ -1107,18 +1114,40 @@ function kebab(items) {
   ).join('')
   return `<div class="kebab-wrap"><button class="kebab-btn" title="Actions" aria-label="Row actions" onclick="toggleKebab(event,this)">${icon('more',15)}</button><div class="kebab-menu">${body}</div></div>`
 }
+// The open menu is portalled to <body> while open. .card uses backdrop-filter, which
+// makes it a containing block for position:fixed descendants — without the portal the
+// menu would be positioned relative to the card and land off-screen.
+let _kebabOpen = null
+
 function closeKebabs() {
-  document.querySelectorAll('.kebab-menu.open').forEach(m => m.classList.remove('open'))
+  if (_kebabOpen) {
+    const { btn, menu, home } = _kebabOpen
+    _kebabOpen = null
+    menu.classList.remove('open')
+    menu.style.left = menu.style.top = ''
+    btn.classList.remove('on')
+    home.isConnected ? home.appendChild(menu) : menu.remove()   // home dies if the table re-rendered
+  }
+  // Sweep up anything a re-render may have orphaned
+  document.querySelectorAll('.kebab-menu.open').forEach(m => {
+    m.classList.remove('open')
+    if (!m.closest('.kebab-wrap')) m.remove()
+  })
   document.querySelectorAll('.kebab-btn.on').forEach(b => b.classList.remove('on'))
 }
+
 function toggleKebab(ev, btn) {
   ev.stopPropagation()
-  const menu = btn.nextElementSibling
-  const wasOpen = menu.classList.contains('open')
+  const wasOpen = _kebabOpen && _kebabOpen.btn === btn
   closeKebabs()
   if (wasOpen) return
+  const home = btn.parentNode
+  const menu = home.querySelector('.kebab-menu')
+  if (!menu) return
+  document.body.appendChild(menu)
   menu.classList.add('open')
   btn.classList.add('on')
+  _kebabOpen = { btn, menu, home }
   const r = btn.getBoundingClientRect()
   const mw = menu.offsetWidth, mh = menu.offsetHeight
   let left = r.right - mw, top = r.bottom + 6
@@ -4238,6 +4267,99 @@ function mobNavTo(t){
 // ── INIT ──────────────────────────────────────────────────────
 // Apply theme immediately (before DOMContentLoaded) to avoid flash
 ;(()=>{ const t=localStorage.getItem('dt_theme')||'light'; document.documentElement.dataset.theme=t })()
+
+// ── ANIMATED PARTICLE BACKGROUND ──────────────────────────────
+// Purely decorative and fully self-contained. Reads the theme from the existing
+// toggle (html[data-theme]) rather than tracking it separately.
+;(function(){
+  const cv = document.getElementById('bg-canvas')
+  if (!cv || !cv.getContext) return
+  const ctx = cv.getContext('2d')
+  if (!ctx) return
+  const reduceMQ = matchMedia('(prefers-reduced-motion: reduce)')
+
+  const PALETTE = {
+    dark:  { dot:'hsla(200,80%,70%,0.6)',  lh:210, ls:60, ll:65, la:0.25 },
+    light: { dot:'hsla(212,55%,42%,0.38)', lh:215, ls:60, ll:45, la:0.16 },
+  }
+  const pal = () => PALETTE[document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light']
+
+  let dpr=1, W=0, H=0, parts=[], raf=null, link=0, link2=0, dotR=1, lineW=1
+
+  function init(){
+    // Measure the element itself so scrollbars can never skew the backing store
+    const r = cv.getBoundingClientRect()
+    const cssW = r.width  || innerWidth
+    const cssH = r.height || innerHeight
+    if (cssW < 2 || cssH < 2) return false
+    dpr = Math.min(devicePixelRatio || 1, 2)        // cap dpr at 2
+    W = cv.width  = Math.round(cssW * dpr)
+    H = cv.height = Math.round(cssH * dpr)
+    link = 110 * dpr; link2 = link * link
+    dotR = 1.3 * dpr; lineW = Math.max(0.5, 0.6 * dpr)
+    // Phones get a much sparser field so mid-range GPUs keep up (~55% fewer)
+    const divisor = cssW < 640 ? 62000 : 28000
+    const n = Math.max(10, Math.min(150, Math.round((cssW * cssH) / divisor)))
+    const v = 0.3 * dpr
+    parts = new Array(n)
+    for (let i = 0; i < n; i++) parts[i] = {
+      x: Math.random()*W, y: Math.random()*H,
+      vx: (Math.random()-0.5)*v, vy: (Math.random()-0.5)*v,
+    }
+    return true
+  }
+
+  function draw(){
+    const p = pal()
+    ctx.clearRect(0, 0, W, H)
+    ctx.lineWidth = lineW
+    for (let i = 0; i < parts.length; i++) {
+      const a = parts[i]
+      for (let j = i+1; j < parts.length; j++) {
+        const b = parts[j]
+        const dx = a.x-b.x, dy = a.y-b.y, d2 = dx*dx + dy*dy
+        if (d2 >= link2) continue                    // squared compare avoids sqrt on most pairs
+        ctx.strokeStyle = `hsla(${p.lh},${p.ls}%,${p.ll}%,${p.la * (1 - Math.sqrt(d2)/link)})`
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke()
+      }
+    }
+    ctx.fillStyle = p.dot
+    for (const q of parts) { ctx.beginPath(); ctx.arc(q.x, q.y, dotR, 0, Math.PI*2); ctx.fill() }
+  }
+
+  function step(){
+    for (const q of parts) {
+      q.x += q.vx; q.y += q.vy
+      if (q.x <= 0) { q.x = 0; q.vx =  Math.abs(q.vx) } else if (q.x >= W) { q.x = W; q.vx = -Math.abs(q.vx) }
+      if (q.y <= 0) { q.y = 0; q.vy =  Math.abs(q.vy) } else if (q.y >= H) { q.y = H; q.vy = -Math.abs(q.vy) }
+    }
+  }
+
+  function frame(){ step(); draw(); raf = requestAnimationFrame(frame) }
+  function start(){ if (raf === null && !reduceMQ.matches && !document.hidden) raf = requestAnimationFrame(frame) }
+  function stop(){ if (raf !== null) { cancelAnimationFrame(raf); raf = null } }
+  // Reduced motion → one static frame instead of a running loop
+  function render(){ if (reduceMQ.matches) { stop(); draw() } else start() }
+
+  if (!init()) return
+  render()
+
+  // Don't burn frames on a hidden tab
+  document.addEventListener('visibilitychange', () => document.hidden ? stop() : render())
+
+  let rt = null
+  const reflow = d => { clearTimeout(rt); rt = setTimeout(() => { stop(); if (init()) render() }, d) }
+  addEventListener('resize', () => reflow(180))
+  addEventListener('orientationchange', () => reflow(250))
+
+  // While animating, pal() is read every frame so a theme flip swaps live. This only
+  // covers the paused cases (reduced motion / hidden tab), where no frame is coming.
+  new MutationObserver(() => { if (raf === null) draw() })
+    .observe(document.documentElement, { attributes:true, attributeFilter:['data-theme'] })
+
+  const onReduce = () => { stop(); render() }
+  reduceMQ.addEventListener ? reduceMQ.addEventListener('change', onReduce) : reduceMQ.addListener(onReduce)
+})()
 
 document.addEventListener('click', e=>{
   if(!e.target.closest('.ms-wrap')) document.querySelectorAll('.ms-panel.open').forEach(p=>p.classList.remove('open'))
