@@ -26,7 +26,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sa
 
 /* HEADER */
 .hdr{position:sticky;top:0;z-index:100;padding:10px 20px;background:rgba(255,255,255,0.35);backdrop-filter:blur(30px) saturate(200%);-webkit-backdrop-filter:blur(30px) saturate(200%);border-bottom:1px solid rgba(255,255,255,0.5)}
-.hdr-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:nowrap}
+.hdr-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:10px 12px;flex-wrap:wrap}
+/* Two fixed rows: logo + controls on top, tabs underneath. The nav always owns its
+   own row, so the controls never shift position when the tab count changes between
+   workspaces — and no tab is ever clipped out of reach. */
+.hdr-inner .logo{order:1}
+.hdr-inner .hdr-right{order:2;margin-left:auto}
+.hdr-inner .nav{order:3;flex:1 0 100%}
 .logo{font-size:17px;font-weight:700;letter-spacing:-.3px;white-space:nowrap}
 
 /* TAB NAV */
@@ -556,6 +562,16 @@ body.privacy-mode #privacy-banner{display:block}
 .soc-conn .d{font-size:12.5px;color:var(--text-2);line-height:1.45}
 .soc-cap{max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:middle}
 @media(max-width:760px){.soc-cap{max-width:140px}}
+
+/* ── WORKSPACE MODE TOGGLE ───────────────────────────────────── */
+/* One button; its label names the workspace the click takes you to. */
+.mode-toggle{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:10px;border:1px solid var(--card-border);background:var(--card);color:var(--text);font-size:12.5px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .15s;white-space:nowrap}
+.mode-toggle:hover{border-color:var(--blue);color:var(--blue)}
+.mode-toggle svg{flex-shrink:0}
+@media(max-width:600px){.mode-toggle{padding:7px 9px}.mode-toggle #mode-toggle-lbl{display:none}}
+.btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.btn:disabled:hover{filter:none}
+@media(max-width:900px){.mode-btn span{display:none}.mode-btn{padding:6px 8px}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.7/dist/pizzip.js"></script>
 <script>
@@ -580,16 +596,20 @@ body.privacy-mode #privacy-banner{display:block}
     <span class="logo"><img src="data:image/png;base64,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" id="hdr-logo" style="height:32px;width:auto;border-radius:7px;object-fit:contain;display:inline-block;vertical-align:middle;margin-right:8px;flex-shrink:0"><span id="hdr-title">Kore Visuals Tracker</span></span>
     <button id="mob-menu-btn" onclick="openMobDrawer()" aria-label="Open menu"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
     <nav class="nav" id="nav">
-      <button class="tab on" data-tab="dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg> Dashboard</button>
-      <button class="tab" data-tab="income"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg> Income</button>
-      <button class="tab" data-tab="purchases"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Purchases</button>
-      <button class="tab" data-tab="subscriptions"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg> Subscriptions</button>
-      <button class="tab" data-tab="clients"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Clients</button>
-      <button class="tab" data-tab="jobs"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Jobs & Pricing</button>
-      <button class="tab" data-tab="export"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Export</button>
-      <button class="tab" data-tab="social"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg> Social</button>
+      <button data-mode="business" class="tab on" data-tab="dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg> Dashboard</button>
+      <button data-mode="business" class="tab" data-tab="income"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg> Income</button>
+      <button data-mode="business" class="tab" data-tab="purchases"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Purchases</button>
+      <button data-mode="business" class="tab" data-tab="subscriptions"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg> Subscriptions</button>
+      <button data-mode="business" class="tab" data-tab="clients"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Clients</button>
+      <button data-mode="business" class="tab" data-tab="jobs"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Jobs & Pricing</button>
+      <button data-mode="business" class="tab" data-tab="export"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Export</button>
+      <button data-mode="social" class="tab on" data-tab="social-stats"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Stats</button>
+      <button data-mode="social" class="tab" data-tab="social-ideas"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> Content Ideas</button>
     </nav>
     <div class="hdr-right">
+      <button class="mode-toggle" id="mode-toggle" onclick="toggleMode()">
+        <span id="mode-toggle-ico"></span><span id="mode-toggle-lbl"></span>
+      </button>
       <button id="qa-btn" onclick="openQuickAdd()" title="Quick add (Cmd/Ctrl + K)"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>Add</span><kbd id="qa-kbd">⌘K</kbd></button>
       <div class="sync-pill" id="sync-indicator" title="Google Sheets sync status"></div>
       <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg> Dark</button>
@@ -602,14 +622,15 @@ body.privacy-mode #privacy-banner{display:block}
 <div id="mob-drawer-overlay" onclick="closeMobDrawer()"></div>
 <div id="mob-drawer">
   <div class="mob-drawer-logo">Kore Visuals Tracker</div>
-  <button class="tab on" data-tab="dashboard" onclick="mobNavTo('dashboard')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg> Dashboard</button>
-  <button class="tab" data-tab="income" onclick="mobNavTo('income')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg> Income</button>
-  <button class="tab" data-tab="purchases" onclick="mobNavTo('purchases')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Purchases</button>
-  <button class="tab" data-tab="subscriptions" onclick="mobNavTo('subscriptions')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg> Subscriptions</button>
-  <button class="tab" data-tab="clients" onclick="mobNavTo('clients')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Clients</button>
-  <button class="tab" data-tab="jobs" onclick="mobNavTo('jobs')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Jobs & Pricing</button>
-  <button class="tab" data-tab="export" onclick="mobNavTo('export')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Export</button>
-  <button class="tab" data-tab="social" onclick="mobNavTo('social')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg> Social</button>
+  <button data-mode="business" class="tab on" data-tab="dashboard" onclick="mobNavTo('dashboard')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg> Dashboard</button>
+  <button data-mode="business" class="tab" data-tab="income" onclick="mobNavTo('income')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg> Income</button>
+  <button data-mode="business" class="tab" data-tab="purchases" onclick="mobNavTo('purchases')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Purchases</button>
+  <button data-mode="business" class="tab" data-tab="subscriptions" onclick="mobNavTo('subscriptions')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg> Subscriptions</button>
+  <button data-mode="business" class="tab" data-tab="clients" onclick="mobNavTo('clients')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Clients</button>
+  <button data-mode="business" class="tab" data-tab="jobs" onclick="mobNavTo('jobs')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Jobs & Pricing</button>
+  <button data-mode="business" class="tab" data-tab="export" onclick="mobNavTo('export')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Export</button>
+  <button data-mode="social" class="tab on" data-tab="social-stats" onclick="mobNavTo('social-stats')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Stats</button>
+  <button data-mode="social" class="tab" data-tab="social-ideas" onclick="mobNavTo('social-ideas')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> Content Ideas</button>
 </div>
 
 <div id="privacy-banner"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px;margin-top:-1px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Privacy Mode — monetary values are hidden &nbsp;·&nbsp; new entries are temporary and will be discarded when disabled</div>
@@ -902,15 +923,8 @@ body.privacy-mode #privacy-banner{display:block}
     <div id="cli-detail-view" style="display:none"></div>
   </section>
 
-  <!-- SOCIAL -->
-  <section class="panel" id="panel-social">
-    <div class="jobs-subnav" id="social-subnav">
-      <button class="jobs-subnav-btn on" data-section="stats" onclick="switchSocialSection('stats')">Stats</button>
-      <button class="jobs-subnav-btn" data-section="ideas" onclick="switchSocialSection('ideas')">Content Ideas</button>
-    </div>
-
-    <!-- Stats section (shown by default) -->
-    <div id="social-stats-section">
+  <!-- SOCIAL — STATS -->
+  <section class="panel" id="panel-social-stats">
       <div class="sec-hdr">
         <h2>Instagram Stats</h2>
         <p>Follower growth, reach, and what's working</p>
@@ -928,10 +942,10 @@ body.privacy-mode #privacy-banner{display:block}
         <div class="card-ttl">Top Reels</div>
         <div class="tbl-wrap" id="soc-reels-table"></div>
       </div>
-    </div>
+  </section>
 
-    <!-- Content Ideas section (hidden by default) -->
-    <div id="social-ideas-section" style="display:none">
+  <!-- SOCIAL — CONTENT IDEAS -->
+  <section class="panel" id="panel-social-ideas">
       <div class="sec-hdr">
         <h2>Content Ideas</h2>
         <p>AI-generated hooks, captions, and CTAs for your content buckets</p>
@@ -951,7 +965,6 @@ body.privacy-mode #privacy-banner{display:block}
         </div>
       </div>
       <div id="soc-ideas-out"></div>
-    </div>
   </section>
 
   <!-- PRICING -->
@@ -1144,6 +1157,7 @@ const ICONS = {
   'check-circle':'<path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
   lock:        '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>',
   clock:       '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  instagram:  '<rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/>',
   briefcase:   '<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>',
   cart:        '<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.97-1.67l1.38-7.33H6"/>',
   refresh:     '<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>',
@@ -4206,7 +4220,7 @@ async function saveSettings() {
     } catch (err) { console.warn('Logo upload:', err) }
   }
   const wu = document.getElementById('smod-worker-url')?.value.trim()
-  if (wu !== undefined && wu !== socialCfg().workerUrl) { saveSocialCfg({ workerUrl: wu }); renderSocial() }
+  if (wu !== undefined && wu !== socialCfg().workerUrl) { saveSocialCfg({ workerUrl: wu }); renderSocialStats(); renderSocialIdeas() }
   closeSettings()
   toast('Settings saved!')
 }
@@ -4253,7 +4267,7 @@ function toggleTheme() {
 }
 
 // ── TAB SWITCHING ─────────────────────────────────────────────
-const tabRenders={social:renderSocial,dashboard:renderDash,income:renderIncTable,purchases:renderPurTable,subscriptions:()=>{renderSubTable()},taxes:renderTaxes,export:()=>{renderDataSummary();switchExportSection('export-main')},clients:renderClientsTab,jobs:()=>{renderPricingList();initQuoteBuilder();renderJobsBoard()}}
+const tabRenders={'social-stats':renderSocialStats,'social-ideas':renderSocialIdeas,dashboard:renderDash,income:renderIncTable,purchases:renderPurTable,subscriptions:()=>{renderSubTable()},taxes:renderTaxes,export:()=>{renderDataSummary();switchExportSection('export-main')},clients:renderClientsTab,jobs:()=>{renderPricingList();initQuoteBuilder();renderJobsBoard()}}
 
 function openTab(t) {
   const tab=document.querySelector(`#nav [data-tab="${t}"]`); if(!tab)return
@@ -4265,7 +4279,7 @@ function openTab(t) {
 
 // Switch tabs from anywhere (empty-state buttons, quick-add palette, dashboard widgets)
 function navTo(t) {
-  localStorage.setItem('dt_active_tab', t)
+  localStorage.setItem(MODE_TAB_KEY[appMode()] || 'dt_active_tab', t)
   openTab(t)
   document.querySelectorAll('#mob-drawer .tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===t))
 }
@@ -4488,7 +4502,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   setupFilter('inc-filter','inc',renderIncTable)
   setupFilter('pur-filter','pur',renderPurTable)
   setupFilter('sub-filter','sub',()=>{renderSubTable()})
-  openTab(localStorage.getItem('dt_active_tab')||'dashboard')
+  const mode = appMode()
+  applyMode(mode)
+  openTab(localStorage.getItem(MODE_TAB_KEY[mode]) || MODE_HOME[mode])
   setSyncStatus('idle')  // will be updated by gsOnLibraryLoad() once GIS script loads
 })
 
@@ -6193,27 +6209,24 @@ function socSnaps() {
   return load(K.socSnap).slice().sort((a,b) => String(a.date).localeCompare(String(b.date)))
 }
 
-function switchSocialSection(section) {
-  const st = document.getElementById('social-stats-section')
-  const id = document.getElementById('social-ideas-section')
-  const btns = document.querySelectorAll('#social-subnav .jobs-subnav-btn')
-  const ideas = section === 'ideas'
-  if (st) st.style.display = ideas ? 'none' : ''
-  if (id) id.style.display = ideas ? '' : 'none'
-  btns.forEach(b => b.classList.toggle('on', b.dataset.section === (ideas ? 'ideas' : 'stats')))
-}
-
-function renderSocial() {
-  // Re-assert the sub-nav state on every tab open: another panel's switcher may
-  // have run while this panel was hidden.
-  const active = document.getElementById('social-ideas-section')?.style.display === '' ? 'ideas' : 'stats'
-  switchSocialSection(active)
+// Stats and Content Ideas are top-level tabs of the Social workspace, so each
+// gets its own render entry point in tabRenders.
+function renderSocialStats() {
   renderSocConnBanner()
   renderSocSummary()
   renderSocChart()
   renderSocReels()
+  socApplyConnState()
+}
+
+function renderSocialIdeas() {
   renderSocBuckets()
   renderSocIdeas()
+  socApplyConnState()
+}
+
+// Enable/disable everything that needs a Worker URL. Safe to call from either tab.
+function socApplyConnState() {
   const connected = !!socWorker()
   const gen  = document.getElementById('soc-gen-btn')
   const note = document.getElementById('soc-gen-note')
@@ -6224,6 +6237,38 @@ function renderSocial() {
     sync.title = connected ? 'Fetch the latest stats from your Worker' : 'Add your Worker URL in Settings first'
   }
   if (note) note.textContent = connected ? '' : 'Connect the backend in Settings to enable this.'
+}
+
+// ── WORKSPACE MODE (business ⇄ social) ────────────────────────
+// Each mode owns its own nav buttons and remembers its own last-open tab.
+const MODE_HOME = { business: 'dashboard', social: 'social-stats' }
+const MODE_TAB_KEY = { business: 'dt_active_tab', social: 'dt_active_tab_social' }
+function appMode() {
+  return localStorage.getItem('dt_mode') === 'social' ? 'social' : 'business'
+}
+const MODE_LABEL = { business: 'Business', social: 'Social Media' }
+const MODE_ICON  = { business: 'briefcase', social: 'instagram' }
+function applyMode(mode) {
+  document.querySelectorAll('#nav [data-mode], #mob-drawer [data-mode]')
+    .forEach(b => { b.style.display = b.dataset.mode === mode ? '' : 'none' })
+  // The button advertises the destination, not the current mode
+  const dest = mode === 'business' ? 'social' : 'business'
+  const lbl = document.getElementById('mode-toggle-lbl')
+  const ico = document.getElementById('mode-toggle-ico')
+  const btn = document.getElementById('mode-toggle')
+  if (lbl) lbl.textContent = MODE_LABEL[dest]
+  if (ico) ico.innerHTML = icon(MODE_ICON[dest], 14)
+  if (btn) btn.title = `Switch to the ${MODE_LABEL[dest]} tool`
+}
+function toggleMode() {
+  setMode(appMode() === 'business' ? 'social' : 'business')
+}
+function setMode(mode) {
+  if (mode !== 'business' && mode !== 'social') return
+  localStorage.setItem('dt_mode', mode)
+  applyMode(mode)
+  closeMobDrawer()
+  navTo(localStorage.getItem(MODE_TAB_KEY[mode]) || MODE_HOME[mode])
 }
 
 function renderSocConnBanner() {
@@ -6403,7 +6448,7 @@ async function socialSyncNow() {
       save(K.socReels, [...byId.values()])
     }
     saveSocialCfg({ lastSync: new Date().toISOString(), igUsername: data.username || socialCfg().igUsername || '' })
-    renderSocial()
+    renderSocialStats()
     toast('Instagram stats synced!')
   } catch (err) {
     console.warn('socialSyncNow:', err)
