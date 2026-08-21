@@ -50,7 +50,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sa
 .sum-card .lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text-2);margin-bottom:10px}
 .sum-card .val{font-size:40px;font-weight:700;letter-spacing:-1.5px}
 .sum-card .sub{font-size:12px;color:var(--text-2);margin-top:5px}
-.sum-sub-card{background:var(--card);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--card-border);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 16px;display:flex;flex-direction:column}
+/* Secondary cards sit visually behind the primary row: flatter, softer, less contrast */
+.sum-sub-card{background:rgba(255,255,255,0.36);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid rgba(255,255,255,0.55);border-radius:var(--r);box-shadow:0 2px 10px rgba(0,0,0,0.04);padding:14px 16px;display:flex;flex-direction:column}
+[data-theme="dark"] .sum-sub-card{background:rgba(28,28,34,0.5);border-color:rgba(255,255,255,0.06);box-shadow:0 2px 10px rgba(0,0,0,0.25)}
 .sum-sub-card .lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-2);margin-bottom:5px;opacity:.75}
 .sum-sub-card .val{font-size:15px;font-weight:700;letter-spacing:-.3px;margin-top:auto}
 .g{color:var(--green)}.r{color:var(--red)}.b{color:var(--blue)}.o{color:var(--orange)}
@@ -62,8 +64,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sa
 .dw[data-span="6"]{grid-column:span 6}
 @media(max-width:880px){
   #dash-widgets{grid-template-columns:1fr 1fr 1fr;align-items:start}
-  #dash-widgets .sum-card{grid-column:1/-1;padding:12px 14px}
-  #dash-widgets .sum-card .val{font-size:20px}
+  #dash-widgets .sum-card{grid-column:1/-1;padding:16px 18px}
+  #dash-widgets .sum-card .val{font-size:26px}
   #dash-widgets .sum-sub-card{grid-column:span 1;padding:10px 12px}
   #dash-widgets .sum-sub-card .val{font-size:12px}
   #dash-widgets .card{grid-column:span 3}
@@ -109,7 +111,13 @@ input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 
 .date-wrap input[type="date"]{border:none!important;background:transparent!important;box-shadow:none!important;border-radius:0!important;width:100%;min-width:0}
 .profit-preview{padding:9px 13px;border-radius:var(--r-sm);border:1px solid rgba(52,199,89,0.25);background:rgba(52,199,89,0.08);font-size:15px;font-weight:700;color:var(--green)}
 
-/* BUTTONS */
+/* BUTTONS
+   ── ACCENT RULE (keep this consistent when adding buttons) ──
+   .btn-g  GREEN  = creates a new record        (+ Add …, + New …, Save …, Convert to Job)
+   .btn-p  BLUE   = primary action / output     (Generate …, Download …, Export, Apply, Backup)
+   .btn-s  GREY   = secondary / auxiliary       (Cancel, Upload, View, Back)
+   .btn-d  RED    = destructive                 (Delete, Clear All Data)
+   .btn-v / .btn-o are legacy — do not use for new buttons.                        */
 .btn{padding:9px 20px;border:none;border-radius:var(--r-sm);cursor:pointer;font-family:inherit;font-size:14px;font-weight:600;transition:all .2s;display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .btn-p{background:var(--blue);color:#fff;box-shadow:0 4px 14px rgba(0,122,255,0.28)}
 .btn-p:hover{background:#0066d6;transform:translateY(-1px)}
@@ -127,10 +135,35 @@ input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 
 .tbl-wrap{overflow-x:auto;border-radius:14px;border:1px solid rgba(255,255,255,0.72)}
 table{width:100%;border-collapse:collapse;min-width:580px}
 thead{background:rgba(255,255,255,0.55)}
-th{padding:11px 14px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text-2);white-space:nowrap}
-td{padding:11px 14px;border-top:1px solid rgba(0,0,0,0.05);font-size:13px;vertical-align:middle}
-tr:hover td{background:rgba(255,255,255,0.32)}
+th{padding:9px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text-2);white-space:nowrap}
+td{padding:6px 12px;border-top:1px solid rgba(0,0,0,0.05);font-size:13px;vertical-align:middle}
+/* Zebra striping + hover for scannability — hover must out-rank the stripe */
+tbody tr:nth-child(even) td{background:rgba(255,255,255,0.22)}
+tbody tr:hover td{background:rgba(255,255,255,0.5)}
 tfoot td{font-weight:700;background:rgba(255,255,255,0.45);border-top:2px solid rgba(0,0,0,0.08)}
+/* Inline selects sit inside tighter rows now */
+td .isel{padding:3px 7px}
+
+/* ── ROW ACTION (KEBAB) MENU ────────────────────────────────
+   Menu is position:fixed so it is not clipped by .tbl-wrap's overflow-x. */
+.kebab-wrap{position:relative;display:inline-block}
+.kebab-btn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:26px;padding:0;border:1px solid rgba(0,0,0,0.1);background:rgba(255,255,255,0.6);border-radius:8px;cursor:pointer;color:var(--text-2);font-family:inherit;transition:all .15s}
+.kebab-btn:hover,.kebab-btn.on{background:var(--blue);border-color:var(--blue);color:#fff}
+[data-theme=dark] .kebab-btn{background:rgba(255,255,255,0.09);border-color:rgba(255,255,255,0.13);color:var(--text-2)}
+[data-theme=dark] .kebab-btn:hover,[data-theme=dark] .kebab-btn.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.kebab-menu{position:fixed;z-index:900;display:none;min-width:178px;padding:5px;background:rgba(255,255,255,0.97);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(255,255,255,0.8);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,0.16)}
+.kebab-menu.open{display:block}
+[data-theme=dark] .kebab-menu{background:rgba(30,30,42,0.98);border-color:rgba(255,255,255,0.1);box-shadow:0 8px 28px rgba(0,0,0,0.5)}
+.kebab-item{display:flex;align-items:center;gap:9px;width:100%;padding:8px 11px;border:none;background:none;border-radius:8px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:500;color:var(--text);text-align:left;line-height:1.3}
+.kebab-item:hover{background:rgba(0,122,255,0.1);color:var(--blue)}
+[data-theme=dark] .kebab-item:hover{background:rgba(0,122,255,0.18);color:#60b4ff}
+.kebab-item.kebab-danger{color:var(--red)}
+.kebab-item.kebab-danger:hover{background:rgba(255,59,48,0.1);color:var(--red)}
+.kebab-item.kebab-active{color:var(--blue)}
+[data-theme=dark] .kebab-item.kebab-active{color:#60b4ff}
+.kebab-sep{height:1px;margin:4px 6px;background:rgba(0,0,0,0.08)}
+[data-theme=dark] .kebab-sep{background:rgba(255,255,255,0.1)}
+@media(max-width:768px){.kebab-btn{width:34px;height:32px}.kebab-item{padding:11px 12px;font-size:14px}}
 
 /* BADGES */
 .bdg{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
@@ -237,6 +270,31 @@ svg{flex-shrink:0}
 .smod-logo-row img{height:44px;width:auto;max-width:80px;border-radius:8px;object-fit:contain}
 .smod-footer{display:flex;gap:8px;margin-top:24px;padding-top:20px;border-top:1px solid var(--card-border)}
 
+/* ── QUICK ADD (Cmd/Ctrl+K) ─────────────────────────────────── */
+#qa-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border:1px solid rgba(255,255,255,0.55);background:rgba(255,255,255,0.42);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:20px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:var(--text);line-height:1;transition:all .2s;flex-shrink:0;white-space:nowrap}
+#qa-btn:hover{background:rgba(255,255,255,0.7);transform:scale(1.04)}
+#qa-btn kbd{font-family:inherit;font-size:10.5px;font-weight:600;opacity:.55;border:1px solid currentColor;border-radius:4px;padding:1px 4px;margin-left:2px}
+[data-theme=dark] #qa-btn{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.15)}
+[data-theme=dark] #qa-btn:hover{background:rgba(255,255,255,0.18)}
+#qa-overlay{position:fixed;inset:0;z-index:1200;display:none;align-items:flex-start;justify-content:center;padding:14vh 20px 20px;background:rgba(0,0,0,0.38);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+#qa-overlay.open{display:flex}
+#qa-panel{width:100%;max-width:480px;background:rgba(255,255,255,0.97);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);border:1px solid rgba(255,255,255,0.8);border-radius:18px;box-shadow:0 24px 60px rgba(0,0,0,0.24);overflow:hidden}
+[data-theme=dark] #qa-panel{background:rgba(26,26,34,0.98);border-color:rgba(255,255,255,0.1)}
+.qa-search{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid rgba(0,0,0,0.08);color:var(--text-2)}
+[data-theme=dark] .qa-search{border-color:rgba(255,255,255,0.08)}
+#qa-input{border:none!important;background:transparent!important;box-shadow:none!important;padding:0!important;font-size:16px;font-weight:500;min-height:0}
+#qa-list{max-height:min(52vh,340px);overflow-y:auto;padding:7px}
+.qa-item{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border:none;background:none;border-radius:10px;cursor:pointer;font-family:inherit;font-size:14px;font-weight:500;color:var(--text);text-align:left}
+.qa-item:hover,.qa-item.qa-sel{background:rgba(0,122,255,0.11);color:var(--blue)}
+[data-theme=dark] .qa-item:hover,[data-theme=dark] .qa-item.qa-sel{background:rgba(0,122,255,0.2);color:#60b4ff}
+.qa-item .qa-ico{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;background:rgba(0,122,255,0.1);color:var(--blue);flex-shrink:0}
+[data-theme=dark] .qa-item .qa-ico{background:rgba(0,122,255,0.2);color:#60b4ff}
+.qa-item .qa-sub{display:block;font-size:11.5px;font-weight:400;color:var(--text-2);margin-top:1px}
+.qa-foot{padding:9px 18px;border-top:1px solid rgba(0,0,0,0.08);font-size:11px;color:var(--text-2);display:flex;gap:14px}
+[data-theme=dark] .qa-foot{border-color:rgba(255,255,255,0.08)}
+.qa-none{padding:26px 18px;text-align:center;font-size:13px;color:var(--text-2)}
+@media(max-width:768px){#qa-btn span{display:none}#qa-btn kbd{display:none}#qa-overlay{padding:8vh 12px 12px}}
+
 /* ── DARK MODE ─────────────────────────────────────────────── */
 [data-theme="dark"]{
   --text: #f2f2f7;
@@ -277,7 +335,8 @@ svg{flex-shrink:0}
 [data-theme="dark"] .tbl-wrap{border-color:rgba(255,255,255,0.08)}
 [data-theme="dark"] thead{background:rgba(255,255,255,0.06)}
 [data-theme="dark"] td{border-color:rgba(255,255,255,0.05)}
-[data-theme="dark"] tr:hover td{background:rgba(255,255,255,0.05)}
+[data-theme="dark"] tbody tr:nth-child(even) td{background:rgba(255,255,255,0.028)}
+[data-theme="dark"] tbody tr:hover td{background:rgba(255,255,255,0.075)}
 [data-theme="dark"] tfoot td{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.1)}
 [data-theme="dark"] .link-form-area{background:transparent}
 [data-theme="dark"] .row-pending td{background:rgba(255,149,0,0.1)!important}
@@ -382,8 +441,8 @@ body.privacy-mode #privacy-banner{display:block}
   .main{padding:16px 12px}
   .sec-hdr h2{font-size:18px}
   .sum-grid{grid-template-columns:1fr}
-  .sum-card{padding:12px 14px}
-  .sum-card .val{font-size:20px}
+  .sum-card{padding:16px 16px}
+  .sum-card .val{font-size:27px}
   .sum-sub-grid{grid-template-columns:1fr 1fr 1fr}
   .sum-sub-card{padding:10px 10px}
   .sum-sub-card .lbl{font-size:9px;letter-spacing:.3px}
@@ -505,6 +564,7 @@ body.privacy-mode #privacy-banner{display:block}
       <button class="tab" data-tab="export"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Export</button>
     </nav>
     <div class="hdr-right">
+      <button id="qa-btn" onclick="openQuickAdd()" title="Quick add (Cmd/Ctrl + K)"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>Add</span><kbd id="qa-kbd">⌘K</kbd></button>
       <div class="sync-pill" id="sync-indicator" title="Google Sheets sync status"></div>
       <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg> Dark</button>
       <button class="settings-btn" onclick="openSettings()" title="Settings"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>
@@ -624,7 +684,7 @@ body.privacy-mode #privacy-banner{display:block}
     <div class="card">
       <div class="form-toggle-hdr">
         <span class="form-ttl" id="pur-form-ttl">Add New Purchase</span>
-        <button class="btn btn-p" id="pur-toggle-btn" onclick="toggleForm('pur')">+ Add Purchase</button>
+        <button class="btn btn-g" id="pur-toggle-btn" onclick="toggleForm('pur')">+ Add Purchase</button>
       </div>
       <div class="form-wrap" id="pur-form-wrap">
         <div class="form-inner">
@@ -641,7 +701,7 @@ body.privacy-mode #privacy-banner{display:block}
             <div class="ff wide"><label>Description</label><input type="text" id="pur-desc" placeholder="What did you buy?"></div>
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <button class="btn btn-p" onclick="savePurchase()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Purchase</button>
+            <button class="btn btn-g" onclick="savePurchase()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Purchase</button>
             <button class="btn btn-s" onclick="cancelForm('pur')">Cancel</button>
           </div>
         </div>
@@ -686,7 +746,7 @@ body.privacy-mode #privacy-banner{display:block}
     <div class="card">
       <div class="form-toggle-hdr">
         <span class="form-ttl" id="sub-form-ttl">Add Subscription</span>
-        <button class="btn btn-v" id="sub-toggle-btn" onclick="toggleForm('sub')">+ Add Subscription</button>
+        <button class="btn btn-g" id="sub-toggle-btn" onclick="toggleForm('sub')">+ Add Subscription</button>
       </div>
       <div class="form-wrap" id="sub-form-wrap">
         <div class="form-inner">
@@ -710,7 +770,7 @@ body.privacy-mode #privacy-banner{display:block}
             <div class="ff wide"><label>Description / Notes</label><input type="text" id="sub-desc" placeholder="Account, plan tier, notes..."></div>
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <button class="btn btn-v" onclick="saveSub()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Subscription</button>
+            <button class="btn btn-g" onclick="saveSub()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Subscription</button>
             <button class="btn btn-s" onclick="cancelForm('sub')">Cancel</button>
           </div>
         </div>
@@ -769,13 +829,13 @@ body.privacy-mode #privacy-banner{display:block}
         <div class="exp-icon"><svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg></div>
         <h3>Export Excel</h3>
         <p>Excel-compatible file with all sections. Opens directly in Microsoft Excel or Numbers.</p>
-        <button class="btn btn-g" style="width:100%;margin-top:auto" onclick="exportExcel()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download .xls</button>
+        <button class="btn btn-p" style="width:100%;margin-top:auto" onclick="exportExcel()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download .xls</button>
       </div>
       <div class="card exp-card">
         <div class="exp-icon"><svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
         <h3>Backup JSON</h3>
         <p>Full data backup as a JSON file. Use to transfer data between browsers or computers.</p>
-        <button class="btn btn-o" style="width:100%" onclick="exportJSON()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download Backup</button>
+        <button class="btn btn-p" style="width:100%" onclick="exportJSON()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download Backup</button>
       </div>
       <div class="card exp-card">
         <div class="exp-icon"><svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg></div>
@@ -870,7 +930,7 @@ body.privacy-mode #privacy-banner{display:block}
         <div style="margin-bottom:12px">
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:10px">Line Items</div>
           <div id="quote-items"></div>
-          <button class="btn btn-s btn-sm" onclick="quoteAddLine()" style="margin-top:6px">+ Add Line Item</button>
+          <button class="btn btn-g btn-sm" onclick="quoteAddLine()" style="margin-top:6px">+ Add Line Item</button>
         </div>
         <div style="text-align:right;padding:14px;background:rgba(52,199,89,0.08);border-radius:12px;border:1px solid rgba(52,199,89,0.2);margin-bottom:16px">
           <span style="font-size:12px;font-weight:600;color:var(--text-2);margin-right:12px">Grand Total</span>
@@ -893,7 +953,7 @@ body.privacy-mode #privacy-banner{display:block}
         </div>
         <div id="jobs-hdr-btns" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
           <button class="btn btn-p" onclick="openInvoiceModal()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Generate Invoice</button>
-          <button class="btn btn-s" onclick="openAgrForm(null)"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Generate Agreement</button>
+          <button class="btn btn-p" onclick="openAgrForm(null)"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Generate Agreement</button>
           <button class="btn btn-s" onclick="openAgrUploadModal()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg> Upload Agreement</button>
           <button class="btn btn-g" onclick="openJobForm()">+ New Job</button>
         </div>
@@ -967,6 +1027,18 @@ body.privacy-mode #privacy-banner{display:block}
 
 <div id="toast"></div>
 
+<!-- QUICK ADD PALETTE (Cmd/Ctrl+K) -->
+<div id="qa-overlay" onclick="if(event.target===this)closeQuickAdd()">
+  <div id="qa-panel" role="dialog" aria-label="Quick add">
+    <div class="qa-search">
+      <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="qa-input" placeholder="What do you want to add?" autocomplete="off" spellcheck="false">
+    </div>
+    <div id="qa-list"></div>
+    <div class="qa-foot"><span>↑↓ navigate</span><span>↵ select</span><span>esc close</span></div>
+  </div>
+</div>
+
 <script>
 // ── ICON LIBRARY ──────────────────────────────────────────────
 const ICONS = {
@@ -1008,9 +1080,53 @@ const ICONS = {
   paperclip:   '<path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>',
   users:       '<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>',
   calendar:    '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+  more:        '<circle cx="12" cy="5" r="1.8" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.8" fill="currentColor" stroke="none"/>',
+  plus:        '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  search:      '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
 }
 function icon(name, size=16) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;flex-shrink:0">${ICONS[name]||''}</svg>`
+}
+
+// ── EMPTY STATE ───────────────────────────────────────────────
+// One shared shape for every empty list/table/column: icon, message, optional action.
+function emptyState(iconName, msg, action, opts={}) {
+  const sz = opts.small ? 28 : 40
+  const pad = opts.pad ? ` style="padding:${opts.pad}"` : ''
+  const btn = action ? `<button class="btn btn-sm ${action.cls||'btn-g'}" style="margin-top:12px" onclick="${action.fn}">${action.label}</button>` : ''
+  return `<div class="empty"${pad}><div class="ei">${icon(iconName,sz)}</div><p>${msg}</p>${btn}</div>`
+}
+
+// ── ROW ACTION (KEBAB) MENU ───────────────────────────────────
+// items: [{label, icon, fn, danger, active}] — `fn` is a JS call string.
+// Pass the literal string 'sep' for a divider.
+function kebab(items) {
+  const body = items.map(it => it === 'sep'
+    ? '<div class="kebab-sep"></div>'
+    : `<button class="kebab-item${it.danger?' kebab-danger':''}${it.active?' kebab-active':''}" onclick="closeKebabs();${it.fn}">${it.icon?icon(it.icon,14):''}<span>${it.label}</span></button>`
+  ).join('')
+  return `<div class="kebab-wrap"><button class="kebab-btn" title="Actions" aria-label="Row actions" onclick="toggleKebab(event,this)">${icon('more',15)}</button><div class="kebab-menu">${body}</div></div>`
+}
+function closeKebabs() {
+  document.querySelectorAll('.kebab-menu.open').forEach(m => m.classList.remove('open'))
+  document.querySelectorAll('.kebab-btn.on').forEach(b => b.classList.remove('on'))
+}
+function toggleKebab(ev, btn) {
+  ev.stopPropagation()
+  const menu = btn.nextElementSibling
+  const wasOpen = menu.classList.contains('open')
+  closeKebabs()
+  if (wasOpen) return
+  menu.classList.add('open')
+  btn.classList.add('on')
+  const r = btn.getBoundingClientRect()
+  const mw = menu.offsetWidth, mh = menu.offsetHeight
+  let left = r.right - mw, top = r.bottom + 6
+  if (top + mh > window.innerHeight - 8) top = Math.max(8, r.top - mh - 6)
+  if (left < 8) left = 8
+  if (left + mw > window.innerWidth - 8) left = window.innerWidth - mw - 8
+  menu.style.left = left + 'px'
+  menu.style.top  = top  + 'px'
 }
 
 // ── STORAGE ──────────────────────────────────────────────────
@@ -1126,7 +1242,8 @@ function showChartTip(e, lbl, r, x) {
   const tip=document.getElementById('chart-tip')
   const dot=(c)=>`<span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${c};flex-shrink:0"></span>`
   const row=(c,label,val,col)=>`<div style="display:flex;align-items:center;gap:7px;margin-top:4px">${dot(c)}<span style="color:var(--text-2);font-size:12px">${label}</span><span style="margin-left:auto;padding-left:16px;font-size:12px;font-weight:600;color:${col}">${fmt(val)}</span></div>`
-  tip.innerHTML=`<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px">${lbl}</div>${row('rgba(0,122,255,0.8)','Revenue',r,'var(--green)')}${row('rgba(255,59,48,0.8)','Expenses',x,'var(--red)')}`
+  const n=r-x
+  tip.innerHTML=`<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px">${lbl}</div>${row('rgba(0,122,255,0.8)','Revenue',r,'var(--green)')}${row('rgba(255,59,48,0.8)','Expenses',x,'var(--red)')}<div style="height:1px;background:rgba(128,128,128,0.22);margin:6px 0 2px"></div>${row('#34C759','Net Profit',n,n>=0?'var(--green)':'var(--red)')}`
   tip.style.display='block'
   posChartTip(e)
 }
@@ -1189,7 +1306,16 @@ function applyPrivacyMode(on) {
   renderDash(); renderIncTable(); renderPurTable(); renderSubTable(); renderTaxes(); renderDataSummary(); renderLinks()
 }
 
-function fmt(n) { const v=parseFloat(n)||0; return '$'+v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',') }
+// Single source of truth for currency display. Rounds to cents first so float
+// artifacts (95.0000001) never surface, and puts the sign before the $ (-$1,234.50).
+function fmt(n) {
+  let v = parseFloat(n)
+  if (!isFinite(v)) v = 0
+  // Round half away from zero (currency convention), not half toward +Infinity
+  const r = Math.sign(v) * Math.round(Math.abs(v) * 100) / 100
+  const s = Math.abs(r).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  return (r < 0 ? '-$' : '$') + s
+}
 
 // Returns a view of data with financial fields zeroed for real (non-temp) entries
 // when Privacy Mode is active, so temp (_priv) entries show their actual values.
@@ -1358,8 +1484,8 @@ function renderDash() {
     .map(x => `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:rgba(0,122,255,0.08);border-radius:20px;font-size:11px;font-weight:600;color:var(--blue);margin:2px">${x.n} ${x.s}</span>`)
     .join('')
   const jobsWidgetHTML = activeJobs.length === 0
-    ? `<div class="card-ttl" style="display:flex;align-items:center;gap:7px;margin-bottom:12px">${icon('briefcase',16)} Jobs Pipeline</div><div class="empty" style="padding:16px 0"><div class="ei">${icon('briefcase',32)}</div><p>No active jobs</p><button class="btn btn-sm btn-g" onclick="document.querySelector('[data-tab=&quot;jobs&quot;]').click()" style="margin-top:8px">+ New Job</button></div>`
-    : `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="card-ttl" style="margin-bottom:0;display:flex;align-items:center;gap:7px">${icon('briefcase',16)} Jobs Pipeline</div><button class="btn btn-sm btn-s" onclick="document.querySelector('[data-tab=&quot;jobs&quot;]').click()">View Jobs</button></div><div style="margin-bottom:12px;line-height:2">${stagePills}</div><div style="display:flex;gap:20px"><div><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:4px">Active Jobs</div><div style="font-size:22px;font-weight:700;color:var(--blue)">${activeJobs.length}</div></div><div><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:4px">Pipeline Value</div><div style="font-size:22px;font-weight:700;color:var(--green)">${fmt(pipelineValue)}</div></div></div>`
+    ? `<div class="card-ttl" style="display:flex;align-items:center;gap:7px;margin-bottom:12px">${icon('briefcase',16)} Jobs Pipeline</div>${emptyState('briefcase','No active jobs',{label:'+ New Job',fn:"navTo('jobs');switchJobsSection('pipeline');openJobForm()"},{small:true,pad:'16px 0'})}`
+    : `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="card-ttl" style="margin-bottom:0;display:flex;align-items:center;gap:7px">${icon('briefcase',16)} Jobs Pipeline</div><button class="btn btn-sm btn-s" onclick="navTo('jobs')">View Jobs</button></div><div style="margin-bottom:12px;line-height:2">${stagePills}</div><div style="display:flex;gap:20px"><div><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:4px">Active Jobs</div><div style="font-size:22px;font-weight:700;color:var(--blue)">${activeJobs.length}</div></div><div><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:4px">Pipeline Value</div><div style="font-size:22px;font-weight:700;color:var(--green)">${fmt(pipelineValue)}</div></div></div>`
 
   // Outstanding payments widget
   const outstanding = loadP(K.inc).filter(e => e.status === 'Pending' || e.status === 'Unpaid')
@@ -1379,7 +1505,7 @@ function renderDash() {
     ...subCards,
     `<div class="card-ttl">Monthly Revenue vs Expenses (Last 12 Months)</div><div class="chart-wrap" id="chart"></div>`,
     `<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><div style="position:relative"><div id="ren-view-heading" class="card-ttl" style="margin-bottom:0;display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none" onclick="toggleDashViewMenu()">${icon('bell',16)} <span id="ren-view-label">Upcoming Renewals</span><span style="font-size:14px;opacity:.75;margin-left:4px;line-height:1">▾</span></div><div id="ren-view-menu" class="ren-view-menu"><button id="ren-opt-renewals" class="ren-view-opt" onclick="setDashView('renewals')">Renewals</button><button id="ren-opt-shoots" class="ren-view-opt" onclick="setDashView('shoots')">Shoots</button><button id="ren-opt-both" class="ren-view-opt" onclick="setDashView('both')">All</button></div></div></div><div style="display:flex;justify-content:flex-end;gap:5px;margin-bottom:12px"><button id="ren-f-30d" class="fbtn" onclick="setRenewalFilter('30d')">30 Days</button><button id="ren-f-1y" class="fbtn" onclick="setRenewalFilter('1y')">1 Year</button><button id="ren-f-all" class="fbtn" onclick="setRenewalFilter('all')">All Active</button></div><div id="renewals-list"></div>`,
-    `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="card-ttl" style="margin-bottom:0;display:flex;align-items:center;gap:7px">${icon('link',16)} Quick Links</div><button class="btn btn-sm btn-p" id="link-add-btn" onclick="toggleLinkForm()">+ Add Link</button></div><div class="link-form-area" id="link-form-area"><div class="form-inner" style="margin-bottom:0"><input type="hidden" id="link-edit-id"><div class="fg" style="grid-template-columns:1fr 1fr;margin-bottom:10px"><div class="ff"><label>Name</label><input type="text" id="link-name" placeholder="e.g. FAA DroneZone"></div><div class="ff"><label>URL</label><input type="text" id="link-url" placeholder="https://..."></div></div><div style="display:flex;gap:8px"><button class="btn btn-p btn-sm" onclick="saveLink()">${icon('save',13)} Save</button><button class="btn btn-s btn-sm" onclick="cancelLinkForm()">Cancel</button></div></div></div><div id="links-list"></div>`,
+    `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="card-ttl" style="margin-bottom:0;display:flex;align-items:center;gap:7px">${icon('link',16)} Quick Links</div><button class="btn btn-sm btn-g" id="link-add-btn" onclick="toggleLinkForm()">+ Add Link</button></div><div class="link-form-area" id="link-form-area"><div class="form-inner" style="margin-bottom:0"><input type="hidden" id="link-edit-id"><div class="fg" style="grid-template-columns:1fr 1fr;margin-bottom:10px"><div class="ff"><label>Name</label><input type="text" id="link-name" placeholder="e.g. FAA DroneZone"></div><div class="ff"><label>URL</label><input type="text" id="link-url" placeholder="https://..."></div></div><div style="display:flex;gap:8px"><button class="btn btn-g btn-sm" onclick="saveLink()">${icon('save',13)} Save</button><button class="btn btn-s btn-sm" onclick="cancelLinkForm()">Cancel</button></div></div></div><div id="links-list"></div>`,
     jobsWidgetHTML,
     outstandingHTML,
   ]
@@ -1393,10 +1519,13 @@ function renderDash() {
   renderLinks()
 }
 
+// Net-profit line overlay preference (on by default), persisted across sessions
+let _chartNet = localStorage.getItem('dt_chart_net') !== '0'
+
 function renderChart() {
   const el=document.getElementById('chart')
   if (privacyMode()) {
-    el.innerHTML=`<div class="empty" style="padding:28px 20px"><div class="ei" style="opacity:.4">${icon('eye-off',36)}</div><p>Values hidden in Privacy Mode</p></div>`
+    el.innerHTML=emptyState('eye-off','Values hidden in Privacy Mode',null,{small:true,pad:'28px 20px'})
     return
   }
   const months=[]
@@ -1414,31 +1543,60 @@ function renderChart() {
     return p+x+t
   })
   const hasData=rev.some(v=>v>0)||exp.some(v=>v>0)
-  if(!hasData){el.innerHTML=`<div class="empty"><div class="ei">${icon('bar-chart',40)}</div><p>Add income and expenses to see your chart</p></div>`;return}
+  if(!hasData){el.innerHTML=emptyState('bar-chart','Add income and expenses to see your chart',{label:'+ Add Job',fn:"navTo('income');openForm('inc')"});return}
 
+  const net=months.map((_,i)=>rev[i]-exp[i])
   const W=680,H=280,pad={t:20,r:20,b:50,l:62}
   const cW=W-pad.l-pad.r, cH=H-pad.t-pad.b
-  const mx=Math.max(...rev,...exp,1)
+  // Net profit can be negative, so the scale only drops below zero when the line is shown
+  const yMin=_chartNet?Math.min(0,...net):0
+  const yMax=Math.max(...rev,...exp,...(_chartNet?net:[]),1)
+  const span=(yMax-yMin)||1
+  const Y=v=>pad.t+cH*(1-(v-yMin)/span)
+  const zeroY=Y(0)
   const mW=cW/12, bW=mW*.3
 
   let grid='',ylab='',bars='',xlab=''
   for(let i=0;i<=4;i++){
-    const y=pad.t+cH*(1-i/4), v=mx*i/4
+    const v=yMin+span*i/4, y=Y(v)
     grid+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="rgba(0,0,0,0.07)" stroke-width="1"/>`
-    const lv=v>=1000?'$'+(v/1000).toFixed(1)+'k':'$'+v.toFixed(0)
-    ylab+=`<text x="${pad.l-5}" y="${y+4}" text-anchor="end" font-size="10" fill="#6e6e73">${lv}</text>`
+    const a=Math.abs(v)
+    const lv=(v<0?'−':'')+(a>=1000?'$'+(a/1000).toFixed(1)+'k':'$'+a.toFixed(0))
+    ylab+=`<text x="${pad.l-5}" y="${y+4}" text-anchor="end" font-size="10" fill="var(--text-2)">${lv}</text>`
   }
+  // Emphasise the zero baseline when the chart dips negative
+  const zeroLine=yMin<0?`<line x1="${pad.l}" y1="${zeroY}" x2="${W-pad.r}" y2="${zeroY}" stroke="rgba(0,0,0,0.22)" stroke-width="1"/>`:''
   months.forEach((mo,i)=>{
     const cx=pad.l+i*mW+mW/2
-    const rH=Math.max(rev[i]>0?2:0,(rev[i]/mx)*cH), rY=pad.t+cH-rH
-    const eH=Math.max(exp[i]>0?2:0,(exp[i]/mx)*cH), eY=pad.t+cH-eH
-    bars+=`<rect x="${cx-bW-1}" y="${rY}" width="${bW}" height="${rH}" rx="3" fill="rgba(0,122,255,0.78)"/>`
-    bars+=`<rect x="${cx+1}" y="${eY}" width="${bW}" height="${eH}" rx="3" fill="rgba(255,59,48,0.78)"/>`
+    const rH=Math.max(rev[i]>0?2:0,zeroY-Y(rev[i]))
+    const eH=Math.max(exp[i]>0?2:0,zeroY-Y(exp[i]))
+    bars+=`<rect x="${cx-bW-1}" y="${zeroY-rH}" width="${bW}" height="${rH}" rx="3" fill="rgba(0,122,255,0.78)"/>`
+    bars+=`<rect x="${cx+1}" y="${zeroY-eH}" width="${bW}" height="${eH}" rx="3" fill="rgba(255,59,48,0.78)"/>`
     bars+=`<rect class="chart-col" x="${cx-mW/2+1}" y="${pad.t}" width="${mW-2}" height="${cH}" rx="4" fill="rgba(0,0,0,0)" pointer-events="all" data-lbl="${mo.lbl}" data-rev="${rev[i]}" data-exp="${exp[i]}" style="cursor:default"/>`
-    xlab+=`<text x="${cx}" y="${H-8}" text-anchor="middle" font-size="9" fill="#6e6e73">${mo.lbl}</text>`
+    xlab+=`<text x="${cx}" y="${H-8}" text-anchor="middle" font-size="9" fill="var(--text-2)">${mo.lbl}</text>`
   })
-  const leg=`<rect x="${W-148}" y="${pad.t}" width="9" height="9" rx="2" fill="rgba(0,122,255,0.78)"/><text x="${W-135}" y="${pad.t+8}" font-size="11" fill="#6e6e73">Revenue</text><rect x="${W-72}" y="${pad.t}" width="9" height="9" rx="2" fill="rgba(255,59,48,0.78)"/><text x="${W-59}" y="${pad.t+8}" font-size="11" fill="#6e6e73">Expenses</text>`
-  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${grid}${ylab}${bars}${xlab}${leg}<line x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${pad.t+cH}" stroke="rgba(0,0,0,0.15)" stroke-width="1"/><line x1="${pad.l}" y1="${pad.t+cH}" x2="${W-pad.r}" y2="${pad.t+cH}" stroke="rgba(0,0,0,0.15)" stroke-width="1"/></svg>`
+  // Net profit overlay (revenue − expenses), toggled from the legend
+  let netLine=''
+  if(_chartNet){
+    const pts=months.map((_,i)=>`${(pad.l+i*mW+mW/2).toFixed(1)},${Y(net[i]).toFixed(1)}`).join(' ')
+    const dots=months.map((_,i)=>`<circle cx="${(pad.l+i*mW+mW/2).toFixed(1)}" cy="${Y(net[i]).toFixed(1)}" r="2.8" fill="var(--dropdown-bg)" stroke="#34C759" stroke-width="1.8"/>`).join('')
+    netLine=`<polyline points="${pts}" fill="none" stroke="#34C759" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>${dots}`
+  }
+  // Legend — the Net Profit entry is clickable
+  const legItems=[
+    {c:'rgba(0,122,255,0.78)', t:'Revenue',    w:52, on:true},
+    {c:'rgba(255,59,48,0.78)', t:'Expenses',   w:58, on:true},
+    {c:'#34C759',              t:'Net Profit', w:62, on:_chartNet, click:true},
+  ]
+  let lx=W-pad.r-legItems.reduce((s,it)=>s+it.w+13,0), leg=''
+  legItems.forEach(it=>{
+    leg+=`<g${it.click?' class="chart-leg" style="cursor:pointer"':''} opacity="${it.on?1:0.35}">`
+       + (it.click?`<rect x="${lx-4}" y="${pad.t-5}" width="${it.w+15}" height="18" rx="4" fill="transparent"/>`:'')
+       + `<rect x="${lx}" y="${pad.t-1}" width="9" height="9" rx="2" fill="${it.c}"/>`
+       + `<text x="${lx+13}" y="${pad.t+7}" font-size="11" fill="var(--text-2)">${it.t}</text></g>`
+    lx+=it.w+13
+  })
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${grid}${ylab}${bars}${zeroLine}${netLine}${xlab}${leg}<line x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${pad.t+cH}" stroke="rgba(0,0,0,0.15)" stroke-width="1"/><line x1="${pad.l}" y1="${pad.t+cH}" x2="${W-pad.r}" y2="${pad.t+cH}" stroke="rgba(0,0,0,0.15)" stroke-width="1"/></svg>`
   el.querySelectorAll('.chart-col').forEach(r=>{
     r.addEventListener('mouseenter', e=>{
       r.setAttribute('fill','rgba(0,0,0,0.04)')
@@ -1449,6 +1607,12 @@ function renderChart() {
       r.setAttribute('fill','rgba(0,0,0,0)')
       hideChartTip()
     })
+  })
+  const legToggle=el.querySelector('.chart-leg')
+  if(legToggle) legToggle.addEventListener('click', ()=>{
+    _chartNet=!_chartNet
+    localStorage.setItem('dt_chart_net', _chartNet?'1':'0')
+    renderChart()
   })
 }
 
@@ -1522,7 +1686,7 @@ function renderRenewals() {
       : _renewalFilter === '30d' ? 'No renewals in the next 30 days'
       : _renewalFilter === '1y' ? 'No renewals in the next 12 months'
       : 'No active recurring subscriptions'
-    el.innerHTML = `<div class="empty" style="padding:20px"><div class="ei">${icon('check-open',36)}</div><p>${emptyMsg}</p></div>`
+    el.innerHTML = emptyState('check-open', emptyMsg, null, {small:true, pad:'20px'})
     return
   }
 
@@ -1543,7 +1707,7 @@ function renderRenewals() {
 function renderLinks() {
   const el=document.getElementById('links-list'); if(!el)return
   const list=load(K.links)
-  if(!list.length){el.innerHTML='<div style="color:var(--text-2);font-size:13px;padding:8px 0">No links yet. Add one above.</div>';return}
+  if(!list.length){el.innerHTML=emptyState('link','No links yet.',{label:'+ Add Link',fn:'openLinkForm()'},{small:true,pad:'16px 0'});return}
   el.innerHTML=list.map(l=>`<div class="link-item">
     <a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.name)}</a>
     <div style="display:flex;gap:5px">
@@ -1556,6 +1720,13 @@ function toggleLinkForm() {
   const w=document.getElementById('link-form-area'), open=w.classList.toggle('open')
   document.getElementById('link-add-btn').innerHTML=open?`${icon('x',12)} Close`:'+ Add Link'
   if(!open) clearLinkForm()
+}
+// Open-only variant for the quick-add palette and empty-state buttons
+function openLinkForm() {
+  const w=document.getElementById('link-form-area'); if(!w)return
+  if(!w.classList.contains('open')) toggleLinkForm()
+  w.scrollIntoView({behavior:'smooth',block:'nearest'})
+  const n=document.getElementById('link-name'); if(n) setTimeout(()=>n.focus(),150)
 }
 function cancelLinkForm(){document.getElementById('link-form-area').classList.remove('open');document.getElementById('link-add-btn').textContent='+ Add Link';clearLinkForm()}
 function clearLinkForm(){['link-edit-id','link-name','link-url'].forEach(id=>document.getElementById(id).value='')}
@@ -1637,7 +1808,7 @@ function renderTaxes() {
   // Include subscription years so historical-only years appear
   const subYears=Object.keys(subByYear)
   const allDates=[...inc.map(e=>e.date),...pur.map(e=>e.date),...subYears.map(y=>y+'-01-01')]
-  if(!allDates.length){el.innerHTML=`<div class="card"><div class="empty"><div class="ei">${icon('receipt',40)}</div><p>No data yet to summarize.</p></div></div>`;return}
+  if(!allDates.length){el.innerHTML=`<div class="card">${emptyState('receipt','No data yet to summarize.')}</div>`;return}
   const years=[...new Set(allDates.map(d=>d.slice(0,4)))].sort().reverse()
   el.innerHTML=years.map(yr=>{
     const yInc=inc.filter(e=>e.date.startsWith(yr))
@@ -1915,7 +2086,7 @@ function renderIncTable() {
   if(FS.inc.clients.length) list=list.filter(e=>FS.inc.clients.includes(e.client))
   list.sort((a,b)=>b.date.localeCompare(a.date))
   renderIncSummary(list)
-  if(!list.length){el.innerHTML=`<div class="empty"><div class="ei">${icon('briefcase',40)}</div><p>No income entries yet. Add your first job above!</p></div>`;return}
+  if(!list.length){el.innerHTML=emptyState('briefcase','No income entries yet.',{label:'+ Add Job',fn:'openForm(\'inc\')'});return}
   const totRev=list.reduce((s,e)=>s+(+e.amount||0),0)
   const totTravel=list.reduce((s,e)=>s+(+(e.travel||e.travelExpenses||e.travel_expenses||0)),0)
   const totProfit=list.reduce((s,e)=>s+(+e.profit||0),0)
@@ -1928,6 +2099,7 @@ function renderIncTable() {
       const desc=e.desc||e.description||''
       const filmingDate=e.filmingDate||''
       const attCount=(()=>{if(!e.agreementId)return 0;try{const p=JSON.parse(e.agreementId);return Array.isArray(p)?p.length:1}catch{return 1}})()
+      const calLink=(e.calendarEventId&&e.date>=today())?(gcEventLink(e.calendarEventId)||''):''
       const opt=(val,cur)=>`<option${val===cur?' selected':''}>${val}</option>`
       if(e.id===editing.inc){
         const profit=+e.amount-travel
@@ -1955,7 +2127,14 @@ function renderIncTable() {
         <td>${travel>0?`<span class="bdg bdg-o">${fmt(travel)}</span>`:'<span style="color:var(--text-2)">—</span>'}</td>
         <td><span class="${+e.profit>=0?'pos':'neg'}">${fmt(e.profit)}</span></td>
         <td style="min-width:140px;white-space:normal;word-break:break-word">${esc(desc||'—')}</td>
-        <td><div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;width:fit-content"><button class="btn btn-sm btn-s" style="${e.invoiceNum?'color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)':'opacity:0.45'}" title="${e.invoiceNum?'Invoice: '+e.invoiceNum:'Link Invoice'}" onclick="openInvLinkModal('${e.id}')">${icon('receipt',13)}</button><button class="btn btn-sm btn-s" style="${attCount?'color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)':'opacity:0.45'}" title="${attCount?'Attachments: '+attCount:'Link Attachment'}" onclick="openAgrModal('${e.id}')">${icon('paperclip',13)}</button><button class="btn btn-sm btn-s" onclick="editIncRow('${e.id}')">${icon('pencil',13)}</button><button class="btn btn-sm btn-d" onclick="delInc('${e.id}')">${icon('trash',13)}</button>${(e.calendarEventId&&e.date>=today()&&gcEventLink(e.calendarEventId))?`<button class="btn btn-sm btn-s" style="color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28);grid-column:span 2" title="View in Google Calendar" data-href="${esc(gcEventLink(e.calendarEventId))}" onclick="window.open(this.dataset.href,'_blank')">${icon('calendar',13)}</button>`:''}</div></td>
+        <td>${kebab([
+          {label:'Edit', icon:'pencil', fn:`editIncRow('${e.id}')`},
+          {label:e.invoiceNum?`Invoice ${esc(e.invoiceNum)}`:'Link Invoice', icon:'receipt', fn:`openInvLinkModal('${e.id}')`, active:!!e.invoiceNum},
+          {label:attCount?`Attachments (${attCount})`:'Link Attachment', icon:'paperclip', fn:`openAgrModal('${e.id}')`, active:!!attCount},
+          ...(calLink?[{label:'View in Calendar', icon:'calendar', fn:`window.open('${esc(calLink)}','_blank')`, active:true}]:[]),
+          'sep',
+          {label:'Delete', icon:'trash', fn:`delInc('${e.id}')`, danger:true},
+        ])}</td>
       </tr>`
     }).join('')}</tbody>
     <tfoot><tr><td></td><td colspan="2">Total (${list.length} jobs)</td><td><span class="pos">${fmt(totRev)}</span></td><td colspan="2"></td><td>${totTravel>0?`<span class="neg">${fmt(totTravel)}</span>`:''}</td><td><span class="${totProfit>=0?'pos':'neg'}">${fmt(totProfit)}</span></td><td colspan="2"></td></tr></tfoot>
@@ -1999,7 +2178,7 @@ function delPricing(id) {
 function renderPricingList() {
   const el=document.getElementById('prc-list'); if(!el)return
   const list=load(K.prc)
-  if(!list.length){el.innerHTML=`<div class="empty" style="padding:20px 0"><p>No services yet. Add your first service above.</p></div>`;return}
+  if(!list.length){el.innerHTML=emptyState('receipt','No services yet. Add a service to get started.',{label:'+ Add Service',fn:'openPrcForm()'},{pad:'24px 20px'});return}
   el.innerHTML=list.map(p=>`<div class="pricing-row">
     <div style="flex:1"><strong>${esc(p.name)}</strong></div>
     <div style="font-size:12px;color:var(--text-2)">${p.type}</div>
@@ -2497,7 +2676,7 @@ function renderJobsBoard() {
     const stageColor = STAGE_COLORS[stage] || 'var(--text-2)'
     return `<div class="kanban-col" style="border-left:3px solid ${stageColor}">
       <div class="kanban-col-hdr"><span>${stage}</span><span style="background:rgba(0,0,0,0.08);border-radius:8px;padding:1px 6px;font-size:10px">${jobs.length}</span></div>
-      ${cards||`<div style="font-size:11px;color:var(--text-2);padding:8px 0;text-align:center">—</div>`}
+      ${cards||emptyState('briefcase','No jobs here',null,{small:true,pad:'14px 6px'})}
     </div>`
   }).join('')
 }
@@ -2573,7 +2752,7 @@ function renderPurTable() {
   if(FS.pur.vendors.length) list=list.filter(e=>FS.pur.vendors.includes(e.store||e.name||''))
   list.sort((a,b)=>b.date.localeCompare(a.date))
   renderPurSummary()
-  if(!list.length){el.innerHTML=`<div class="empty"><div class="ei">${icon('cart',40)}</div><p>No purchases yet. Log your first one above!</p></div>`;return}
+  if(!list.length){el.innerHTML=emptyState('cart','No purchases yet.',{label:'+ Add Purchase',fn:'openForm(\'pur\')'});return}
   const total=list.reduce((s,e)=>s+(+e.price||0),0)
   el.innerHTML=`<table>
     <thead><tr><th>Date</th><th>Store / Vendor</th><th>Category</th><th>Price</th><th>Description</th><th>Actions</th></tr></thead>
@@ -2598,7 +2777,11 @@ function renderPurTable() {
       <td><select class="isel" onchange="updatePurField('${e.id}','cat',this.value)">${optC('Drone Equipment')}${optC('Camera Equipment')}${optC('Misc')}</select></td>
       <td><span class="${+e.price<0?'pos':'neg'}">${fmt(e.price)}</span></td>
       <td style="min-width:120px;white-space:normal;word-break:break-word">${esc(desc||'—')}</td>
-      <td><button class="btn btn-sm btn-s" onclick="editPurRow('${e.id}')">${icon('pencil',13)}</button> <button class="btn btn-sm btn-d" onclick="delPur('${e.id}')">${icon('trash',13)}</button></td>
+      <td>${kebab([
+        {label:'Edit', icon:'pencil', fn:`editPurRow('${e.id}')`},
+        'sep',
+        {label:'Delete', icon:'trash', fn:`delPur('${e.id}')`, danger:true},
+      ])}</td>
     </tr>`}).join('')}</tbody>
     <tfoot><tr><td colspan="3">Total (${list.length} items)</td><td><span class="neg">${fmt(total)}</span></td><td colspan="2"></td></tr></tfoot>
   </table>`
@@ -2780,7 +2963,7 @@ function renderSubTable() {
     return true
   })
   renderSubSummary()
-  if(!allFiltered.length){el.innerHTML=`<div class="empty"><div class="ei">${icon('refresh',40)}</div><p>No subscriptions yet. Add your first one above!</p></div>`;return}
+  if(!allFiltered.length){el.innerHTML=emptyState('refresh','No subscriptions yet.',{label:'+ Add Subscription',fn:'openForm(\'sub\')'});return}
   const bBdg={Monthly:'bdg-b',Annual:'bdg-g','Every 2 Years':'bdg-o','Every 3 Years':'bdg-v','One-Time':'bdg-gr'}
   const spent=s=>(s.totalSpent!==undefined&&s.totalSpent!=='')?+s.totalSpent:(s.lastProcessed?(+s.amount||0):0)
   const active=allFiltered.filter(s=>s.status==='Active'&&s.billingType!=='One-Time').sort((a,b)=>a.name.localeCompare(b.name))
@@ -2822,7 +3005,12 @@ function renderSubTable() {
         <td>${statusCell}</td>
         <td style="font-size:12px;color:var(--text-2);white-space:nowrap">${nr}</td>
         <td><span class="neg">${fmt(spent(s))}</span></td>
-        <td style="white-space:nowrap"><button class="btn btn-sm btn-s" onclick="editSubRow('${s.id}')">${icon('pencil',13)}</button> <button class="btn btn-sm btn-s" onclick="dupSub('${s.id}')" title="Duplicate">${icon('copy',13)}</button> <button class="btn btn-sm btn-d" onclick="delSub('${s.id}')">${icon('trash',13)}</button></td>
+        <td style="white-space:nowrap">${kebab([
+          {label:'Edit', icon:'pencil', fn:`editSubRow('${s.id}')`},
+          {label:'Duplicate', icon:'copy', fn:`dupSub('${s.id}')`},
+          'sep',
+          {label:'Delete', icon:'trash', fn:`delSub('${s.id}')`, danger:true},
+        ])}</td>
       </tr>`
     }).join('')}
   function buildSubTable(list){
@@ -2845,7 +3033,7 @@ function renderSubTable() {
 function renderSubxTable() {
   const el=document.getElementById('subexp-table')
   const list=load(K.subx).sort((a,b)=>b.date.localeCompare(a.date))
-  if(!list.length){el.innerHTML=`<div class="empty"><div class="ei">${icon('document',40)}</div><p>No auto-charges yet. Active subscriptions will generate entries here on each open.</p></div>`;return}
+  if(!list.length){el.innerHTML=emptyState('document','No auto-charges yet. Active subscriptions will generate entries here on each open.');return}
   const total=list.reduce((s,e)=>s+(+e.amount||0),0)
   el.innerHTML=`<table>
     <thead><tr><th>Date</th><th>Subscription</th><th>Amount</th><th>Actions</th></tr></thead>
@@ -3143,18 +3331,21 @@ function renderDataSummary() {
 // ── FORM HELPERS ──────────────────────────────────────────────
 const wrapIds={inc:'inc-form-wrap',pur:'pur-form-wrap',sub:'sub-form-wrap'}
 
+const formDateIds={inc:'inc-date',pur:'pur-date',sub:'sub-start'}
+
 function openForm(type) {
-  document.getElementById(wrapIds[type]).classList.add('open')
+  const w=document.getElementById(wrapIds[type]); if(!w)return
+  w.classList.add('open')
   const ttls={inc:'inc-form-ttl',pur:'pur-form-ttl',sub:'sub-form-ttl'}
   document.getElementById(ttls[type]).style.display=''
+  // default today date — also covers callers outside the tab (quick-add, empty states)
+  const df=document.getElementById(formDateIds[type]); if(df&&!df.value) df.value=today()
+  w.scrollIntoView({behavior:'smooth',block:'nearest'})
 }
 
 function toggleForm(type) {
   const w=document.getElementById(wrapIds[type])
   if(w.classList.contains('open')){cancelForm(type);return}
-  // default today date
-  const dmap={inc:'inc-date',pur:'pur-date',sub:'sub-start'}
-  const df=document.getElementById(dmap[type]); if(df&&!df.value) df.value=today()
   openForm(type)
 }
 
@@ -3393,6 +3584,7 @@ let _gsToken = null        // { access_token, expires_at }
 let _gsSignedIn = false    // UX sign-in state; independent of token expiry
 let _gsSyncQueue = new Set()
 let _gsSyncTimer = null
+let _gsRetryTimer = null
 
 // ── Sync status UI ────────────────────────────────────────────
 function setSyncStatus(state, detail) {
@@ -3405,9 +3597,9 @@ function setSyncStatus(state, detail) {
     idle:    { d:dot('#9EA3AE'),           text:'Sheets: not signed in', click:true },
     signing: { d:dot('#007AFF',true),      text:'Signing in…' },
     loading: { d:dot('#007AFF',true),      text:'Loading from Sheets…' },
-    syncing: { d:dot('#007AFF',true),      text:'Syncing…' },
+    syncing: { d:dot('#007AFF',true),      text:'Saving…' },
     synced:  { d:dot('#34C759'),           text:`Synced ${ts()} · Sign out`, click:true },
-    error:   { d:dot('#FF453A'),           text:detail||'Sync error — tap to retry', click:true },
+    error:   { d:dot('#FF453A'),           text:(detail?`Save failed: ${detail}`:'Save failed')+' · tap to retry', click:true },
     offline: { d:dot('#FF9500'),           text:'Offline — local only' },
   }
   const c = cfgs[state] || cfgs.idle
@@ -3634,17 +3826,26 @@ async function gsFlushQueue() {
   if (!_gsSyncQueue.size) return
   const keys = [..._gsSyncQueue]; _gsSyncQueue.clear()
   setSyncStatus('syncing')
+  const done = new Set()
   try {
     for (const key of keys) {
       const { tab, cols } = SHEET_SCHEMA[key]
       const rows = key === K.subx ? gsSettingsRows() : gsObjsToRows(key)
       const ok = await gsWriteTab(tab, cols, rows)
-      if (!ok) throw new Error(`Write failed: ${tab}`)
+      if (!ok) throw new Error(tab)
+      done.add(key)
     }
     setSyncStatus('synced')
   } catch(err) {
     console.error('gsFlushQueue:', err)
+    // Put the writes that never landed back on the queue so nothing is silently dropped,
+    // then retry once automatically. Data is already safe in localStorage either way.
+    keys.filter(k => !done.has(k)).forEach(k => _gsSyncQueue.add(k))
     setSyncStatus('error', err.message)
+    clearTimeout(_gsRetryTimer)
+    _gsRetryTimer = setTimeout(() => {
+      if (_gsSyncQueue.size && gsGetToken()) gsFlushQueue()
+    }, 6000)
   }
 }
 function gsRetrySync() {
@@ -3933,12 +4134,88 @@ function openTab(t) {
   if(tabRenders[t]) tabRenders[t]()
 }
 
-document.getElementById('nav').addEventListener('click', e=>{
-  const tab=e.target.closest('[data-tab]'); if(!tab)return
-  const t=tab.dataset.tab
+// Switch tabs from anywhere (empty-state buttons, quick-add palette, dashboard widgets)
+function navTo(t) {
   localStorage.setItem('dt_active_tab', t)
   openTab(t)
+  document.querySelectorAll('#mob-drawer .tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===t))
+}
+
+document.getElementById('nav').addEventListener('click', e=>{
+  const tab=e.target.closest('[data-tab]'); if(!tab)return
+  navTo(tab.dataset.tab)
 })
+
+// ── QUICK ADD PALETTE (Cmd/Ctrl+K) ────────────────────────────
+// Additive only: every action routes to an EXISTING form. Per-tab add buttons are untouched.
+const QA_ACTIONS = [
+  {label:'Income Entry',  sub:'Log a paid or pending job',      ico:'dollar',    keys:'income job revenue payment earning', run:()=>{navTo('income');      openForm('inc')} },
+  {label:'Job',           sub:'Add a job to the pipeline',      ico:'briefcase', keys:'job pipeline lead booking gig',      run:()=>{navTo('jobs');        switchJobsSection('pipeline'); openJobForm()} },
+  {label:'Purchase',      sub:'Log equipment or an expense',    ico:'cart',      keys:'purchase expense buy gear equipment',run:()=>{navTo('purchases');   openForm('pur')} },
+  {label:'Subscription',  sub:'Track a recurring cost',         ico:'repeat',    keys:'subscription recurring monthly saas',run:()=>{navTo('subscriptions');openForm('sub')} },
+  {label:'Client',        sub:'Add a new client record',        ico:'users',     keys:'client customer contact company',    run:()=>{navTo('clients');     openNewClientForm()} },
+  {label:'Service / Rate',sub:'Add a service to your rate card', ico:'receipt',  keys:'service rate pricing price quote',   run:()=>{navTo('jobs');        switchJobsSection('pricing'); openPrcForm()} },
+  {label:'Quick Link',    sub:'Save a link to the dashboard',   ico:'link',      keys:'link url bookmark shortcut',         run:()=>{navTo('dashboard');   openLinkForm()} },
+]
+let _qaMatches = [], _qaSel = 0
+
+function openQuickAdd() {
+  const ov = document.getElementById('qa-overlay')
+  ov.classList.add('open')
+  const inp = document.getElementById('qa-input')
+  inp.value = ''
+  renderQuickAdd('')
+  setTimeout(()=>inp.focus(), 0)
+}
+function closeQuickAdd() {
+  document.getElementById('qa-overlay').classList.remove('open')
+}
+function renderQuickAdd(q) {
+  const s = q.trim().toLowerCase()
+  _qaMatches = s ? QA_ACTIONS.filter(a => (a.label+' '+a.keys).toLowerCase().includes(s)) : QA_ACTIONS.slice()
+  _qaSel = 0
+  const el = document.getElementById('qa-list')
+  if (!_qaMatches.length) { el.innerHTML = `<div class="qa-none">Nothing matches “${esc(q)}”</div>`; return }
+  el.innerHTML = _qaMatches.map((a,i) =>
+    `<button class="qa-item${i===0?' qa-sel':''}" data-i="${i}" onclick="runQuickAdd(${i})">
+       <span class="qa-ico">${icon(a.ico,16)}</span>
+       <span>${esc(a.label)}<span class="qa-sub">${esc(a.sub)}</span></span>
+     </button>`).join('')
+}
+function moveQuickAdd(d) {
+  if (!_qaMatches.length) return
+  _qaSel = (_qaSel + d + _qaMatches.length) % _qaMatches.length
+  const items = document.querySelectorAll('#qa-list .qa-item')
+  items.forEach((b,i) => b.classList.toggle('qa-sel', i === _qaSel))
+  const cur = items[_qaSel]
+  if (cur) cur.scrollIntoView({block:'nearest'})
+}
+function runQuickAdd(i) {
+  const a = _qaMatches[i]
+  if (!a) return
+  closeQuickAdd()
+  a.run()
+}
+
+document.getElementById('qa-input').addEventListener('input', e => renderQuickAdd(e.target.value))
+document.getElementById('qa-input').addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown')      { e.preventDefault(); moveQuickAdd(1) }
+  else if (e.key === 'ArrowUp')   { e.preventDefault(); moveQuickAdd(-1) }
+  else if (e.key === 'Enter')     { e.preventDefault(); runQuickAdd(_qaSel) }
+})
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+    e.preventDefault()
+    document.getElementById('qa-overlay').classList.contains('open') ? closeQuickAdd() : openQuickAdd()
+  } else if (e.key === 'Escape') {
+    if (document.getElementById('qa-overlay').classList.contains('open')) closeQuickAdd()
+    closeKebabs()
+  }
+})
+// Show the right modifier hint per platform
+if (!/Mac|iPhone|iPad/.test(navigator.platform || '')) {
+  const k = document.getElementById('qa-kbd'); if (k) k.textContent = 'Ctrl K'
+}
 
 function openMobDrawer(){
   document.getElementById('mob-drawer-overlay').classList.add('open')
@@ -3964,7 +4241,11 @@ function mobNavTo(t){
 
 document.addEventListener('click', e=>{
   if(!e.target.closest('.ms-wrap')) document.querySelectorAll('.ms-panel.open').forEach(p=>p.classList.remove('open'))
+  if(!e.target.closest('.kebab-wrap')) closeKebabs()
 })
+// Kebab menus are position:fixed — close them if the page or a table scrolls underneath
+window.addEventListener('scroll', closeKebabs, true)
+window.addEventListener('resize', closeKebabs)
 
 window.addEventListener('beforeprint',()=>{if(document.getElementById('agr-preview-overlay').classList.contains('open')){_prevTitle=document.title;document.title=''}})
 window.addEventListener('afterprint',()=>{if(typeof _prevTitle!=='undefined'){document.title=_prevTitle;_prevTitle=undefined}})
@@ -5287,7 +5568,7 @@ function renderClientList() {
     </div>
     <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
       <input id="cli-search" class="inp" placeholder="Search clients..." value="${esc(q)}" oninput="renderClientList()" style="flex:1;min-width:180px">
-      <button class="btn btn-p" onclick="openNewClientForm()">+ Add Client</button>
+      <button class="btn btn-g" onclick="openNewClientForm()">+ Add Client</button>
     </div>
     <div style="display:grid;gap:10px">
       ${sorted.length ? sorted.map(({c, s: stats}) => {
@@ -5310,7 +5591,7 @@ function renderClientList() {
             <div>${stats.jobs} jobs</div>
           </div>
         </div>`
-      }).join('') : '<div style="text-align:center;padding:40px;color:var(--text-2)">No clients found</div>'}
+      }).join('') : (q ? emptyState('users',`No clients match “${esc(q)}”.`) : emptyState('users','No clients yet.',{label:'+ Add Client',fn:'openNewClientForm()'}))}
     </div>
   `
 }
@@ -5383,7 +5664,7 @@ function renderClientDetail(name) {
         <div style="grid-column:1/-1">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
             <div class="smod-lbl" style="margin-bottom:0">Contacts</div>
-            <button class="btn btn-s btn-sm" onclick="cliAddContact()" type="button">+ Add Contact</button>
+            <button class="btn btn-g btn-sm" onclick="cliAddContact()" type="button">+ Add Contact</button>
           </div>
           <div id="cli-contacts">
             ${contacts.map(ct => `
@@ -5419,7 +5700,7 @@ function renderClientDetail(name) {
         </div>
       </div>
       <div id="cli-save-status" style="font-size:12px;min-height:16px;margin-bottom:8px"></div>
-      <button class="btn btn-p" onclick="saveClientDetail('${esc(name).replace(/'/g,"\\'")}')">Save Changes</button>
+      <button class="btn btn-g" onclick="saveClientDetail('${esc(name).replace(/'/g,"\\'")}')">Save Changes</button>
     </div>
     ${stats.entries.length ? `
     <div class="card">
