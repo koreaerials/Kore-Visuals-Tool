@@ -4175,7 +4175,6 @@ function openSettings() {
   _pendingLogos.dark = null; _pendingLogos.light = null
   refreshLogoPreview('dark')
   refreshLogoPreview('light')
-  const akEl = document.getElementById('smod-anthropic-key'); if(akEl) akEl.value = localStorage.getItem('dt_anthropic_key')||''
   const wuEl = document.getElementById('smod-worker-url'); if(wuEl) wuEl.value = socialCfg().workerUrl || ''
   document.getElementById('settings-overlay').classList.add('open')
 }
@@ -4206,7 +4205,6 @@ async function saveSettings() {
       }
     } catch (err) { console.warn('Logo upload:', err) }
   }
-  const ak = document.getElementById('smod-anthropic-key')?.value.trim(); if(ak !== undefined) localStorage.setItem('dt_anthropic_key', ak)
   const wu = document.getElementById('smod-worker-url')?.value.trim()
   if (wu !== undefined && wu !== socialCfg().workerUrl) { saveSocialCfg({ workerUrl: wu }); renderSocial() }
   closeSettings()
@@ -5414,8 +5412,8 @@ function closeAgrForm() {
 }
 
 async function generateAgreement() {
-  const apiKey = localStorage.getItem('dt_anthropic_key')
-  if(!apiKey) { toast('Add your Anthropic API key in Settings first'); return }
+  const base = socWorker()
+  if(!base) { toast('Set your Social backend URL in Settings first'); return }
   const jobId = document.getElementById('agrf-job-id').value
   const jobType = document.getElementById('agrf-type').value
   const clientName = document.getElementById('agrf-client').value.trim()
@@ -5435,7 +5433,7 @@ async function generateAgreement() {
   const hoursLabel = hours===1 ? '1 hour' : `${hours} hours`
   const statusEl = document.getElementById('agrf-status')
   const btn = document.getElementById('agrf-generate-btn')
-  btn.disabled = true; btn.textContent = 'Generating…'; statusEl.textContent = 'Calling Claude API…'
+  btn.disabled = true; btn.textContent = 'Generating…'; statusEl.textContent = 'Generating…'
 
   const SYSTEM_PROMPT = `You are a legal agreement generator for Kore Aerials, LLC, a professional drone photography and videography business in New York. Generate a drone services agreement that exactly follows this style, tone, structure, and formatting.
 
@@ -5485,22 +5483,7 @@ RULES:
 - Fines & Legal Liability section template: "X. Fines, Permits & Legal Liability. Client understands and agrees that certain locations may be subject to airspace restrictions, permitting requirements, or other regulatory limitations for drone operations. If Operator incurs any fines, violations, or penalties arising directly from the location or nature of the requested shoot, including but not limited to FAA violations or local law enforcement penalties, Client agrees to fully reimburse Operator for the total cost of such fines or penalties."
 - Output ONLY the agreement text — no preamble, no explanation, no markdown formatting, no code blocks`
 
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 2000,
-        system: SYSTEM_PROMPT,
-        messages: [{
-          role: 'user',
-          content: `Generate a drone services agreement with these details:
+  const USER_PROMPT = `Generate a drone services agreement with these details:
 - Client: ${clientName}
 - Job Type: ${jobType}
 - Location: ${location}
@@ -5511,16 +5494,21 @@ RULES:
 - Overtime Rate: $${overtime}/hour
 - Deliverables: ${deliverables || 'standard deliverables for ' + jobType}
 - Delivery: within ${deliveryDays} business days after shoot${inclTravel ? '\n- Include Travel Expenses clause' : ''}${inclFines ? '\n- Include Fines & Legal Liability clause' : ''}`
-        }]
-      })
+
+  try {
+    // The Worker holds the Claude API key — no credential is sent from this file.
+    const resp = await fetch(`${base}/agreements`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ system: SYSTEM_PROMPT, user: USER_PROMPT })
     })
     if(!resp.ok) {
       const errData = await resp.json().catch(()=>({}))
-      throw new Error(errData.error?.message || `API error ${resp.status}`)
+      throw new Error(errData.error?.message || errData.error || `Worker returned ${resp.status}`)
     }
     const data = await resp.json()
-    const text = data.content?.[0]?.text || ''
-    if(!text) throw new Error('Empty response from API')
+    const text = data.text || ''
+    if(!text) throw new Error('Empty response from the Worker')
     statusEl.textContent = ''
     closeAgrForm()
     showAgrPreview(text, { jobId, clientName, jobType, location, date, amount, deposit, deliverables, deliveryDays })
@@ -6569,11 +6557,6 @@ function socCopy(i, key) {
           <span class="toggle-slider"></span>
         </label>
       </div>
-    </div>
-    <div class="smod-row">
-      <div class="smod-lbl">Anthropic API Key</div>
-      <input type="password" id="smod-anthropic-key" class="isel" style="width:100%;box-sizing:border-box" placeholder="sk-ant-api03-...">
-      <div style="font-size:11px;color:var(--text-2);margin-top:5px">Used for AI agreement generation. Stored locally, never synced.</div>
     </div>
     <div class="smod-row">
       <div class="smod-lbl">Social backend URL (Cloudflare Worker)</div>
