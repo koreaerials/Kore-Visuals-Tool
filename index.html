@@ -572,6 +572,18 @@ body.privacy-mode #privacy-banner{display:block}
 .btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
 .btn:disabled:hover{filter:none}
 @media(max-width:900px){.mode-btn span{display:none}.mode-btn{padding:6px 8px}}
+
+/* ── WISHLIST ────────────────────────────────────────────────── */
+.wish-name{font-weight:600}
+.wish-co{font-size:11.5px;color:var(--text-2);margin-top:2px}
+.wish-tax{font-size:10.5px;color:var(--text-2);margin-left:4px;white-space:nowrap}
+.wish-est{font-size:11.5px;color:var(--text-2);margin-top:2px}
+.wish-link{color:var(--blue);text-decoration:none}
+.wish-link:hover{text-decoration:underline}
+.wish-sec{display:none}
+.wish-sec.on{display:block}
+.row-hl{animation:rowHl 2.4s ease-out}
+@keyframes rowHl{0%,55%{background:rgba(0,122,255,0.22)}100%{background:transparent}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.7/dist/pizzip.js"></script>
 <script>
@@ -599,6 +611,7 @@ body.privacy-mode #privacy-banner{display:block}
       <button data-mode="business" class="tab on" data-tab="dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg> Dashboard</button>
       <button data-mode="business" class="tab" data-tab="income"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg> Income</button>
       <button data-mode="business" class="tab" data-tab="purchases"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Purchases</button>
+      <button data-mode="business" class="tab" data-tab="wishlist"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.6 6.1.8-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.4l6.1-.8z"/></svg> Wishlist</button>
       <button data-mode="business" class="tab" data-tab="subscriptions"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg> Subscriptions</button>
       <button data-mode="business" class="tab" data-tab="clients"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Clients</button>
       <button data-mode="business" class="tab" data-tab="jobs"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Jobs & Pricing</button>
@@ -625,6 +638,7 @@ body.privacy-mode #privacy-banner{display:block}
   <button data-mode="business" class="tab on" data-tab="dashboard" onclick="mobNavTo('dashboard')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg> Dashboard</button>
   <button data-mode="business" class="tab" data-tab="income" onclick="mobNavTo('income')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg> Income</button>
   <button data-mode="business" class="tab" data-tab="purchases" onclick="mobNavTo('purchases')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Purchases</button>
+  <button data-mode="business" class="tab" data-tab="wishlist" onclick="mobNavTo('wishlist')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.6 6.1.8-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.4l6.1-.8z"/></svg> Wishlist</button>
   <button data-mode="business" class="tab" data-tab="subscriptions" onclick="mobNavTo('subscriptions')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg> Subscriptions</button>
   <button data-mode="business" class="tab" data-tab="clients" onclick="mobNavTo('clients')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Clients</button>
   <button data-mode="business" class="tab" data-tab="jobs" onclick="mobNavTo('jobs')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Jobs & Pricing</button>
@@ -785,6 +799,45 @@ body.privacy-mode #privacy-banner{display:block}
       </div>
       <div id="pur-summary" style="margin-bottom:14px"></div>
       <div class="tbl-wrap" id="pur-table"></div>
+    </div>
+  </section>
+
+  <!-- WISHLIST -->
+  <section class="panel" id="panel-wishlist">
+    <div class="sec-hdr"><h2>Wishlist</h2><p>Gear and services you're tracking but haven't bought yet</p></div>
+    <div class="card">
+      <div class="form-toggle-hdr">
+        <span class="form-ttl">Tracked Items</span>
+        <button class="btn btn-g" onclick="openWishModal()">+ Add Item</button>
+      </div>
+      <div class="fbar" id="wish-filter">
+        <span class="lbl">Type:</span>
+        <button class="fbtn on" data-f="type" data-v="all">All</button>
+        <button class="fbtn" data-f="type" data-v="product">Product</button>
+        <button class="fbtn" data-f="type" data-v="subscription">Subscription</button>
+        <span class="lbl" style="margin-left:8px">Category:</span>
+        <button class="fbtn cat-on" data-f="cat" data-v="all">All</button>
+        <button class="fbtn" data-f="cat" data-v="Drone Equipment">Drone</button>
+        <button class="fbtn" data-f="cat" data-v="Camera Equipment">Camera</button>
+        <button class="fbtn" data-f="cat" data-v="Misc">Misc</button>
+        <span class="lbl" style="margin-left:8px">Priority:</span>
+        <button class="fbtn on" data-f="pri" data-v="all">All</button>
+        <button class="fbtn" data-f="pri" data-v="must-have">Must-have</button>
+        <button class="fbtn" data-f="pri" data-v="nice-to-have">Nice-to-have</button>
+        <button class="fbtn" data-f="pri" data-v="someday">Someday</button>
+      </div>
+      <div id="wish-summary" style="margin-bottom:14px"></div>
+      <div class="tbl-wrap" id="wish-table"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="form-toggle-hdr">
+        <span class="card-ttl" style="margin-bottom:0">Purchased &amp; Passed</span>
+        <button class="btn btn-s btn-sm" id="wish-arch-btn" onclick="toggleWishArchive()">Show</button>
+      </div>
+      <div id="wish-arch-wrap" style="display:none;margin-top:12px">
+        <div class="tbl-wrap" id="wish-arch-table"></div>
+      </div>
     </div>
   </section>
 
@@ -1245,7 +1298,7 @@ function toggleKebab(ev, btn) {
 }
 
 // ── STORAGE ──────────────────────────────────────────────────
-const K = { inc:'dt_income', pur:'dt_purchases', sub:'dt_subs', subx:'dt_subx', links:'dt_links', prc:'dt_pricing', jobs:'dt_jobs', agr:'dt_agr', socSnap:'dt_soc_snapshots', socReels:'dt_soc_reels', socCfg:'dt_soc_config' }
+const K = { inc:'dt_income', pur:'dt_purchases', sub:'dt_subs', subx:'dt_subx', links:'dt_links', prc:'dt_pricing', jobs:'dt_jobs', agr:'dt_agr', wish:'dt_wishlist', socSnap:'dt_soc_snapshots', socReels:'dt_soc_reels', socCfg:'dt_soc_config' }
 const DEFAULT_LINKS = [
   {id:'l1', name:'Kore Aerials Website', url:'https://www.koreaerials.com'},
   {id:'l2', name:'FAA DroneZone', url:'https://faadronezone-operator.faa.gov/#/part107'}
@@ -1374,6 +1427,24 @@ const SHEET_SCHEMA = {
     cols: ['id','workerUrl','igUsername','lastSync'],
     toRow: o => [ o.id||'cfg', o.workerUrl||'', o.igUsername||'', o.lastSync||'' ],
     toObj: r => ({ id: r[0]||'cfg', workerUrl: r[1]||'', igUsername: r[2]||'', lastSync: r[3]||'' }),
+  },
+  [K.wish]: {
+    tab:  'Wishlist',
+    cols: ['id','type','name','company','store','url','price','priceComplete','estTotal','category','priority','description','dateAdded','status','resolvedDate','linkedId','billing','renewal'],
+    toRow: o => [
+      o.id, o.type||'product', o.name||'', o.company||'', o.store||'', o.url||'',
+      o.price||0, o.priceComplete ? 'TRUE' : 'FALSE', o.estTotal||0,
+      o.category||'', o.priority||'nice-to-have', o.description||'',
+      o.dateAdded||'', o.status||'active', o.resolvedDate||'', o.linkedId||'',
+      o.billing||'', o.renewal||''
+    ],
+    toObj: r => ({
+      id: r[0], type: r[1]||'product', name: r[2]||'', company: r[3]||'', store: r[4]||'', url: r[5]||'',
+      price: +r[6]||0, priceComplete: String(r[7]).toUpperCase()==='TRUE', estTotal: +r[8]||0,
+      category: r[9]||'', priority: r[10]||'nice-to-have', description: r[11]||'',
+      dateAdded: r[12]||'', status: r[13]||'active', resolvedDate: r[14]||'', linkedId: r[15]||'',
+      billing: r[16]||'', renewal: r[17]||''
+    }),
   },
 }
 const today = () => toStr(new Date())
@@ -2913,7 +2984,7 @@ function renderPurTable() {
           <td style="white-space:nowrap"><button class="btn btn-sm btn-g" onclick="savePurRow('${e.id}')">${icon('save',13)} Save</button> <button class="btn btn-sm btn-s" onclick="cancelRowEdit('pur')">Cancel</button></td>
         </tr>`
       }
-      return `<tr>
+      return `<tr data-rid="${e.id}">
       <td style="white-space:nowrap">${fmtDate(e.date)}</td>
       <td><strong>${esc(store)}</strong></td>
       <td><select class="isel" onchange="updatePurField('${e.id}','cat',this.value)">${optC('Drone Equipment')}${optC('Camera Equipment')}${optC('Misc')}</select></td>
@@ -3138,7 +3209,7 @@ function renderSubTable() {
       const statusCell=s.status==='Inactive'&&s.endDate
         ?`<div>${statusSel}<div style="font-size:11px;color:var(--text-2);margin-top:3px;white-space:nowrap">${fmtDate(s.endDate)}</div></div>`
         :statusSel
-      return `<tr>
+      return `<tr data-rid="${s.id}">
         <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(s.name)}"><strong>${esc(s.name)}</strong></td>
         <td><span class="neg">${fmt(s.amount)}</span></td>
         <td style="white-space:nowrap"><span class="bdg ${bBdg[s.billingType]||'bdg-gr'}">${esc(s.billingType)}</span></td>
@@ -4267,7 +4338,7 @@ function toggleTheme() {
 }
 
 // ── TAB SWITCHING ─────────────────────────────────────────────
-const tabRenders={'social-stats':renderSocialStats,'social-ideas':renderSocialIdeas,dashboard:renderDash,income:renderIncTable,purchases:renderPurTable,subscriptions:()=>{renderSubTable()},taxes:renderTaxes,export:()=>{renderDataSummary();switchExportSection('export-main')},clients:renderClientsTab,jobs:()=>{renderPricingList();initQuoteBuilder();renderJobsBoard()}}
+const tabRenders={wishlist:renderWishlist,'social-stats':renderSocialStats,'social-ideas':renderSocialIdeas,dashboard:renderDash,income:renderIncTable,purchases:renderPurTable,subscriptions:()=>{renderSubTable()},taxes:renderTaxes,export:()=>{renderDataSummary();switchExportSection('export-main')},clients:renderClientsTab,jobs:()=>{renderPricingList();initQuoteBuilder();renderJobsBoard()}}
 
 function openTab(t) {
   const tab=document.querySelector(`#nav [data-tab="${t}"]`); if(!tab)return
@@ -4295,6 +4366,7 @@ const QA_ACTIONS = [
   {label:'Income Entry',  sub:'Log a paid or pending job',      ico:'dollar',    keys:'income job revenue payment earning', run:()=>{navTo('income');      openForm('inc')} },
   {label:'Job',           sub:'Add a job to the pipeline',      ico:'briefcase', keys:'job pipeline lead booking gig',      run:()=>{navTo('jobs');        switchJobsSection('pipeline'); openJobForm()} },
   {label:'Purchase',      sub:'Log equipment or an expense',    ico:'cart',      keys:'purchase expense buy gear equipment',run:()=>{navTo('purchases');   openForm('pur')} },
+  {label:'Wishlist Item', sub:'Track gear you might buy',        ico:'bag',       keys:'wishlist wish gear want saved idea',  run:()=>{navTo('wishlist');    openWishModal()}},
   {label:'Subscription',  sub:'Track a recurring cost',         ico:'repeat',    keys:'subscription recurring monthly saas',run:()=>{navTo('subscriptions');openForm('sub')} },
   {label:'Client',        sub:'Add a new client record',        ico:'users',     keys:'client customer contact company',    run:()=>{navTo('clients');     openNewClientForm()} },
   {label:'Service / Rate',sub:'Add a service to your rate card', ico:'receipt',  keys:'service rate pricing price quote',   run:()=>{navTo('jobs');        switchJobsSection('pricing'); openPrcForm()} },
@@ -6553,6 +6625,412 @@ function socCopy(i, key) {
     .then(() => toast('Copied!'))
     .catch(() => toast('Copy failed — select the text manually'))
 }
+
+// ── WISHLIST ──────────────────────────────────────────────────
+// Gear seen in videos and tracked before buying. "Mark as purchased" converts an
+// item into a real Purchase or Subscription by filling that tab's own form and
+// calling its existing save function — the write logic lives in one place.
+const WISH_PRI = { 'must-have':{lbl:'Must-have', cls:'bdg-r', ord:0},
+                   'nice-to-have':{lbl:'Nice-to-have', cls:'bdg-o', ord:1},
+                   'someday':{lbl:'Someday', cls:'bdg-gr', ord:2} }
+let _wishF = { type:'all', cat:'all', pri:'all' }
+let _wishArchOpen = false
+
+function wishList() { return load(K.wish) }
+function wishItem(id) { return wishList().find(w => w.id === id) }
+function wishVal(w) { return (+w.estTotal || 0) > 0 ? +w.estTotal : (+w.price || 0) }
+
+// ── Filters ──
+function wishFilter(kind, val) {
+  _wishF[kind] = val
+  document.querySelectorAll(`#wish-filter [data-f="${kind}"]`).forEach(b => {
+    const on = b.dataset.v === val
+    b.classList.toggle(kind === 'cat' ? 'cat-on' : 'on', on)
+  })
+  renderWishTable()
+}
+function wishApplyFilters(list) {
+  return list.filter(w =>
+    (_wishF.type === 'all' || (w.type || 'product') === _wishF.type) &&
+    // Subscriptions carry no category, so a specific category filters them out
+    (_wishF.cat  === 'all' || (w.category || '') === _wishF.cat) &&
+    (_wishF.pri  === 'all' || (w.priority || 'nice-to-have') === _wishF.pri))
+}
+function wishSort(list) {
+  return list.slice().sort((a, b) => {
+    const pa = (WISH_PRI[a.priority] || WISH_PRI['nice-to-have']).ord
+    const pb = (WISH_PRI[b.priority] || WISH_PRI['nice-to-have']).ord
+    if (pa !== pb) return pa - pb
+    return String(b.dateAdded || '').localeCompare(String(a.dateAdded || ''))
+  })
+}
+
+// ── Render ──
+function renderWishlist() { renderWishSummary(); renderWishTable(); renderWishArchive() }
+
+function renderWishSummary() {
+  const el = document.getElementById('wish-summary'); if (!el) return
+  const active = wishList().filter(w => (w.status || 'active') === 'active')
+  const tot = active.reduce((s, w) => s + wishVal(w), 0)
+  const by = k => active.filter(w => (w.priority || 'nice-to-have') === k)
+  const sub = k => {
+    const l = by(k), v = l.reduce((s, w) => s + wishVal(w), 0)
+    return `<div class="lbl" style="display:flex;align-items:center;gap:4px">${WISH_PRI[k].lbl}</div>
+            <div class="val">${fmt(v)}</div>
+            <div style="font-size:11px;color:var(--text-2);margin-top:3px">${l.length} item${l.length === 1 ? '' : 's'}</div>`
+  }
+  el.innerHTML = `
+    <div class="sum-grid" style="margin-bottom:10px">
+      <div class="sum-card">
+        <div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('bag',13)} Total Wishlist Value</div>
+        <div class="val">${fmt(tot)}</div>
+        <div class="sub">${active.length} active item${active.length === 1 ? '' : 's'}</div>
+      </div>
+    </div>
+    <div class="sum-sub-grid" style="margin-bottom:0">
+      <div class="sum-sub-card">${sub('must-have')}</div>
+      <div class="sum-sub-card">${sub('nice-to-have')}</div>
+      <div class="sum-sub-card">${sub('someday')}</div>
+    </div>`
+}
+
+function wishNameCell(w) {
+  return `<div class="wish-name">${esc(w.name || '—')}</div>` +
+         (w.company ? `<div class="wish-co">${esc(w.company)}</div>` : '')
+}
+function wishTypeBadge(w) {
+  return (w.type === 'subscription')
+    ? '<span class="bdg bdg-v">Subscription</span>'
+    : '<span class="bdg bdg-b">Product</span>'
+}
+function wishPriBadge(w) {
+  const p = WISH_PRI[w.priority] || WISH_PRI['nice-to-have']
+  return `<span class="bdg ${p.cls}">${p.lbl}</span>`
+}
+function wishStoreCell(w) {
+  const s = w.store || '—'
+  return (w.url && /^https?:\/\//i.test(w.url))
+    ? `<a class="wish-link" href="${esc(w.url)}" target="_blank" rel="noopener">${esc(s)}</a>`
+    : esc(s)
+}
+function wishPriceCell(w) {
+  const base = fmt(+w.price || 0)
+  const mark = w.priceComplete ? '' : '<span class="wish-tax">+ tax/ship</span>'
+  const est  = (!w.priceComplete && (+w.estTotal || 0) > 0)
+    ? `<div class="wish-est">est. ${fmt(+w.estTotal)}</div>` : ''
+  return `${base}${mark}${est}`
+}
+// Purchased rows show what was actually paid — the wishlist price is only an
+// estimate, and the real figure lives on the record the conversion created.
+function wishArchPrice(w, rec) {
+  const wish = +w.price || 0
+  if (!rec) return fmt(wish)
+  const paid = +(rec.price ?? rec.amount) || 0
+  const diff = paid !== wish
+  return `${fmt(paid)}` + (diff
+    ? `<div class="wish-est">wishlisted at ${fmt(wish)}</div>`
+    : '')
+}
+
+function wishCatCell(w) {
+  if (w.type === 'subscription') return `<span style="color:var(--text-2)">${esc(w.billing || '—')}</span>`
+  const cur = w.category || 'Misc'
+  const opt = v => `<option${v === cur ? ' selected' : ''}>${v}</option>`
+  return `<select class="isel" onchange="wishSetField('${w.id}','category',this.value)">${opt('Drone Equipment')}${opt('Camera Equipment')}${opt('Misc')}</select>`
+}
+
+function renderWishTable() {
+  const el = document.getElementById('wish-table'); if (!el) return
+  const active = wishList().filter(w => (w.status || 'active') === 'active')
+  const list = wishSort(wishApplyFilters(active))
+  if (!list.length) {
+    el.innerHTML = active.length
+      ? emptyState('search', 'No items match these filters.', null, {small:true, pad:'28px 20px'})
+      : emptyState('bag', 'Nothing on the wishlist yet.', {label:'+ Add Item', fn:'openWishModal()'})
+    return
+  }
+  el.innerHTML = `<table>
+    <thead><tr><th>Item</th><th>Type</th><th>Category</th><th>Store</th><th>Price</th><th>Priority</th><th>Added</th><th>Actions</th></tr></thead>
+    <tbody>${list.map(w => `<tr>
+      <td>${wishNameCell(w)}</td>
+      <td>${wishTypeBadge(w)}</td>
+      <td>${wishCatCell(w)}</td>
+      <td>${wishStoreCell(w)}</td>
+      <td class="amt">${wishPriceCell(w)}</td>
+      <td>${wishPriBadge(w)}</td>
+      <td>${w.dateAdded ? fmtDate(w.dateAdded) : '—'}</td>
+      <td>${kebab([
+        {label:'Edit', icon:'pencil', fn:`openWishModal('${w.id}')`},
+        {label:'Mark as purchased', icon:'cart', fn:`openWishConv('${w.id}')`},
+        {label:'Mark as passed', icon:'x', fn:`wishMarkPassed('${w.id}')`},
+        'sep',
+        {label:'Delete', icon:'trash', fn:`delWishItem('${w.id}')`, danger:true}
+      ])}</td>
+    </tr>`).join('')}</tbody></table>`
+}
+
+function toggleWishArchive() {
+  _wishArchOpen = !_wishArchOpen
+  const wrap = document.getElementById('wish-arch-wrap')
+  const btn  = document.getElementById('wish-arch-btn')
+  if (wrap) wrap.style.display = _wishArchOpen ? '' : 'none'
+  if (btn)  btn.textContent = _wishArchOpen ? 'Hide' : 'Show'
+  if (_wishArchOpen) renderWishArchive()
+}
+
+function renderWishArchive() {
+  const el = document.getElementById('wish-arch-table'); if (!el) return
+  const list = wishList().filter(w => w.status === 'purchased' || w.status === 'passed')
+    .sort((a, b) => String(b.resolvedDate || '').localeCompare(String(a.resolvedDate || '')))
+  const btn = document.getElementById('wish-arch-btn')
+  if (btn) btn.textContent = _wishArchOpen ? 'Hide' : `Show (${list.length})`
+  if (!list.length) {
+    el.innerHTML = emptyState('check-circle', 'Nothing resolved yet — bought and passed items land here.', null, {small:true, pad:'26px 20px'})
+    return
+  }
+  el.innerHTML = `<table>
+    <thead><tr><th>Item</th><th>Type</th><th>Category</th><th>Store</th><th>Price</th><th>Priority</th><th>Status</th><th>Resolved</th><th>Actions</th></tr></thead>
+    <tbody>${list.map(w => {
+      const bought = w.status === 'purchased'
+      const rec = wishLinked(w)
+      const tab = w.type === 'subscription' ? 'subscriptions' : 'purchases'
+      const acts = [{label:'Move back to active', icon:'refresh', fn:`wishReactivate('${w.id}')`}]
+      if (rec) acts.push({label: w.type === 'subscription' ? 'View subscription' : 'View purchase',
+                          icon:'arrow-down', fn:`navToRecord('${tab}','${rec.id}')`})
+      acts.push('sep', {label:'Delete', icon:'trash', fn:`delWishItem('${w.id}')`, danger:true})
+      return `<tr>
+        <td>${wishNameCell(w)}</td>
+        <td>${wishTypeBadge(w)}</td>
+        <td>${w.type === 'subscription' ? esc(w.billing || '—') : esc(w.category || 'Misc')}</td>
+        <td>${wishStoreCell(w)}</td>
+        <td class="amt">${wishArchPrice(w, rec)}</td>
+        <td>${wishPriBadge(w)}</td>
+        <td><span class="bdg ${bought ? 'bdg-g' : 'bdg-gr'}">${bought ? 'Purchased' : 'Passed'}</span></td>
+        <td>${w.resolvedDate ? fmtDate(w.resolvedDate) : '—'}</td>
+        <td>${kebab(acts)}</td>
+      </tr>`
+    }).join('')}</tbody></table>`
+}
+
+// ── Deep link to the record a wishlist item became ──
+// Rows carry data-rid; the target tab re-renders on navTo, so the scroll happens
+// after that render. Falls back to a toast if the record was deleted since.
+function navToRecord(tab, id) {
+  navTo(tab)
+  const row = document.querySelector(`#panel-${tab} tr[data-rid="${id}"]`)
+  if (!row) { toast('That record no longer exists'); return }
+  row.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  row.classList.remove('row-hl')
+  void row.offsetWidth          // restart the animation if it is already applied
+  row.classList.add('row-hl')
+  setTimeout(() => row.classList.remove('row-hl'), 2600)
+}
+
+// Resolve the Purchase/Subscription a purchased item created, if it still exists.
+function wishLinked(w) {
+  if (w.status !== 'purchased' || !w.linkedId) return null
+  const key = w.type === 'subscription' ? K.sub : K.pur
+  return load(key).find(e => e.id === w.linkedId) || null
+}
+
+// ── Inline field edit (category dropdown in the table) ──
+function wishSetField(id, field, val) {
+  const list = wishList(); const i = list.findIndex(w => w.id === id); if (i < 0) return
+  list[i][field] = val
+  save(K.wish, list)
+  renderWishSummary(); renderWishTable()
+}
+
+// ── Add / edit modal ──
+function wishSetType(type) {
+  document.getElementById('wish-type-product').classList.toggle('on', type === 'product')
+  document.getElementById('wish-type-subscription').classList.toggle('on', type === 'subscription')
+  document.getElementById('wish-product-fields').classList.toggle('on', type === 'product')
+  document.getElementById('wish-sub-fields').classList.toggle('on', type === 'subscription')
+}
+function wishCurrentType() {
+  return document.getElementById('wish-type-subscription').classList.contains('on') ? 'subscription' : 'product'
+}
+function wishToggleEst() {
+  const complete = document.getElementById('wish-price-complete').checked
+  document.getElementById('wish-est-row').style.display = complete ? 'none' : ''
+}
+function openWishModal(id) {
+  const w = id ? wishItem(id) : null
+  document.getElementById('wish-edit-id').value = w ? w.id : ''
+  document.getElementById('wish-modal-ttl').textContent = w ? 'Edit Wishlist Item' : 'Add Wishlist Item'
+  document.getElementById('wish-modal-err').textContent = ''
+  const set = (el, v) => { const e = document.getElementById(el); if (e) e.value = v }
+  set('wish-name', w?.name || ''); set('wish-company', w?.company || '')
+  set('wish-store', w?.store || ''); set('wish-url', w?.url || '')
+  set('wish-price', w?.price ?? ''); set('wish-est-total', w?.estTotal ?? '')
+  set('wish-cat', w?.category || 'Drone Equipment')
+  set('wish-billing', w?.billing || 'Monthly'); set('wish-renewal', w?.renewal || 'Auto')
+  set('wish-priority', w?.priority || 'nice-to-have')
+  set('wish-date-added', w?.dateAdded || today())
+  set('wish-desc', w?.description || '')
+  document.getElementById('wish-price-complete').checked = !!w?.priceComplete
+  wishToggleEst()
+  wishSetType(w?.type || 'product')
+  document.getElementById('wish-modal-overlay').classList.add('open')
+}
+function closeWishModal() { document.getElementById('wish-modal-overlay').classList.remove('open') }
+
+function saveWishItem() {
+  const err = document.getElementById('wish-modal-err')
+  const id = document.getElementById('wish-edit-id').value
+  const name = document.getElementById('wish-name').value.trim()
+  const price = parseFloat(document.getElementById('wish-price').value) || 0
+  const url = document.getElementById('wish-url').value.trim()
+  if (!name) { err.textContent = 'Name is required.'; return }
+  if (price <= 0) { err.textContent = 'Price is required and must be above zero.'; return }
+  if (url && !/^https?:\/\//i.test(url)) { err.textContent = 'Link must start with http:// or https://'; return }
+  const type = wishCurrentType()
+  const complete = document.getElementById('wish-price-complete').checked
+  const list = wishList()
+  const prev = id ? list.find(w => w.id === id) : null
+  const entry = {
+    ...(prev || {}),
+    id: id || uid(), type, name,
+    company: document.getElementById('wish-company').value.trim(),
+    store:   document.getElementById('wish-store').value.trim(),
+    url, price, priceComplete: complete,
+    estTotal: complete ? 0 : (parseFloat(document.getElementById('wish-est-total').value) || 0),
+    category: type === 'product' ? document.getElementById('wish-cat').value : '',
+    billing:  type === 'subscription' ? document.getElementById('wish-billing').value : '',
+    renewal:  type === 'subscription' ? document.getElementById('wish-renewal').value : '',
+    priority: document.getElementById('wish-priority').value,
+    description: document.getElementById('wish-desc').value.trim(),
+    dateAdded: document.getElementById('wish-date-added').value || today(),
+    status: prev?.status || 'active',
+    resolvedDate: prev?.resolvedDate || '',
+    linkedId: prev?.linkedId || ''
+  }
+  if (!id && privacyMode()) entry._priv = true
+  if (id) { const i = list.findIndex(w => w.id === id); if (i >= 0) list[i] = entry } else list.push(entry)
+  save(K.wish, list)
+  closeWishModal()
+  renderWishlist()
+  toast(id ? 'Wishlist item updated!' : 'Added to wishlist!')
+}
+
+function delWishItem(id) {
+  const w = wishItem(id); if (!w) return
+  if (!confirm(`Delete "${w.name}" from the wishlist?`)) return
+  save(K.wish, wishList().filter(x => x.id !== id))
+  renderWishlist()
+  toast('Wishlist item deleted')
+}
+function wishMarkPassed(id) {
+  const list = wishList(); const i = list.findIndex(w => w.id === id); if (i < 0) return
+  list[i].status = 'passed'; list[i].resolvedDate = today(); list[i].linkedId = ''
+  save(K.wish, list)
+  renderWishlist()
+  toast('Moved to Purchased & Passed')
+}
+function wishReactivate(id) {
+  const list = wishList(); const i = list.findIndex(w => w.id === id); if (i < 0) return
+  list[i].status = 'active'; list[i].resolvedDate = ''; list[i].linkedId = ''
+  save(K.wish, list)
+  renderWishlist()
+  toast('Moved back to active')
+}
+
+// ── Conversion to a real Purchase / Subscription ──
+function openWishConv(id) {
+  const w = wishItem(id); if (!w) return
+  document.getElementById('wish-conv-id').value = id
+  document.getElementById('wish-conv-err').textContent = ''
+  const isSub = w.type === 'subscription'
+  document.getElementById('wish-conv-product').classList.toggle('on', !isSub)
+  document.getElementById('wish-conv-sub').classList.toggle('on', isSub)
+  document.getElementById('wish-conv-ttl').textContent = isSub ? 'Add to Subscriptions' : 'Add to Purchases'
+  document.getElementById('wish-conv-note').textContent = isSub
+    ? 'This creates a subscription record. Everything is editable — the price or plan may have changed since you added it.'
+    : 'This creates a purchase record. Everything is editable — the price or store may have changed since you added it.'
+  // Prefill the more accurate figure
+  const best = (+w.estTotal || 0) > 0 ? +w.estTotal : (+w.price || 0)
+  if (isSub) {
+    document.getElementById('wish-conv-name').value = w.name || ''
+    document.getElementById('wish-conv-amount').value = w.price || ''
+    document.getElementById('wish-conv-billing').value = w.billing || 'Monthly'
+    document.getElementById('wish-conv-renewal').value = w.renewal || 'Auto'
+    document.getElementById('wish-conv-start').value = today()
+  } else {
+    document.getElementById('wish-conv-date').value = today()
+    document.getElementById('wish-conv-store').value = w.store || ''
+    document.getElementById('wish-conv-cat').value = w.category || 'Misc'
+    document.getElementById('wish-conv-price').value = best || ''
+    document.getElementById('wish-conv-desc').value =
+      w.description ? `${w.name} — ${w.description}` : (w.name || '')
+  }
+  document.getElementById('wish-conv-overlay').classList.add('open')
+}
+function closeWishConv() { document.getElementById('wish-conv-overlay').classList.remove('open') }
+
+async function confirmWishConv() {
+  const id = document.getElementById('wish-conv-id').value
+  const w = wishItem(id); if (!w) return
+  const err = document.getElementById('wish-conv-err')
+  const btn = document.getElementById('wish-conv-btn')
+  const isSub = w.type === 'subscription'
+  err.textContent = ''
+
+  // Validate here so the target tab's own toast never fires on a half-filled form
+  if (isSub) {
+    if (!document.getElementById('wish-conv-name').value.trim()) { err.textContent = 'Service name is required.'; return }
+    if ((parseFloat(document.getElementById('wish-conv-amount').value) || 0) <= 0) { err.textContent = 'Amount must be above zero.'; return }
+    if (!document.getElementById('wish-conv-start').value) { err.textContent = 'Start date is required.'; return }
+  } else {
+    if (!document.getElementById('wish-conv-date').value) { err.textContent = 'Date is required.'; return }
+    if (!document.getElementById('wish-conv-store').value.trim()) { err.textContent = 'Store is required — Purchases needs a vendor.'; return }
+    if ((parseFloat(document.getElementById('wish-conv-price').value) || 0) <= 0) { err.textContent = 'Price must be above zero.'; return }
+  }
+
+  const key = isSub ? K.sub : K.pur
+  const before = new Set(load(key).map(e => e.id))
+  btn.disabled = true
+
+  try {
+    if (isSub) {
+      // Fill the Subscriptions tab's own form, then call its save function
+      document.getElementById('sub-edit-id').value = ''
+      document.getElementById('sub-name').value = document.getElementById('wish-conv-name').value.trim()
+      document.getElementById('sub-amount').value = document.getElementById('wish-conv-amount').value
+      document.getElementById('sub-billing').value = document.getElementById('wish-conv-billing').value
+      document.getElementById('sub-autorenew').value = document.getElementById('wish-conv-renewal').value
+      document.getElementById('sub-status').value = 'Active'
+      document.getElementById('sub-start').value = document.getElementById('wish-conv-start').value
+      document.getElementById('sub-end').value = ''
+      document.getElementById('sub-desc').value = w.description || ''
+      await saveSub()
+    } else {
+      document.getElementById('pur-edit-id').value = ''
+      document.getElementById('pur-date').value = document.getElementById('wish-conv-date').value
+      document.getElementById('pur-store').value = document.getElementById('wish-conv-store').value.trim()
+      document.getElementById('pur-cat').value = document.getElementById('wish-conv-cat').value
+      document.getElementById('pur-price').value = document.getElementById('wish-conv-price').value
+      document.getElementById('pur-desc').value = document.getElementById('wish-conv-desc').value.trim()
+      savePurchase()
+    }
+  } finally {
+    btn.disabled = false
+  }
+
+  const created = load(key).find(e => !before.has(e.id))
+  if (!created) { err.textContent = 'The record was not created — nothing was changed.'; return }
+
+  const list = wishList(); const i = list.findIndex(x => x.id === id)
+  if (i >= 0) {
+    list[i].status = 'purchased'
+    list[i].resolvedDate = today()
+    list[i].linkedId = created.id
+    save(K.wish, list)
+  }
+  closeWishConv()
+  renderWishlist()
+  toast(isSub ? 'Added to Subscriptions' : 'Added to Purchases')
+}
 </script>
 <!-- SETTINGS MODAL -->
 <div class="smod-overlay" id="settings-overlay" onclick="if(event.target===this)closeSettings()">
@@ -6942,6 +7420,162 @@ function socCopy(i, key) {
     <div class="smod-footer">
       <button class="btn btn-p" onclick="saveNewClient()" style="flex:1">Add Client</button>
       <button class="btn btn-s" onclick="closeNewClientForm()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- WISHLIST ADD / EDIT MODAL -->
+<div class="smod-overlay" id="wish-modal-overlay" onclick="if(event.target===this)closeWishModal()">
+  <div class="smod" style="max-width:520px">
+    <div class="smod-hdr">
+      <span class="smod-ttl" id="wish-modal-ttl">Add Wishlist Item</span>
+      <button class="smod-close" onclick="closeWishModal()">&#x2715;</button>
+    </div>
+    <input type="hidden" id="wish-edit-id">
+    <div class="smod-row">
+      <div class="smod-lbl">Type</div>
+      <div style="display:flex;gap:8px">
+        <button class="fbtn on" id="wish-type-product" onclick="wishSetType('product')">Product</button>
+        <button class="fbtn" id="wish-type-subscription" onclick="wishSetType('subscription')">Subscription</button>
+      </div>
+    </div>
+    <div class="smod-row">
+      <div class="smod-lbl">Name <span style="color:var(--red)">*</span></div>
+      <input class="isel" id="wish-name" style="width:100%;box-sizing:border-box" placeholder="DJI Mini 5 Pro, Frame.io plan...">
+    </div>
+    <div class="smod-row">
+      <div class="smod-lbl">Company / Brand</div>
+      <input class="isel" id="wish-company" style="width:100%;box-sizing:border-box" placeholder="DJI, Sony, Adobe...">
+    </div>
+    <div class="smod-row">
+      <div class="smod-lbl">Store / Vendor</div>
+      <input class="isel" id="wish-store" style="width:100%;box-sizing:border-box" placeholder="Amazon, B&amp;H, Best Buy...">
+    </div>
+    <div class="smod-row">
+      <div class="smod-lbl">Product Link</div>
+      <input class="isel" id="wish-url" style="width:100%;box-sizing:border-box" placeholder="https://...">
+    </div>
+    <div class="smod-row">
+      <div class="smod-lbl">Price ($) <span style="color:var(--red)">*</span></div>
+      <input type="number" class="isel" id="wish-price" style="width:100%;box-sizing:border-box" placeholder="0.00" min="0" step="0.01">
+      <label style="display:flex;align-items:center;gap:7px;margin-top:9px;font-size:12.5px;color:var(--text-2);cursor:pointer">
+        <input type="checkbox" id="wish-price-complete" onchange="wishToggleEst()"> Price includes tax &amp; shipping
+      </label>
+    </div>
+    <div class="smod-row" id="wish-est-row">
+      <div class="smod-lbl">Estimated total (optional)</div>
+      <input type="number" class="isel" id="wish-est-total" style="width:100%;box-sizing:border-box" placeholder="All-in cost with tax &amp; shipping" min="0" step="0.01">
+    </div>
+    <div class="smod-row wish-sec on" id="wish-product-fields">
+      <div class="smod-lbl">Category</div>
+      <select class="isel" id="wish-cat" style="width:100%;box-sizing:border-box">
+        <option>Drone Equipment</option><option>Camera Equipment</option><option>Misc</option>
+      </select>
+    </div>
+    <div class="wish-sec" id="wish-sub-fields">
+      <div class="smod-row">
+        <div class="smod-lbl">Billing</div>
+        <select class="isel" id="wish-billing" style="width:100%;box-sizing:border-box">
+          <option>Monthly</option><option>Annual</option><option>Every 2 Years</option><option>Every 3 Years</option><option>One-Time</option>
+        </select>
+      </div>
+      <div class="smod-row">
+        <div class="smod-lbl">Renewal</div>
+        <select class="isel" id="wish-renewal" style="width:100%;box-sizing:border-box">
+          <option value="Auto">Auto Renew</option><option value="Manual">Manual Renew</option>
+        </select>
+      </div>
+    </div>
+    <div class="smod-row">
+      <div class="smod-lbl">Priority</div>
+      <select class="isel" id="wish-priority" style="width:100%;box-sizing:border-box">
+        <option value="must-have">Must-have</option>
+        <option value="nice-to-have" selected>Nice-to-have</option>
+        <option value="someday">Someday</option>
+      </select>
+    </div>
+    <div class="smod-row">
+      <div class="smod-lbl">Date added</div>
+      <input type="date" class="isel" id="wish-date-added" style="width:100%;box-sizing:border-box">
+    </div>
+    <div class="smod-row">
+      <div class="smod-lbl">Notes</div>
+      <input class="isel" id="wish-desc" style="width:100%;box-sizing:border-box" placeholder="Why you want it, which video you saw it in...">
+    </div>
+    <div id="wish-modal-err" style="font-size:12px;color:var(--red);margin-bottom:10px"></div>
+    <div class="smod-footer">
+      <button class="btn btn-p" onclick="saveWishItem()" style="flex:1">Save Item</button>
+      <button class="btn btn-s" onclick="closeWishModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- WISHLIST → PURCHASE / SUBSCRIPTION CONVERSION MODAL -->
+<div class="smod-overlay" id="wish-conv-overlay" onclick="if(event.target===this)closeWishConv()">
+  <div class="smod" style="max-width:480px">
+    <div class="smod-hdr">
+      <span class="smod-ttl" id="wish-conv-ttl">Mark as purchased</span>
+      <button class="smod-close" onclick="closeWishConv()">&#x2715;</button>
+    </div>
+    <div style="font-size:12.5px;color:var(--text-2);margin-bottom:16px;line-height:1.45" id="wish-conv-note"></div>
+    <input type="hidden" id="wish-conv-id">
+
+    <div class="wish-sec" id="wish-conv-product">
+      <div class="smod-row">
+        <div class="smod-lbl">Date</div>
+        <input type="date" class="isel" id="wish-conv-date" style="width:100%;box-sizing:border-box">
+      </div>
+      <div class="smod-row">
+        <div class="smod-lbl">Store / Vendor <span style="color:var(--red)">*</span></div>
+        <input class="isel" id="wish-conv-store" style="width:100%;box-sizing:border-box" placeholder="Where did you buy it?">
+      </div>
+      <div class="smod-row">
+        <div class="smod-lbl">Category</div>
+        <select class="isel" id="wish-conv-cat" style="width:100%;box-sizing:border-box">
+          <option>Drone Equipment</option><option>Camera Equipment</option><option>Misc</option>
+        </select>
+      </div>
+      <div class="smod-row">
+        <div class="smod-lbl">Price paid ($) <span style="color:var(--red)">*</span></div>
+        <input type="number" class="isel" id="wish-conv-price" style="width:100%;box-sizing:border-box" min="0" step="0.01">
+      </div>
+      <div class="smod-row">
+        <div class="smod-lbl">Description</div>
+        <input class="isel" id="wish-conv-desc" style="width:100%;box-sizing:border-box">
+      </div>
+    </div>
+
+    <div class="wish-sec" id="wish-conv-sub">
+      <div class="smod-row">
+        <div class="smod-lbl">Service <span style="color:var(--red)">*</span></div>
+        <input class="isel" id="wish-conv-name" style="width:100%;box-sizing:border-box">
+      </div>
+      <div class="smod-row">
+        <div class="smod-lbl">Amount ($) <span style="color:var(--red)">*</span></div>
+        <input type="number" class="isel" id="wish-conv-amount" style="width:100%;box-sizing:border-box" min="0" step="0.01">
+      </div>
+      <div class="smod-row">
+        <div class="smod-lbl">Billing</div>
+        <select class="isel" id="wish-conv-billing" style="width:100%;box-sizing:border-box">
+          <option>Monthly</option><option>Annual</option><option>Every 2 Years</option><option>Every 3 Years</option><option>One-Time</option>
+        </select>
+      </div>
+      <div class="smod-row">
+        <div class="smod-lbl">Renewal</div>
+        <select class="isel" id="wish-conv-renewal" style="width:100%;box-sizing:border-box">
+          <option value="Auto">Auto Renew</option><option value="Manual">Manual Renew</option>
+        </select>
+      </div>
+      <div class="smod-row">
+        <div class="smod-lbl">Start date</div>
+        <input type="date" class="isel" id="wish-conv-start" style="width:100%;box-sizing:border-box">
+      </div>
+    </div>
+
+    <div id="wish-conv-err" style="font-size:12px;color:var(--red);margin-bottom:10px"></div>
+    <div class="smod-footer">
+      <button class="btn btn-g" id="wish-conv-btn" onclick="confirmWishConv()" style="flex:1">Confirm</button>
+      <button class="btn btn-s" onclick="closeWishConv()">Cancel</button>
     </div>
   </div>
 </div>
