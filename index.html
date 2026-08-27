@@ -582,6 +582,13 @@ body.privacy-mode #privacy-banner{display:block}
 .wish-link:hover{text-decoration:underline}
 .wish-sec{display:none}
 .wish-sec.on{display:block}
+.smod.smod-scroll{display:flex;flex-direction:column;max-height:85vh;padding-bottom:0;overflow:hidden}
+.smod.smod-scroll .smod-hdr{flex:0 0 auto}
+.smod.smod-scroll .smod-body{flex:1 1 auto;min-height:0;overflow-y:auto;margin:0 -30px;padding:0 30px 2px}
+.smod.smod-scroll .smod-footer{flex:0 0 auto;margin-top:0;padding-bottom:24px;background:var(--card)}
+/* The global input rule sets width:100% + padding, which stretches checkboxes */
+.wish-chk{display:flex;flex-direction:row;align-items:center;gap:8px;font-size:13px;color:var(--text-2);cursor:pointer;padding-top:22px}
+.wish-chk input[type="checkbox"]{width:16px;height:16px;flex:0 0 auto;padding:0;margin:0}
 .row-hl{animation:rowHl 2.4s ease-out}
 @keyframes rowHl{0%,55%{background:rgba(0,122,255,0.22)}100%{background:transparent}}
 </style>
@@ -611,8 +618,8 @@ body.privacy-mode #privacy-banner{display:block}
       <button data-mode="business" class="tab on" data-tab="dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg> Dashboard</button>
       <button data-mode="business" class="tab" data-tab="income"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg> Income</button>
       <button data-mode="business" class="tab" data-tab="purchases"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Purchases</button>
-      <button data-mode="business" class="tab" data-tab="wishlist"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.6 6.1.8-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.4l6.1-.8z"/></svg> Wishlist</button>
       <button data-mode="business" class="tab" data-tab="subscriptions"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg> Subscriptions</button>
+      <button data-mode="business" class="tab" data-tab="wishlist"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.6 6.1.8-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.4l6.1-.8z"/></svg> Wishlist</button>
       <button data-mode="business" class="tab" data-tab="clients"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Clients</button>
       <button data-mode="business" class="tab" data-tab="jobs"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Jobs & Pricing</button>
       <button data-mode="business" class="tab" data-tab="export"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Export</button>
@@ -638,8 +645,8 @@ body.privacy-mode #privacy-banner{display:block}
   <button data-mode="business" class="tab on" data-tab="dashboard" onclick="mobNavTo('dashboard')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg> Dashboard</button>
   <button data-mode="business" class="tab" data-tab="income" onclick="mobNavTo('income')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg> Income</button>
   <button data-mode="business" class="tab" data-tab="purchases" onclick="mobNavTo('purchases')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Purchases</button>
-  <button data-mode="business" class="tab" data-tab="wishlist" onclick="mobNavTo('wishlist')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.6 6.1.8-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.4l6.1-.8z"/></svg> Wishlist</button>
   <button data-mode="business" class="tab" data-tab="subscriptions" onclick="mobNavTo('subscriptions')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg> Subscriptions</button>
+  <button data-mode="business" class="tab" data-tab="wishlist" onclick="mobNavTo('wishlist')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.6 6.1.8-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.4l6.1-.8z"/></svg> Wishlist</button>
   <button data-mode="business" class="tab" data-tab="clients" onclick="mobNavTo('clients')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Clients</button>
   <button data-mode="business" class="tab" data-tab="jobs" onclick="mobNavTo('jobs')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Jobs & Pricing</button>
   <button data-mode="business" class="tab" data-tab="export" onclick="mobNavTo('export')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Export</button>
@@ -6843,17 +6850,19 @@ function wishSetField(id, field, val) {
 
 // ── Add / edit modal ──
 function wishSetType(type) {
-  document.getElementById('wish-type-product').classList.toggle('on', type === 'product')
-  document.getElementById('wish-type-subscription').classList.toggle('on', type === 'subscription')
-  document.getElementById('wish-product-fields').classList.toggle('on', type === 'product')
-  document.getElementById('wish-sub-fields').classList.toggle('on', type === 'subscription')
+  const isSub = type === 'subscription'
+  document.getElementById('wish-type-product').classList.toggle('on', !isSub)
+  document.getElementById('wish-type-subscription').classList.toggle('on', isSub)
+  // Fields are individual grid cells now, so toggle each rather than a wrapper row
+  document.querySelectorAll('#wish-modal-overlay .wish-prod-f').forEach(e => e.style.display = isSub ? 'none' : '')
+  document.querySelectorAll('#wish-modal-overlay .wish-sub-f').forEach(e => e.style.display = isSub ? '' : 'none')
 }
 function wishCurrentType() {
   return document.getElementById('wish-type-subscription').classList.contains('on') ? 'subscription' : 'product'
 }
 function wishToggleEst() {
   const complete = document.getElementById('wish-price-complete').checked
-  document.getElementById('wish-est-row').style.display = complete ? 'none' : ''
+  document.getElementById('wish-est-row').style.display = complete ? 'none' : 'flex'
 }
 function openWishModal(id) {
   const w = id ? wishItem(id) : null
@@ -7426,83 +7435,62 @@ async function confirmWishConv() {
 
 <!-- WISHLIST ADD / EDIT MODAL -->
 <div class="smod-overlay" id="wish-modal-overlay" onclick="if(event.target===this)closeWishModal()">
-  <div class="smod" style="max-width:520px">
+  <div class="smod smod-scroll" style="max-width:560px">
     <div class="smod-hdr">
       <span class="smod-ttl" id="wish-modal-ttl">Add Wishlist Item</span>
       <button class="smod-close" onclick="closeWishModal()">&#x2715;</button>
     </div>
-    <input type="hidden" id="wish-edit-id">
-    <div class="smod-row">
-      <div class="smod-lbl">Type</div>
-      <div style="display:flex;gap:8px">
-        <button class="fbtn on" id="wish-type-product" onclick="wishSetType('product')">Product</button>
-        <button class="fbtn" id="wish-type-subscription" onclick="wishSetType('subscription')">Subscription</button>
+    <div class="smod-body">
+      <input type="hidden" id="wish-edit-id">
+      <div class="ff" style="margin-bottom:14px">
+        <label>Type</label>
+        <div style="display:flex;gap:8px">
+          <button class="fbtn on" id="wish-type-product" onclick="wishSetType('product')">Product</button>
+          <button class="fbtn" id="wish-type-subscription" onclick="wishSetType('subscription')">Subscription</button>
+        </div>
       </div>
-    </div>
-    <div class="smod-row">
-      <div class="smod-lbl">Name <span style="color:var(--red)">*</span></div>
-      <input class="isel" id="wish-name" style="width:100%;box-sizing:border-box" placeholder="DJI Mini 5 Pro, Frame.io plan...">
-    </div>
-    <div class="smod-row">
-      <div class="smod-lbl">Company / Brand</div>
-      <input class="isel" id="wish-company" style="width:100%;box-sizing:border-box" placeholder="DJI, Sony, Adobe...">
-    </div>
-    <div class="smod-row">
-      <div class="smod-lbl">Store / Vendor</div>
-      <input class="isel" id="wish-store" style="width:100%;box-sizing:border-box" placeholder="Amazon, B&amp;H, Best Buy...">
-    </div>
-    <div class="smod-row">
-      <div class="smod-lbl">Product Link</div>
-      <input class="isel" id="wish-url" style="width:100%;box-sizing:border-box" placeholder="https://...">
-    </div>
-    <div class="smod-row">
-      <div class="smod-lbl">Price ($) <span style="color:var(--red)">*</span></div>
-      <input type="number" class="isel" id="wish-price" style="width:100%;box-sizing:border-box" placeholder="0.00" min="0" step="0.01">
-      <label style="display:flex;align-items:center;gap:7px;margin-top:9px;font-size:12.5px;color:var(--text-2);cursor:pointer">
-        <input type="checkbox" id="wish-price-complete" onchange="wishToggleEst()"> Price includes tax &amp; shipping
-      </label>
-    </div>
-    <div class="smod-row" id="wish-est-row">
-      <div class="smod-lbl">Estimated total (optional)</div>
-      <input type="number" class="isel" id="wish-est-total" style="width:100%;box-sizing:border-box" placeholder="All-in cost with tax &amp; shipping" min="0" step="0.01">
-    </div>
-    <div class="smod-row wish-sec on" id="wish-product-fields">
-      <div class="smod-lbl">Category</div>
-      <select class="isel" id="wish-cat" style="width:100%;box-sizing:border-box">
-        <option>Drone Equipment</option><option>Camera Equipment</option><option>Misc</option>
-      </select>
-    </div>
-    <div class="wish-sec" id="wish-sub-fields">
-      <div class="smod-row">
-        <div class="smod-lbl">Billing</div>
-        <select class="isel" id="wish-billing" style="width:100%;box-sizing:border-box">
-          <option>Monthly</option><option>Annual</option><option>Every 2 Years</option><option>Every 3 Years</option><option>One-Time</option>
-        </select>
+      <div class="fg">
+        <div class="ff"><label>Name <span style="color:var(--red)">*</span></label>
+          <input id="wish-name" placeholder="DJI Mini 5 Pro, Frame.io plan..."></div>
+        <div class="ff"><label>Company / Brand</label>
+          <input id="wish-company" placeholder="DJI, Sony, Adobe..."></div>
+        <div class="ff"><label>Store / Vendor</label>
+          <input id="wish-store" placeholder="Amazon, B&amp;H, Best Buy..."></div>
+        <div class="ff"><label>Product Link</label>
+          <input id="wish-url" placeholder="https://..."></div>
+        <div class="ff"><label>Price ($) <span style="color:var(--red)">*</span></label>
+          <input type="number" id="wish-price" placeholder="0.00" min="0" step="0.01"></div>
+        <label class="ff wish-chk">
+          <input type="checkbox" id="wish-price-complete" onchange="wishToggleEst()">
+          <span>Price includes tax &amp; shipping</span>
+        </label>
+        <div class="ff" id="wish-est-row"><label>Estimated total</label>
+          <input type="number" id="wish-est-total" placeholder="All-in cost with tax &amp; shipping" min="0" step="0.01"></div>
+        <div class="ff wish-prod-f" id="wish-cat-ff"><label>Category</label>
+          <select id="wish-cat">
+            <option>Drone Equipment</option><option>Camera Equipment</option><option>Misc</option>
+          </select></div>
+        <div class="ff wish-sub-f" id="wish-billing-ff"><label>Billing</label>
+          <select id="wish-billing">
+            <option>Monthly</option><option>Annual</option><option>Every 2 Years</option><option>Every 3 Years</option><option>One-Time</option>
+          </select></div>
+        <div class="ff wish-sub-f" id="wish-renewal-ff"><label>Renewal</label>
+          <select id="wish-renewal">
+            <option value="Auto">Auto Renew</option><option value="Manual">Manual Renew</option>
+          </select></div>
+        <div class="ff"><label>Priority</label>
+          <select id="wish-priority">
+            <option value="must-have">Must-have</option>
+            <option value="nice-to-have" selected>Nice-to-have</option>
+            <option value="someday">Someday</option>
+          </select></div>
+        <div class="ff"><label>Date added</label>
+          <input type="date" id="wish-date-added"></div>
+        <div class="ff wide"><label>Notes</label>
+          <input id="wish-desc" placeholder="Why you want it, which video you saw it in..."></div>
       </div>
-      <div class="smod-row">
-        <div class="smod-lbl">Renewal</div>
-        <select class="isel" id="wish-renewal" style="width:100%;box-sizing:border-box">
-          <option value="Auto">Auto Renew</option><option value="Manual">Manual Renew</option>
-        </select>
-      </div>
+      <div id="wish-modal-err" style="font-size:12px;color:var(--red)"></div>
     </div>
-    <div class="smod-row">
-      <div class="smod-lbl">Priority</div>
-      <select class="isel" id="wish-priority" style="width:100%;box-sizing:border-box">
-        <option value="must-have">Must-have</option>
-        <option value="nice-to-have" selected>Nice-to-have</option>
-        <option value="someday">Someday</option>
-      </select>
-    </div>
-    <div class="smod-row">
-      <div class="smod-lbl">Date added</div>
-      <input type="date" class="isel" id="wish-date-added" style="width:100%;box-sizing:border-box">
-    </div>
-    <div class="smod-row">
-      <div class="smod-lbl">Notes</div>
-      <input class="isel" id="wish-desc" style="width:100%;box-sizing:border-box" placeholder="Why you want it, which video you saw it in...">
-    </div>
-    <div id="wish-modal-err" style="font-size:12px;color:var(--red);margin-bottom:10px"></div>
     <div class="smod-footer">
       <button class="btn btn-p" onclick="saveWishItem()" style="flex:1">Save Item</button>
       <button class="btn btn-s" onclick="closeWishModal()">Cancel</button>
@@ -7512,11 +7500,12 @@ async function confirmWishConv() {
 
 <!-- WISHLIST → PURCHASE / SUBSCRIPTION CONVERSION MODAL -->
 <div class="smod-overlay" id="wish-conv-overlay" onclick="if(event.target===this)closeWishConv()">
-  <div class="smod" style="max-width:480px">
+  <div class="smod smod-scroll" style="max-width:480px">
     <div class="smod-hdr">
       <span class="smod-ttl" id="wish-conv-ttl">Mark as purchased</span>
       <button class="smod-close" onclick="closeWishConv()">&#x2715;</button>
     </div>
+    <div class="smod-body">
     <div style="font-size:12.5px;color:var(--text-2);margin-bottom:16px;line-height:1.45" id="wish-conv-note"></div>
     <input type="hidden" id="wish-conv-id">
 
@@ -7573,6 +7562,7 @@ async function confirmWishConv() {
     </div>
 
     <div id="wish-conv-err" style="font-size:12px;color:var(--red);margin-bottom:10px"></div>
+    </div>
     <div class="smod-footer">
       <button class="btn btn-g" id="wish-conv-btn" onclick="confirmWishConv()" style="flex:1">Confirm</button>
       <button class="btn btn-s" onclick="closeWishConv()">Cancel</button>
