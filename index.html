@@ -4583,6 +4583,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   setupFilter('inc-filter','inc',renderIncTable)
   setupFilter('pur-filter','pur',renderPurTable)
   setupFilter('sub-filter','sub',()=>{renderSubTable()})
+  setupWishFilter()
   const mode = appMode()
   applyMode(mode)
   openTab(localStorage.getItem(MODE_TAB_KEY[mode]) || MODE_HOME[mode])
@@ -6650,13 +6651,21 @@ function wishItem(id) { return wishList().find(w => w.id === id) }
 function wishVal(w) { return (+w.estTotal || 0) > 0 ? +w.estTotal : (+w.price || 0) }
 
 // ── Filters ──
-function wishFilter(kind, val) {
-  _wishF[kind] = val
-  document.querySelectorAll(`#wish-filter [data-f="${kind}"]`).forEach(b => {
-    const on = b.dataset.v === val
-    b.classList.toggle(kind === 'cat' ? 'cat-on' : 'on', on)
+// Same shape as setupFilter(): one delegated listener on the bar, state + active
+// class per group, then a re-render. Registered from DOMContentLoaded.
+function setupWishFilter() {
+  const bar = document.getElementById('wish-filter'); if (!bar) return
+  bar.addEventListener('click', e => {
+    const btn = e.target.closest('[data-f]'); if (!btn) return
+    wishFilter(btn.dataset.f, btn.dataset.v)
   })
-  renderWishTable()
+}
+function wishFilter(kind, val) {
+  if (!(kind in _wishF)) return
+  _wishF[kind] = val
+  document.querySelectorAll(`#wish-filter [data-f="${kind}"]`).forEach(b =>
+    b.classList.toggle(kind === 'cat' ? 'cat-on' : 'on', b.dataset.v === val))
+  renderWishlist()
 }
 function wishApplyFilters(list) {
   return list.filter(w =>
@@ -6679,7 +6688,7 @@ function renderWishlist() { renderWishSummary(); renderWishTable(); renderWishAr
 
 function renderWishSummary() {
   const el = document.getElementById('wish-summary'); if (!el) return
-  const active = wishList().filter(w => (w.status || 'active') === 'active')
+  const active = wishApplyFilters(wishList().filter(w => (w.status || 'active') === 'active'))
   const tot = active.reduce((s, w) => s + wishVal(w), 0)
   const by = k => active.filter(w => (w.priority || 'nice-to-have') === k)
   const sub = k => {
@@ -6789,12 +6798,15 @@ function toggleWishArchive() {
 
 function renderWishArchive() {
   const el = document.getElementById('wish-arch-table'); if (!el) return
-  const list = wishList().filter(w => w.status === 'purchased' || w.status === 'passed')
+  const resolved = wishList().filter(w => w.status === 'purchased' || w.status === 'passed')
+  const list = wishApplyFilters(resolved)
     .sort((a, b) => String(b.resolvedDate || '').localeCompare(String(a.resolvedDate || '')))
   const btn = document.getElementById('wish-arch-btn')
   if (btn) btn.textContent = _wishArchOpen ? 'Hide' : `Show (${list.length})`
   if (!list.length) {
-    el.innerHTML = emptyState('check-circle', 'Nothing resolved yet — bought and passed items land here.', null, {small:true, pad:'26px 20px'})
+    el.innerHTML = resolved.length
+      ? emptyState('search', 'No items match these filters.', null, {small:true, pad:'26px 20px'})
+      : emptyState('check-circle', 'Nothing resolved yet — bought and passed items land here.', null, {small:true, pad:'26px 20px'})
     return
   }
   el.innerHTML = `<table>
