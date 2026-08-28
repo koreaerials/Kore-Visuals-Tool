@@ -591,6 +591,12 @@ body.privacy-mode #privacy-banner{display:block}
 .wish-chk input[type="checkbox"]{width:16px;height:16px;flex:0 0 auto;padding:0;margin:0}
 .row-hl{animation:rowHl 2.4s ease-out}
 @keyframes rowHl{0%,55%{background:rgba(0,122,255,0.22)}100%{background:transparent}}
+/* ── INSTALLMENTS ────────────────────────────────────────────── */
+.inst-chk-row{display:flex;flex-direction:row;align-items:center;gap:8px;font-size:13px;color:var(--text-2);cursor:pointer;padding-top:22px}
+.inst-chk-row input[type="checkbox"],.inst-chk{width:16px;height:16px;flex:0 0 auto;padding:0;margin:0}
+.inst-box{border:1px solid var(--card-border);border-radius:14px;padding:16px;margin-bottom:14px;background:rgba(0,0,0,0.02)}
+[data-theme="dark"] .inst-box{background:rgba(255,255,255,0.03)}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.7/dist/pizzip.js"></script>
 <script>
@@ -768,6 +774,40 @@ body.privacy-mode #privacy-banner{display:block}
             </div>
             <div class="ff"><label>Price ($)</label><input type="number" id="pur-price" placeholder="0.00" min="0" step="0.01"></div>
             <div class="ff wide"><label>Description</label><input type="text" id="pur-desc" placeholder="What did you buy?"></div>
+            <label class="ff wide inst-chk-row">
+              <input type="checkbox" id="pur-is-inst" onchange="instToggleSection()">
+              <span>Paying in installments</span>
+            </label>
+          </div>
+          <div id="pur-inst-section" style="display:none">
+            <div class="inst-box">
+              <div class="card-ttl" style="margin-bottom:10px">Payment plan</div>
+              <div class="fg">
+                <div class="ff"><label>Provider</label>
+                  <select id="pur-inst-provider">
+                    <option>PayPal Pay in 4</option><option>Klarna</option><option>Affirm</option>
+                    <option>Afterpay</option><option>Credit card plan</option><option>Other</option>
+                  </select>
+                </div>
+                <div class="ff"><label>Number of payments</label>
+                  <input type="number" id="pur-inst-count" value="4" min="1" max="60" step="1"></div>
+                <div class="ff"><label>First payment date</label>
+                  <input type="date" id="pur-inst-first"></div>
+                <div class="ff"><label>Frequency</label>
+                  <select id="pur-inst-freq">
+                    <option value="biweekly">Biweekly</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="custom">Custom</option>
+                  </select>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+                <button class="btn btn-s btn-sm" onclick="instGenerateFromForm()">Generate schedule</button>
+                <span id="pur-inst-sum" style="font-size:12px;color:var(--text-2)"></span>
+              </div>
+              <div class="tbl-wrap" id="pur-inst-rows"></div>
+            </div>
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
             <button class="btn btn-g" onclick="savePurchase()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Purchase</button>
@@ -1349,17 +1389,32 @@ const SHEET_SCHEMA = {
       invoiceNum: r[9]||'', agreementId: r[10]||'', calendarEventId: r[11]||'', jobTime: r[12]||'', filmingDate: r[13]||''
     }),
   },
+  // price = expense recognised to date. For an installment plan that is the sum of
+  // PAID installments; installmentTotal carries the full purchase price. Keeping the
+  // cash-basis figure in `price` means every existing total stays correct untouched.
+  // Installments ride along as JSON in one column (option a) so the flat schema and
+  // the existing write queue need no special cases.
   [K.pur]: {
     tab:  'Purchases',
-    cols: ['id','date','store','price','category','description'],
+    cols: ['id','date','store','price','category','description','isInstallment','provider','installmentTotal','installments'],
     toRow: o => [
       o.id, o.date, o.store||o.name||'', o.price,
       o.cat||o.category||'Misc',
-      o.desc||o.description||''
+      o.desc||o.description||'',
+      o.isInstallment ? 'TRUE' : 'FALSE',
+      o.provider||'',
+      o.installmentTotal||0,
+      o.installments && o.installments.length ? JSON.stringify(o.installments) : ''
     ],
-    toObj: r => ({
-      id: r[0], date: r[1], store: r[2], price: r[3], cat: r[4], desc: r[5]
-    }),
+    toObj: r => {
+      let inst = []
+      if (r[9]) { try { const v = JSON.parse(r[9]); if (Array.isArray(v)) inst = v } catch {} }
+      return {
+        id: r[0], date: r[1], store: r[2], price: r[3], cat: r[4], desc: r[5],
+        isInstallment: String(r[6]).toUpperCase() === 'TRUE',
+        provider: r[7]||'', installmentTotal: +r[8]||0, installments: inst
+      }
+    },
   },
   [K.sub]: {
     tab:  'Subscriptions',
@@ -2916,8 +2971,15 @@ function savePurchase() {
   const price=parseFloat(document.getElementById('pur-price').value)||0
   const desc=document.getElementById('pur-desc').value.trim()
   if(!date||!store||price<=0){toast('Please fill in date, store, and price');return}
+  const inst = instBuildPatch(price)
+  if(!inst.ok){toast(inst.msg);return}
   const list=load(K.pur)
-  const entry={id:id||uid(),date,store,cat,price,desc}
+  // Spread the previous record so fields this form doesn't own (installments, _priv)
+  // survive an edit instead of being silently dropped.
+  const prev = id ? list.find(e=>e.id===id) : null
+  const entry={...(prev||{}),id:id||uid(),date,store,cat,price,desc,...inst.patch}
+  // Cash basis: an installment purchase only recognises what has actually been paid
+  if(entry.isInstallment) entry.price = purPaidToDate(entry)
   if(!id && privacyMode()) entry._priv = true
   if(id){const i=list.findIndex(e=>e.id===id);if(i>=0)list[i]=entry}else list.push(entry)
   save(K.pur,list); cancelForm('pur'); renderPurTable(); renderDash(); toast(id?'Purchase updated!':'Purchase saved!')
@@ -2931,6 +2993,8 @@ function editPur(id) {
   document.getElementById('pur-cat').value=e.cat||e.category||'Drone Equipment'
   document.getElementById('pur-price').value=e.price||''
   document.getElementById('pur-desc').value=e.desc||e.description||''
+  document.getElementById('pur-price').value=e.isInstallment?(e.installmentTotal||e.price||''):(e.price||'')
+  instLoadForm(e)
   openForm('pur')
   document.getElementById('pur-form-ttl').textContent='Edit Purchase'
 }
@@ -3585,6 +3649,7 @@ function cancelForm(type) {
   } else if(type==='pur'){
     ['pur-edit-id','pur-date','pur-store','pur-price','pur-desc'].forEach(id=>document.getElementById(id).value='')
     document.getElementById('pur-cat').value='Drone Equipment'
+    instLoadForm(null)   // clear any installment plan left over from an edit
     document.getElementById('pur-form-ttl').textContent='Add New Purchase'
     document.getElementById('pur-form-ttl').style.display='none'
   } else if(type==='sub'){
@@ -7053,6 +7118,153 @@ async function confirmWishConv() {
   closeWishConv()
   renderWishlist()
   toast(isSub ? 'Added to Subscriptions' : 'Added to Purchases')
+}
+
+// ── INSTALLMENTS ──────────────────────────────────────────────
+// Cash basis: a purchase's `price` is the expense recognised so far. For an
+// installment plan that is the sum of PAID installments, while `installmentTotal`
+// holds the full purchase price. Every existing total reads `price`, so they stay
+// correct without touching their math. Non-installment purchases are unaffected.
+const INST_PROVIDERS = ['PayPal Pay in 4','Klarna','Affirm','Afterpay','Credit card plan','Other']
+const INST_FREQ = { biweekly:14, weekly:7 }   // monthly + custom handled separately
+let _instDraft = []          // schedule rows being edited in the form
+
+// ── Derived values (never stored) ──
+function instList(p) { return Array.isArray(p?.installments) ? p.installments : [] }
+function purIsInstallment(p) { return !!p?.isInstallment && instList(p).length > 0 }
+function purPaidToDate(p) {
+  return round2(instList(p).filter(i => i.status === 'paid').reduce((s,i) => s + (+i.amount||0), 0))
+}
+function purOutstanding(p) {
+  return round2((+p.installmentTotal||0) - purPaidToDate(p))
+}
+function purNextPayment(p) {
+  return instList(p).filter(i => i.status !== 'paid')
+    .sort((a,b) => String(a.dueDate).localeCompare(String(b.dueDate)))[0] || null
+}
+function purProgress(p) {
+  const l = instList(p)
+  return { paid: l.filter(i => i.status === 'paid').length, total: l.length }
+}
+function round2(n) { return Math.round((+n || 0) * 100) / 100 }
+
+// Calendar-date arithmetic (no timestamps, so nothing lands a day early or late)
+function instAddDays(dateStr, n) {
+  const d = toDate(dateStr); d.setDate(d.getDate() + n); return toStr(d)
+}
+
+// Split `total` across `count` payments. Divide down to cents, then push the leftover
+// cents onto the FIRST payment so the parts always sum to the total exactly.
+function instSplit(total, count) {
+  const cents = Math.round((+total || 0) * 100)
+  const n = Math.max(1, parseInt(count) || 1)
+  const base = Math.floor(cents / n)
+  const rem = cents - base * n
+  return Array.from({length:n}, (_, i) => ((i === 0 ? base + rem : base) / 100))
+}
+
+function instGenerateSchedule(total, count, firstDate, freq) {
+  const amounts = instSplit(total, count)
+  const start = firstDate || today()
+  return amounts.map((amt, i) => {
+    let due
+    if (freq === 'monthly')      due = toStr(addM(toDate(start), i))
+    else if (freq === 'custom')  due = i === 0 ? start : instAddDays(start, 0)
+    else                         due = instAddDays(start, (INST_FREQ[freq] || 14) * i)
+    // Pay-in-4 charges the first payment at checkout: default it to paid when due
+    const dueNow = i === 0 && due <= today()
+    return { id: uid(), seq: i+1, amount: amt, dueDate: due,
+             status: dueNow ? 'paid' : 'scheduled', paidDate: dueNow ? today() : '' }
+  })
+}
+
+// ── Form: show/hide the installment section ──
+function instToggleSection() {
+  const on = document.getElementById('pur-is-inst').checked
+  document.getElementById('pur-inst-section').style.display = on ? '' : 'none'
+  if (on && !_instDraft.length) instGenerateFromForm()
+  instRenderSchedule()
+}
+
+function instGenerateFromForm() {
+  const total = parseFloat(document.getElementById('pur-price').value) || 0
+  if (total <= 0) { toast('Enter the purchase price first'); return }
+  const count = parseInt(document.getElementById('pur-inst-count').value) || 4
+  const first = document.getElementById('pur-inst-first').value || today()
+  const freq  = document.getElementById('pur-inst-freq').value
+  _instDraft = instGenerateSchedule(total, count, first, freq)
+  instRenderSchedule()
+}
+
+function instSetRow(i, field, val) {
+  if (!_instDraft[i]) return
+  if (field === 'amount') _instDraft[i].amount = round2(parseFloat(val) || 0)
+  else if (field === 'dueDate') _instDraft[i].dueDate = val
+  else if (field === 'status') {
+    _instDraft[i].status = val ? 'paid' : 'scheduled'
+    _instDraft[i].paidDate = val ? today() : ''
+  }
+  instRenderSchedule()
+}
+
+function instDraftSum() { return round2(_instDraft.reduce((s,r) => s + (+r.amount||0), 0)) }
+
+function instRenderSchedule() {
+  const el = document.getElementById('pur-inst-rows'); if (!el) return
+  const total = round2(parseFloat(document.getElementById('pur-price').value) || 0)
+  const sum = instDraftSum()
+  const ok = Math.abs(sum - total) < 0.005
+  const sumEl = document.getElementById('pur-inst-sum')
+  if (sumEl) {
+    sumEl.innerHTML = `Sum: <strong>${fmt(sum)}</strong> of <strong>${fmt(total)}</strong>` +
+      (ok ? '' : ' — amounts must match the price')
+    sumEl.style.color = ok ? 'var(--text-2)' : 'var(--red)'
+  }
+  if (!_instDraft.length) {
+    el.innerHTML = emptyState('receipt','No schedule yet — set the options above and generate one.',null,{small:true,pad:'20px'})
+    return
+  }
+  el.innerHTML = `<table>
+    <thead><tr><th>#</th><th>Amount</th><th>Due</th><th>Paid</th></tr></thead>
+    <tbody>${_instDraft.map((r,i) => `<tr>
+      <td style="width:34px">${r.seq}</td>
+      <td><input type="number" class="isel" style="width:104px" step="0.01" min="0" value="${r.amount}"
+                 onchange="instSetRow(${i},'amount',this.value)"></td>
+      <td><input type="date" class="isel" style="width:150px" value="${r.dueDate}"
+                 onchange="instSetRow(${i},'dueDate',this.value)"></td>
+      <td><input type="checkbox" class="inst-chk" ${r.status === 'paid' ? 'checked' : ''}
+                 onchange="instSetRow(${i},'status',this.checked)"></td>
+    </tr>`).join('')}</tbody></table>`
+}
+
+// Called by savePurchase. Returns {ok, patch} — patch is merged into the record.
+function instBuildPatch(price) {
+  const on = document.getElementById('pur-is-inst')?.checked
+  if (!on) return { ok:true, patch:{ isInstallment:false, provider:'', installmentTotal:0, installments:[] } }
+  if (!_instDraft.length) return { ok:false, msg:'Generate a payment schedule first' }
+  const sum = instDraftSum()
+  if (Math.abs(sum - round2(price)) >= 0.005)
+    return { ok:false, msg:`Schedule totals ${fmt(sum)} but the price is ${fmt(price)}` }
+  const rows = _instDraft.map((r,i) => ({ ...r, seq:i+1 }))
+  return { ok:true, patch:{
+    isInstallment: true,
+    provider: document.getElementById('pur-inst-provider').value,
+    installmentTotal: round2(price),
+    installments: rows
+  }}
+}
+
+// Load an existing plan into the form (or reset it for a new purchase)
+function instLoadForm(p) {
+  const on = purIsInstallment(p)
+  _instDraft = on ? instList(p).map(r => ({...r})) : []
+  const chk = document.getElementById('pur-is-inst'); if (chk) chk.checked = on
+  const prov = document.getElementById('pur-inst-provider'); if (prov) prov.value = p?.provider || INST_PROVIDERS[0]
+  const cnt = document.getElementById('pur-inst-count'); if (cnt) cnt.value = on ? instList(p).length : 4
+  const first = document.getElementById('pur-inst-first')
+  if (first) first.value = on ? (instList(p)[0]?.dueDate || today()) : today()
+  const sec = document.getElementById('pur-inst-section'); if (sec) sec.style.display = on ? '' : 'none'
+  instRenderSchedule()
 }
 </script>
 <!-- SETTINGS MODAL -->
