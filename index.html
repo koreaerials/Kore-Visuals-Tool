@@ -222,7 +222,9 @@ td .isel{padding:3px 7px}
 .ren-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.06)}
 .ren-item:last-child{border-bottom:none}
 .ren-name{font-weight:600;font-size:13px}
-.ren-when{font-size:11px;color:var(--text-2);margin-top:2px}
+.ren-when{font-size:11px;color:var(--text-2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ren-item>div:first-child{min-width:0;flex:1 1 auto;padding-right:10px}
+.ren-item>div:last-child{flex:0 0 auto}
 .ren-amt{font-weight:700;font-size:13px;color:var(--red)}
 .ren-view-menu{display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:200;background:var(--dropdown-bg);border:1px solid var(--border);border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.18);min-width:148px;padding:4px}
 .ren-view-opt{display:block;width:100%;text-align:left;padding:7px 12px;background:none;border:none;cursor:pointer;font-size:13px;color:var(--text);border-radius:6px}
@@ -597,6 +599,8 @@ body.privacy-mode #privacy-banner{display:block}
 .inst-box{border:1px solid var(--card-border);border-radius:14px;padding:16px;margin-bottom:14px;background:rgba(0,0,0,0.02)}
 [data-theme="dark"] .inst-box{background:rgba(255,255,255,0.03)}
 
+.ren-tag{display:inline-block;font-size:9.5px;padding:1px 6px;margin-right:6px;vertical-align:1px}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.7/dist/pizzip.js"></script>
 <script>
@@ -774,41 +778,8 @@ body.privacy-mode #privacy-banner{display:block}
             </div>
             <div class="ff"><label>Price ($)</label><input type="number" id="pur-price" placeholder="0.00" min="0" step="0.01"></div>
             <div class="ff wide"><label>Description</label><input type="text" id="pur-desc" placeholder="What did you buy?"></div>
-            <label class="ff wide inst-chk-row">
-              <input type="checkbox" id="pur-is-inst" onchange="instToggleSection()">
-              <span>Paying in installments</span>
-            </label>
           </div>
-          <div id="pur-inst-section" style="display:none">
-            <div class="inst-box">
-              <div class="card-ttl" style="margin-bottom:10px">Payment plan</div>
-              <div class="fg">
-                <div class="ff"><label>Provider</label>
-                  <select id="pur-inst-provider">
-                    <option>PayPal Pay in 4</option><option>Klarna</option><option>Affirm</option>
-                    <option>Afterpay</option><option>Credit card plan</option><option>Other</option>
-                  </select>
-                </div>
-                <div class="ff"><label>Number of payments</label>
-                  <input type="number" id="pur-inst-count" value="4" min="1" max="60" step="1"></div>
-                <div class="ff"><label>First payment date</label>
-                  <input type="date" id="pur-inst-first"></div>
-                <div class="ff"><label>Frequency</label>
-                  <select id="pur-inst-freq">
-                    <option value="biweekly">Biweekly</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                    <option value="custom">Custom</option>
-                  </select>
-                </div>
-              </div>
-              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">
-                <button class="btn btn-s btn-sm" onclick="instGenerateFromForm()">Generate schedule</button>
-                <span id="pur-inst-sum" style="font-size:12px;color:var(--text-2)"></span>
-              </div>
-              <div class="tbl-wrap" id="pur-inst-rows"></div>
-            </div>
-          </div>
+          <div id="pur-inst-mount"></div>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
             <button class="btn btn-g" onclick="savePurchase()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Purchase</button>
             <button class="btn btn-s" onclick="cancelForm('pur')">Cancel</button>
@@ -1781,7 +1752,7 @@ function renderDash() {
     ...mainCards,
     ...subCards,
     `<div class="card-ttl">Monthly Revenue vs Expenses (Last 12 Months)</div><div class="chart-wrap" id="chart"></div>`,
-    `<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><div style="position:relative"><div id="ren-view-heading" class="card-ttl" style="margin-bottom:0;display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none" onclick="toggleDashViewMenu()">${icon('bell',16)} <span id="ren-view-label">Upcoming Renewals</span><span style="font-size:14px;opacity:.75;margin-left:4px;line-height:1">▾</span></div><div id="ren-view-menu" class="ren-view-menu"><button id="ren-opt-renewals" class="ren-view-opt" onclick="setDashView('renewals')">Renewals</button><button id="ren-opt-shoots" class="ren-view-opt" onclick="setDashView('shoots')">Shoots</button><button id="ren-opt-both" class="ren-view-opt" onclick="setDashView('both')">All</button></div></div></div><div style="display:flex;justify-content:flex-end;gap:5px;margin-bottom:12px"><button id="ren-f-30d" class="fbtn" onclick="setRenewalFilter('30d')">30 Days</button><button id="ren-f-1y" class="fbtn" onclick="setRenewalFilter('1y')">1 Year</button><button id="ren-f-all" class="fbtn" onclick="setRenewalFilter('all')">All Active</button></div><div id="renewals-list"></div>`,
+    `<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><div style="position:relative"><div id="ren-view-heading" class="card-ttl" style="margin-bottom:0;display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none" onclick="toggleDashViewMenu()">${icon('bell',16)} <span id="ren-view-label">Upcoming Renewals</span><span style="font-size:14px;opacity:.75;margin-left:4px;line-height:1">▾</span></div><div id="ren-view-menu" class="ren-view-menu"><button id="ren-opt-renewals" class="ren-view-opt" onclick="setDashView('renewals')">Renewals</button><button id="ren-opt-shoots" class="ren-view-opt" onclick="setDashView('shoots')">Shoots</button><button id="ren-opt-installments" class="ren-view-opt" onclick="setDashView('installments')">Installments</button><button id="ren-opt-both" class="ren-view-opt" onclick="setDashView('both')">All</button></div></div></div><div style="display:flex;justify-content:flex-end;gap:5px;margin-bottom:12px"><button id="ren-f-30d" class="fbtn" onclick="setRenewalFilter('30d')">30 Days</button><button id="ren-f-1y" class="fbtn" onclick="setRenewalFilter('1y')">1 Year</button><button id="ren-f-all" class="fbtn" onclick="setRenewalFilter('all')">All Active</button></div><div id="renewals-list"></div>`,
     `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="card-ttl" style="margin-bottom:0;display:flex;align-items:center;gap:7px">${icon('link',16)} Quick Links</div><button class="btn btn-sm btn-g" id="link-add-btn" onclick="toggleLinkForm()">+ Add Link</button></div><div class="link-form-area" id="link-form-area"><div class="form-inner" style="margin-bottom:0"><input type="hidden" id="link-edit-id"><div class="fg" style="grid-template-columns:1fr 1fr;margin-bottom:10px"><div class="ff"><label>Name</label><input type="text" id="link-name" placeholder="e.g. FAA DroneZone"></div><div class="ff"><label>URL</label><input type="text" id="link-url" placeholder="https://..."></div></div><div style="display:flex;gap:8px"><button class="btn btn-g btn-sm" onclick="saveLink()">${icon('save',13)} Save</button><button class="btn btn-s btn-sm" onclick="cancelLinkForm()">Cancel</button></div></div></div><div id="links-list"></div>`,
     jobsWidgetHTML,
     outstandingHTML,
@@ -1924,10 +1895,10 @@ function renderRenewals() {
     if (btn) btn.classList.toggle('on', f === _renewalFilter)
   })
   // update heading label and bold active option
-  const labels = { renewals:'Upcoming Renewals', shoots:'Upcoming Shoots', both:'Upcoming — All' }
+  const labels = { renewals:'Upcoming Renewals', shoots:'Upcoming Shoots', installments:'Upcoming Installments', both:'Upcoming — All' }
   const labelEl = document.getElementById('ren-view-label')
   if (labelEl) labelEl.textContent = labels[_dashView] || 'Upcoming'
-  ;['renewals','shoots','both'].forEach(v => {
+  ;['renewals','shoots','installments','both'].forEach(v => {
     const btn = document.getElementById('ren-opt-' + v)
     if (btn) btn.style.fontWeight = v === _dashView ? '700' : ''
   })
@@ -1939,7 +1910,7 @@ function renderRenewals() {
   const items = []
 
   // Renewals — active recurring subscriptions
-  if (_dashView !== 'shoots') {
+  if (_dashView === 'renewals' || _dashView === 'both') {
     loadP(K.sub)
       .filter(s => s.status === 'Active' && s.billingType !== 'One-Time')
       .map(s => { const nd = toDate(nextCharge(s)); return { type:'renewal', date: toStr(nd), nd, days: Math.round((nd - now) / 864e5), title: s.name, sub: s.billingType, amount: s.amount } })
@@ -1948,7 +1919,7 @@ function renderRenewals() {
   }
 
   // Shoots — income entries with a calendar event link and a future/today date
-  if (_dashView !== 'renewals') {
+  if (_dashView === 'shoots' || _dashView === 'both') {
     loadP(K.inc)
       .filter(e => e.calendarEventId && e.date >= todayStr)
       .map(e => { const nd = toDate(e.date); const days = Math.round((nd - now) / 864e5); return { type:'shoot', date: e.date, nd, days, title: e.client, sub: 'Shoot', amount: e.amount, calLink: gcEventLink(e.calendarEventId), jobTime: e.jobTime||'' } })
@@ -1956,25 +1927,58 @@ function renderRenewals() {
       .forEach(s => items.push(s))
   }
 
-  items.sort((a, b) => a.date.localeCompare(b.date))
+  // Installments — scheduled (unpaid) payments across every purchase plan
+  if (_dashView === 'installments' || _dashView === 'both') {
+    const hide = privacyMode()
+    loadP(K.pur).filter(purIsInstallment).forEach(pu => {
+      const all = instList(pu)
+      all.filter(i => i.status !== 'paid').forEach(i => {
+        const nd = toDate(i.dueDate)
+        const days = Math.round((nd - now) / 864e5)
+        // Overdue is derived from the date, so it is right even before the
+        // auto-logger runs, and a past-due payment is never hidden by a
+        // forward-looking range filter.
+        const overdue = days < 0
+        if (!overdue && (days < 0 || days > maxDays)) return
+        items.push({ type:'installment', overdue, date: i.dueDate, nd, days,
+          title: pu.store || pu.desc || 'Purchase',
+          sub: `${pu.provider || 'Plan'} · ${i.seq} of ${all.length}`,
+          amount: hide ? 0 : (+i.amount || 0) })
+      })
+    })
+  }
+
+  // Overdue first, then everything else by date
+  items.sort((a, b) => (b.overdue?1:0) - (a.overdue?1:0) || a.date.localeCompare(b.date))
 
   if (!items.length) {
-    const emptyMsg = _dashView === 'shoots' ? 'No upcoming shoots with calendar events'
-      : _renewalFilter === '30d' ? 'No renewals in the next 30 days'
-      : _renewalFilter === '1y' ? 'No renewals in the next 12 months'
-      : 'No active recurring subscriptions'
+    // Subject matches the selected view, window matches the selected range
+    const subject = _dashView === 'both' ? 'Nothing upcoming'
+      : _dashView === 'renewals' ? 'No renewals'
+      : _dashView === 'installments' ? 'No installment payments'
+      : 'No upcoming shoots with calendar events'
+    const emptyMsg = _dashView === 'shoots' ? subject
+      : _renewalFilter === '30d' ? `${subject} in the next 30 days`
+      : _renewalFilter === '1y'  ? `${subject} in the next 12 months`
+      : (_dashView === 'both' ? subject : `${subject} scheduled`)
     el.innerHTML = emptyState('check-open', emptyMsg, null, {small:true, pad:'20px'})
     return
   }
 
   el.innerHTML = items.map(item => {
-    const cls = item.days <= 3 ? 'd-urg' : item.days <= 10 ? 'd-soon' : 'd-ok'
-    const dlbl = item.days === 0 ? 'Today' : item.days === 1 ? 'Tomorrow' : item.days < 365 ? `${item.days}d` : `${Math.round(item.days/30)}mo`
-    const borderColor = item.type === 'shoot' ? 'var(--blue)' : '#ff9500'
+    const cls = item.overdue ? 'd-urg' : item.days <= 3 ? 'd-urg' : item.days <= 10 ? 'd-soon' : 'd-ok'
+    const dlbl = item.overdue ? `${Math.abs(item.days)}d late` : item.days === 0 ? 'Today' : item.days === 1 ? 'Tomorrow' : item.days < 365 ? `${item.days}d` : `${Math.round(item.days/30)}mo`
+    const borderColor = item.overdue ? 'var(--red)'
+      : item.type === 'shoot' ? 'var(--blue)'
+      : item.type === 'installment' ? 'var(--purple)' : '#ff9500'
     const amtColor    = item.type === 'shoot' ? 'var(--green)' : 'var(--red)'
+    const tag = item.overdue ? '<span class="ren-tag bdg bdg-r">Overdue</span>'
+      : item.type === 'shoot' ? '<span class="ren-tag bdg bdg-b">Shoot</span>'
+      : item.type === 'installment' ? '<span class="ren-tag bdg bdg-v">Installment</span>'
+      : '<span class="ren-tag bdg bdg-o">Subscription</span>'
     const calIcon = item.calLink ? `<a href="${esc(item.calLink)}" target="_blank" title="View in Calendar" style="color:var(--blue);margin-left:5px;vertical-align:middle">${icon('calendar',11)}</a>` : ''
     const timeStr = item.jobTime ? ' · ' + fmtTime(item.jobTime) : ''
-    return `<div class="ren-item" style="border-left:3px solid ${borderColor};padding-left:10px"><div><div class="ren-name">${esc(item.title)}${calIcon}</div><div class="ren-when">${fmtDate(item.date)}${timeStr} · ${item.sub}</div></div><div style="display:flex;align-items:center;gap:8px"><span class="ren-amt" style="color:${amtColor}">${fmt(item.amount)}</span><span class="d-bdg ${cls}">${dlbl}</span></div></div>`
+    return `<div class="ren-item" style="border-left:3px solid ${borderColor};padding-left:10px"><div><div class="ren-name">${esc(item.title)}${calIcon}</div><div class="ren-when">${tag}${fmtDate(item.date)}${timeStr} · ${item.sub}</div></div><div style="display:flex;align-items:center;gap:8px"><span class="ren-amt" style="color:${amtColor}">${fmt(item.amount)}</span><span class="d-bdg ${cls}">${dlbl}</span></div></div>`
   }).join('')
 }
 
@@ -2971,7 +2975,7 @@ function savePurchase() {
   const price=parseFloat(document.getElementById('pur-price').value)||0
   const desc=document.getElementById('pur-desc').value.trim()
   if(!date||!store||price<=0){toast('Please fill in date, store, and price');return}
-  const inst = instBuildPatch(price)
+  const inst = instBuildPatch('pur', price)
   if(!inst.ok){toast(inst.msg);return}
   const list=load(K.pur)
   // Spread the previous record so fields this form doesn't own (installments, _priv)
@@ -2994,7 +2998,7 @@ function editPur(id) {
   document.getElementById('pur-price').value=e.price||''
   document.getElementById('pur-desc').value=e.desc||e.description||''
   document.getElementById('pur-price').value=e.isInstallment?(e.installmentTotal||e.price||''):(e.price||'')
-  instLoadForm(e)
+  instLoadForm('pur', e)
   openForm('pur')
   document.getElementById('pur-form-ttl').textContent='Edit Purchase'
 }
@@ -3649,7 +3653,7 @@ function cancelForm(type) {
   } else if(type==='pur'){
     ['pur-edit-id','pur-date','pur-store','pur-price','pur-desc'].forEach(id=>document.getElementById(id).value='')
     document.getElementById('pur-cat').value='Drone Equipment'
-    instLoadForm(null)   // clear any installment plan left over from an edit
+    instLoadForm('pur', null)   // clear any installment plan left over from an edit
     document.getElementById('pur-form-ttl').textContent='Add New Purchase'
     document.getElementById('pur-form-ttl').style.display='none'
   } else if(type==='sub'){
@@ -4649,6 +4653,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   setupFilter('pur-filter','pur',renderPurTable)
   setupFilter('sub-filter','sub',()=>{renderSubTable()})
   setupWishFilter()
+  instMount('pur','pur-inst-mount')
+  instMount('wconv','wconv-inst-mount')
   const mode = appMode()
   applyMode(mode)
   openTab(localStorage.getItem(MODE_TAB_KEY[mode]) || MODE_HOME[mode])
@@ -7032,6 +7038,11 @@ function openWishConv(id) {
   const isSub = w.type === 'subscription'
   document.getElementById('wish-conv-product').classList.toggle('on', !isSub)
   document.getElementById('wish-conv-sub').classList.toggle('on', isSub)
+  // Installments only apply on the product path: a Subscription record already has
+  // its own billing cycle, so a payment plan on top would be a second schedule.
+  instLoadForm('wconv', null)
+  const mount = document.getElementById('wconv-inst-mount')
+  if (mount) mount.style.display = isSub ? 'none' : ''
   document.getElementById('wish-conv-ttl').textContent = isSub ? 'Add to Subscriptions' : 'Add to Purchases'
   document.getElementById('wish-conv-note').textContent = isSub
     ? 'This creates a subscription record. Everything is editable — the price or plan may have changed since you added it.'
@@ -7051,6 +7062,8 @@ function openWishConv(id) {
     document.getElementById('wish-conv-price').value = best || ''
     document.getElementById('wish-conv-desc').value =
       w.description ? `${w.name} — ${w.description}` : (w.name || '')
+    const first = document.getElementById('wconv-inst-first')
+    if (first) first.value = today()
   }
   document.getElementById('wish-conv-overlay').classList.add('open')
 }
@@ -7072,7 +7085,11 @@ async function confirmWishConv() {
   } else {
     if (!document.getElementById('wish-conv-date').value) { err.textContent = 'Date is required.'; return }
     if (!document.getElementById('wish-conv-store').value.trim()) { err.textContent = 'Store is required — Purchases needs a vendor.'; return }
-    if ((parseFloat(document.getElementById('wish-conv-price').value) || 0) <= 0) { err.textContent = 'Price must be above zero.'; return }
+    const price = parseFloat(document.getElementById('wish-conv-price').value) || 0
+    if (price <= 0) { err.textContent = 'Price must be above zero.'; return }
+    // Validate the plan here so the message lands in this modal, not as a toast
+    const plan = instBuildPatch('wconv', price)
+    if (!plan.ok) { err.textContent = plan.msg; return }
   }
 
   const key = isSub ? K.sub : K.pur
@@ -7099,6 +7116,8 @@ async function confirmWishConv() {
       document.getElementById('pur-cat').value = document.getElementById('wish-conv-cat').value
       document.getElementById('pur-price').value = document.getElementById('wish-conv-price').value
       document.getElementById('pur-desc').value = document.getElementById('wish-conv-desc').value.trim()
+      // Hand the schedule to the Purchases form so the single write path applies it
+      instCopyScope('wconv', 'pur')
       savePurchase()
     }
   } finally {
@@ -7127,7 +7146,11 @@ async function confirmWishConv() {
 // correct without touching their math. Non-installment purchases are unaffected.
 const INST_PROVIDERS = ['PayPal Pay in 4','Klarna','Affirm','Afterpay','Credit card plan','Other']
 const INST_FREQ = { biweekly:14, weekly:7 }   // monthly + custom handled separately
-let _instDraft = []          // schedule rows being edited in the form
+// One builder, mounted into any number of places. Each mount is a "scope" with its
+// own draft rows and its own price input; the markup and every behaviour below are
+// shared, so Add Purchase and the wishlist conversion cannot drift apart.
+const INST_PRICE_INPUT = { pur:'pur-price', wconv:'wish-conv-price' }
+let _instDrafts = {}         // scope -> schedule rows being edited
 
 // ── Derived values (never stored) ──
 function instList(p) { return Array.isArray(p?.installments) ? p.installments : [] }
@@ -7178,93 +7201,150 @@ function instGenerateSchedule(total, count, firstDate, freq) {
   })
 }
 
-// ── Form: show/hide the installment section ──
-function instToggleSection() {
-  const on = document.getElementById('pur-is-inst').checked
-  document.getElementById('pur-inst-section').style.display = on ? '' : 'none'
-  if (on && !_instDraft.length) instGenerateFromForm()
-  instRenderSchedule()
+// ── Form: the shared builder ──
+function instBuilderHTML(scope) {
+  return `
+  <label class="inst-chk-row">
+    <input type="checkbox" id="${scope}-is-inst" onchange="instToggleSection('${scope}')">
+    <span>Paying in installments</span>
+  </label>
+  <div id="${scope}-inst-section" style="display:none">
+    <div class="inst-box">
+      <div class="card-ttl" style="margin-bottom:10px">Payment plan</div>
+      <div class="fg">
+        <div class="ff"><label>Provider</label>
+          <select id="${scope}-inst-provider">
+            ${INST_PROVIDERS.map(v => `<option>${v}</option>`).join('')}
+          </select>
+        </div>
+        <div class="ff"><label>Number of payments</label>
+          <input type="number" id="${scope}-inst-count" value="4" min="1" max="60" step="1"></div>
+        <div class="ff"><label>First payment date</label>
+          <input type="date" id="${scope}-inst-first"></div>
+        <div class="ff"><label>Frequency</label>
+          <select id="${scope}-inst-freq">
+            <option value="biweekly">Biweekly</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+        <button class="btn btn-s btn-sm" onclick="instGenerateFromForm('${scope}')">Generate schedule</button>
+        <span id="${scope}-inst-sum" style="font-size:12px;color:var(--text-2)"></span>
+      </div>
+      <div class="tbl-wrap" id="${scope}-inst-rows"></div>
+    </div>
+  </div>`
+}
+function instMount(scope, containerId) {
+  const el = document.getElementById(containerId); if (!el) return
+  el.innerHTML = instBuilderHTML(scope)
+  instLoadForm(scope, null)
+}
+function instDraft(scope) { return _instDrafts[scope] || (_instDrafts[scope] = []) }
+function instPrice(scope) {
+  return round2(parseFloat(document.getElementById(INST_PRICE_INPUT[scope])?.value) || 0)
 }
 
-function instGenerateFromForm() {
-  const total = parseFloat(document.getElementById('pur-price').value) || 0
-  if (total <= 0) { toast('Enter the purchase price first'); return }
-  const count = parseInt(document.getElementById('pur-inst-count').value) || 4
-  const first = document.getElementById('pur-inst-first').value || today()
-  const freq  = document.getElementById('pur-inst-freq').value
-  _instDraft = instGenerateSchedule(total, count, first, freq)
-  instRenderSchedule()
+function instToggleSection(scope) {
+  const on = document.getElementById(`${scope}-is-inst`).checked
+  document.getElementById(`${scope}-inst-section`).style.display = on ? '' : 'none'
+  if (on && !instDraft(scope).length) instGenerateFromForm(scope)
+  instRenderSchedule(scope)
 }
 
-function instSetRow(i, field, val) {
-  if (!_instDraft[i]) return
-  if (field === 'amount') _instDraft[i].amount = round2(parseFloat(val) || 0)
-  else if (field === 'dueDate') _instDraft[i].dueDate = val
+function instGenerateFromForm(scope) {
+  const total = instPrice(scope)
+  if (total <= 0) { toast('Enter the price first'); return }
+  const count = parseInt(document.getElementById(`${scope}-inst-count`).value) || 4
+  const first = document.getElementById(`${scope}-inst-first`).value || today()
+  const freq  = document.getElementById(`${scope}-inst-freq`).value
+  _instDrafts[scope] = instGenerateSchedule(total, count, first, freq)
+  instRenderSchedule(scope)
+}
+
+function instSetRow(scope, i, field, val) {
+  const d = instDraft(scope); if (!d[i]) return
+  if (field === 'amount') d[i].amount = round2(parseFloat(val) || 0)
+  else if (field === 'dueDate') d[i].dueDate = val
   else if (field === 'status') {
-    _instDraft[i].status = val ? 'paid' : 'scheduled'
-    _instDraft[i].paidDate = val ? today() : ''
+    d[i].status = val ? 'paid' : 'scheduled'
+    d[i].paidDate = val ? today() : ''
   }
-  instRenderSchedule()
+  instRenderSchedule(scope)
 }
 
-function instDraftSum() { return round2(_instDraft.reduce((s,r) => s + (+r.amount||0), 0)) }
+function instDraftSum(scope) { return round2(instDraft(scope).reduce((s,r) => s + (+r.amount||0), 0)) }
 
-function instRenderSchedule() {
-  const el = document.getElementById('pur-inst-rows'); if (!el) return
-  const total = round2(parseFloat(document.getElementById('pur-price').value) || 0)
-  const sum = instDraftSum()
+function instRenderSchedule(scope) {
+  const el = document.getElementById(`${scope}-inst-rows`); if (!el) return
+  const total = instPrice(scope)
+  const sum = instDraftSum(scope)
   const ok = Math.abs(sum - total) < 0.005
-  const sumEl = document.getElementById('pur-inst-sum')
+  const sumEl = document.getElementById(`${scope}-inst-sum`)
   if (sumEl) {
     sumEl.innerHTML = `Sum: <strong>${fmt(sum)}</strong> of <strong>${fmt(total)}</strong>` +
       (ok ? '' : ' — amounts must match the price')
     sumEl.style.color = ok ? 'var(--text-2)' : 'var(--red)'
   }
-  if (!_instDraft.length) {
+  const d = instDraft(scope)
+  if (!d.length) {
     el.innerHTML = emptyState('receipt','No schedule yet — set the options above and generate one.',null,{small:true,pad:'20px'})
     return
   }
   el.innerHTML = `<table>
     <thead><tr><th>#</th><th>Amount</th><th>Due</th><th>Paid</th></tr></thead>
-    <tbody>${_instDraft.map((r,i) => `<tr>
+    <tbody>${d.map((r,i) => `<tr>
       <td style="width:34px">${r.seq}</td>
       <td><input type="number" class="isel" style="width:104px" step="0.01" min="0" value="${r.amount}"
-                 onchange="instSetRow(${i},'amount',this.value)"></td>
+                 onchange="instSetRow('${scope}',${i},'amount',this.value)"></td>
       <td><input type="date" class="isel" style="width:150px" value="${r.dueDate}"
-                 onchange="instSetRow(${i},'dueDate',this.value)"></td>
+                 onchange="instSetRow('${scope}',${i},'dueDate',this.value)"></td>
       <td><input type="checkbox" class="inst-chk" ${r.status === 'paid' ? 'checked' : ''}
-                 onchange="instSetRow(${i},'status',this.checked)"></td>
+                 onchange="instSetRow('${scope}',${i},'status',this.checked)"></td>
     </tr>`).join('')}</tbody></table>`
 }
 
-// Called by savePurchase. Returns {ok, patch} — patch is merged into the record.
-function instBuildPatch(price) {
-  const on = document.getElementById('pur-is-inst')?.checked
+// Validate a scope's schedule against its price. Returns {ok, patch} or {ok:false, msg}.
+function instBuildPatch(scope, price) {
+  const on = document.getElementById(`${scope}-is-inst`)?.checked
   if (!on) return { ok:true, patch:{ isInstallment:false, provider:'', installmentTotal:0, installments:[] } }
-  if (!_instDraft.length) return { ok:false, msg:'Generate a payment schedule first' }
-  const sum = instDraftSum()
+  const d = instDraft(scope)
+  if (!d.length) return { ok:false, msg:'Generate a payment schedule first' }
+  const sum = instDraftSum(scope)
   if (Math.abs(sum - round2(price)) >= 0.005)
     return { ok:false, msg:`Schedule totals ${fmt(sum)} but the price is ${fmt(price)}` }
-  const rows = _instDraft.map((r,i) => ({ ...r, seq:i+1 }))
   return { ok:true, patch:{
     isInstallment: true,
-    provider: document.getElementById('pur-inst-provider').value,
+    provider: document.getElementById(`${scope}-inst-provider`).value,
     installmentTotal: round2(price),
-    installments: rows
+    installments: d.map((r,i) => ({ ...r, seq:i+1 }))
   }}
 }
 
-// Load an existing plan into the form (or reset it for a new purchase)
-function instLoadForm(p) {
+// Load an existing plan into a scope (or reset that scope for a fresh entry)
+function instLoadForm(scope, p) {
   const on = purIsInstallment(p)
-  _instDraft = on ? instList(p).map(r => ({...r})) : []
-  const chk = document.getElementById('pur-is-inst'); if (chk) chk.checked = on
-  const prov = document.getElementById('pur-inst-provider'); if (prov) prov.value = p?.provider || INST_PROVIDERS[0]
-  const cnt = document.getElementById('pur-inst-count'); if (cnt) cnt.value = on ? instList(p).length : 4
-  const first = document.getElementById('pur-inst-first')
+  _instDrafts[scope] = on ? instList(p).map(r => ({...r})) : []
+  const chk = document.getElementById(`${scope}-is-inst`); if (chk) chk.checked = on
+  const prov = document.getElementById(`${scope}-inst-provider`); if (prov) prov.value = p?.provider || INST_PROVIDERS[0]
+  const cnt = document.getElementById(`${scope}-inst-count`); if (cnt) cnt.value = on ? instList(p).length : 4
+  const first = document.getElementById(`${scope}-inst-first`)
   if (first) first.value = on ? (instList(p)[0]?.dueDate || today()) : today()
-  const sec = document.getElementById('pur-inst-section'); if (sec) sec.style.display = on ? '' : 'none'
-  instRenderSchedule()
+  const sec = document.getElementById(`${scope}-inst-section`); if (sec) sec.style.display = on ? '' : 'none'
+  instRenderSchedule(scope)
+}
+
+// Copy one scope's plan into another, so a flow can hand its schedule to the form
+// that actually performs the write (wishlist conversion -> savePurchase).
+function instCopyScope(from, to) {
+  _instDrafts[to] = instDraft(from).map(r => ({...r}))
+  const src = document.getElementById(`${from}-is-inst`), dst = document.getElementById(`${to}-is-inst`)
+  if (src && dst) dst.checked = src.checked
+  const sp = document.getElementById(`${from}-inst-provider`), dp = document.getElementById(`${to}-inst-provider`)
+  if (sp && dp) dp.value = sp.value
 }
 </script>
 <!-- SETTINGS MODAL -->
@@ -7758,6 +7838,8 @@ function instLoadForm(p) {
         <div class="smod-lbl">Description</div>
         <input class="isel" id="wish-conv-desc" style="width:100%;box-sizing:border-box">
       </div>
+      <!-- Same builder as Add Purchase, mounted under the 'wconv' scope -->
+      <div id="wconv-inst-mount"></div>
     </div>
 
     <div class="wish-sec" id="wish-conv-sub">
