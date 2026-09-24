@@ -598,6 +598,17 @@ body.privacy-mode #privacy-banner{display:block}
 .inst-chk-row input[type="checkbox"],.inst-chk{width:16px;height:16px;flex:0 0 auto;padding:0;margin:0}
 .inst-box{border:1px solid var(--card-border);border-radius:14px;padding:16px;margin-bottom:14px;background:rgba(0,0,0,0.02)}
 [data-theme="dark"] .inst-box{background:rgba(255,255,255,0.03)}
+.inst-chev{border:0;background:none;padding:0 4px 0 0;cursor:pointer;color:var(--text-2);font-size:14px;line-height:1;display:inline-block;transition:transform .15s;vertical-align:1px}
+.inst-chev.open{transform:rotate(90deg)}
+.inst-of{color:var(--text-2);font-size:12px}
+.inst-prog,.inst-next{font-size:11px;color:var(--text-2);margin-top:2px;white-space:nowrap}
+.inst-bar{display:inline-block;width:44px;height:4px;border-radius:2px;background:rgba(0,0,0,0.1);margin-right:6px;vertical-align:middle;overflow:hidden}
+.inst-bar>span{display:block;height:100%;background:var(--green)}
+[data-theme="dark"] .inst-bar{background:rgba(255,255,255,0.15)}
+.inst-sub-row>td{padding:4px 12px 12px 34px}
+.inst-sched{border:1px solid var(--card-border);border-radius:10px;overflow-x:auto}
+.inst-sched table{min-width:0}
+.inst-sched td{padding:5px 12px}
 
 .ren-tag{display:inline-block;font-size:9.5px;padding:1px 6px;margin-right:6px;vertical-align:1px}
 
@@ -1573,7 +1584,8 @@ function loadP(k) {
   return data.map(e => {
     if (e._priv) return e
     if (k === K.inc)  return {...e, amount:0, travel:0, travelExpenses:0, jobExpenses:0, travel_expenses:0, profit:0}
-    if (k === K.pur)  return {...e, price:0}
+    if (k === K.pur)  return {...e, price:0, installmentTotal:0,
+      installments: Array.isArray(e.installments) ? e.installments.map(i => ({...i, amount:0})) : e.installments}
     if (k === K.sub)  return {...e, amount:0, totalSpent:0}
     if (k === K.subx) return {...e, amount:0}
     return e
@@ -1700,10 +1712,10 @@ function initDashDrag() { initGridDrag(document.getElementById('dash-widgets'), 
 function renderDash() {
   const {from,to}=range(FS.dash)
   const inc=loadP(K.inc).filter(e=>inRange(e.date,from,to))
-  const pur=loadP(K.pur).filter(e=>inRange(e.date,from,to))
+  const pur=loadP(K.pur)
   const rev=inc.reduce((s,e)=>s+(+e.amount||0),0)
   const trav=inc.reduce((s,e)=>s+(+(e.travel||e.travelExpenses||e.travel_expenses||0)),0)
-  const purAmt=pur.reduce((s,e)=>s+(+e.price||0),0)
+  const purAmt=pur.reduce((s,e)=>s+purExpense(e,from,to),0)
   const subAmt=FS.dash.r==='all'
     ? loadP(K.sub).reduce((s,e)=>s+(e.totalSpent!==undefined?+e.totalSpent:(+e.amount||0)),0)
     : loadP(K.subx).filter(e=>inRange(e.date,from,to)).reduce((s,e)=>s+(+e.amount||0),0)
@@ -1785,7 +1797,8 @@ function renderChart() {
   const inc=load(K.inc), pur=load(K.pur), subx=load(K.subx)
   const rev=months.map(mo=>inc.filter(e=>{const d=toDate(e.date);return d.getFullYear()===mo.y&&d.getMonth()===mo.m}).reduce((s,e)=>s+(+e.amount||0),0))
   const exp=months.map(mo=>{
-    const p=pur.filter(e=>{const d=toDate(e.date);return d.getFullYear()===mo.y&&d.getMonth()===mo.m}).reduce((s,e)=>s+(+e.price||0),0)
+    const mFrom=toStr(new Date(mo.y,mo.m,1)), mTo=toStr(new Date(mo.y,mo.m+1,0))
+    const p=pur.reduce((s,e)=>s+purExpense(e,mFrom,mTo),0)
     const x=subx.filter(e=>{const d=toDate(e.date);return d.getFullYear()===mo.y&&d.getMonth()===mo.m}).reduce((s,e)=>s+(+e.amount||0),0)
     const t=inc.filter(e=>{const d=toDate(e.date);return d.getFullYear()===mo.y&&d.getMonth()===mo.m}).reduce((s,e)=>s+(+e.travel||0),0)
     return p+x+t
@@ -2088,15 +2101,15 @@ function renderTaxes() {
   const subByYear=subYearlySpending()
   // Include subscription years so historical-only years appear
   const subYears=Object.keys(subByYear)
-  const allDates=[...inc.map(e=>e.date),...pur.map(e=>e.date),...subYears.map(y=>y+'-01-01')]
+  const allDates=[...inc.map(e=>e.date),...pur.map(e=>e.date),...pur.flatMap(e=>purIsInstallment(e)?instList(e).filter(i=>i.status==='paid').map(instPaidOn):[]),...subYears.map(y=>y+'-01-01')]
   if(!allDates.length){el.innerHTML=`<div class="card">${emptyState('receipt','No data yet to summarize.')}</div>`;return}
   const years=[...new Set(allDates.map(d=>d.slice(0,4)))].sort().reverse()
   el.innerHTML=years.map(yr=>{
     const yInc=inc.filter(e=>e.date.startsWith(yr))
-    const yPur=pur.filter(e=>e.date.startsWith(yr))
+    const yPur=pur.filter(e=>purInPeriod(e,`${yr}-01-01`,`${yr}-12-31`))
     const rev=yInc.reduce((s,e)=>s+(+e.amount||0),0)
     const trav=yInc.reduce((s,e)=>s+(+(e.travel||e.travelExpenses||e.travel_expenses||0)),0)
-    const purAmt=yPur.reduce((s,e)=>s+(+e.price||0),0)
+    const purAmt=yPur.reduce((s,e)=>s+purExpense(e,`${yr}-01-01`,`${yr}-12-31`),0)
     const subAmt=subByYear[yr]||0
     const exp=purAmt+subAmt+trav
     const net=rev-exp
@@ -2149,7 +2162,7 @@ ${rows.map(smlRow).join('\n')}
 
 function exportYearXLS(yr) {
   const inc=load(K.inc).filter(e=>e.date.startsWith(yr)).sort((a,b)=>b.date.localeCompare(a.date))
-  const pur=load(K.pur).filter(e=>e.date.startsWith(yr)).sort((a,b)=>b.date.localeCompare(a.date))
+  const pur=load(K.pur).filter(e=>purInPeriod(e,`${yr}-01-01`,`${yr}-12-31`)).sort((a,b)=>b.date.localeCompare(a.date))
   const subx=load(K.subx).filter(e=>e.date.startsWith(yr)).sort((a,b)=>b.date.localeCompare(a.date))
 
   const incRows=inc.map(e=>{
@@ -2159,7 +2172,9 @@ function exportYearXLS(yr) {
   })
 
   const expRows=[
-    ...pur.map(e=>[e.date, e.store||e.name||'', e.cat||e.category||'Misc', +e.price||0, e.desc||e.description||'']),
+    ...pur.flatMap(e=>purIsInstallment(e)
+      ? instList(e).filter(i=>i.status==='paid'&&instPaidOn(i).startsWith(yr)).map(i=>[instPaidOn(i), e.store||e.name||'', e.cat||e.category||'Misc', +i.amount||0, `${e.desc||e.description||''}${e.desc||e.description?' · ':''}Installment ${i.seq} of ${instList(e).length}`])
+      : e.date.startsWith(yr) ? [[e.date, e.store||e.name||'', e.cat||e.category||'Misc', +e.price||0, e.desc||e.description||'']] : []),
     ...subx.map(e=>[e.date, e.name||'', 'Subscription', +e.amount||0, ''])
   ].sort((a,b)=>b[0].localeCompare(a[0]))
 
@@ -2225,7 +2240,7 @@ function savePurRow(id){
   const desc=document.getElementById('per-desc')?.value.trim()
   if(!date||!store){toast('Fill in date and store');return}
   const list=load(K.pur), i=list.findIndex(e=>e.id===id); if(i<0)return
-  list[i]={...list[i],date,store,cat,price,desc}
+  list[i]={...list[i],date,store,cat,price:purIsInstallment(list[i])?purPaidToDate(list[i]):price,desc}
   save(K.pur,list); editing.pur=null; renderPurTable(); renderDash(); toast('Purchase updated!')
 }
 
@@ -3011,10 +3026,10 @@ function delPur(id) {
 function renderPurSummary() {
   const el=document.getElementById('pur-summary'); if(!el)return
   const {from,to}=range(FS.pur)
-  const all=loadP(K.pur).filter(e=>inRange(e.date,from,to))
+  const all=loadP(K.pur).filter(e=>purInPeriod(e,from,to))
   if(!all.length){el.innerHTML='';return}
-  const total=all.reduce((s,e)=>s+(+e.price||0),0)
-  const bycat=cat=>all.filter(e=>(e.cat||e.category||'Misc')===cat).reduce((s,e)=>s+(+e.price||0),0)
+  const total=all.reduce((s,e)=>s+purExpense(e,from,to),0)
+  const bycat=cat=>all.filter(e=>(e.cat||e.category||'Misc')===cat).reduce((s,e)=>s+purExpense(e,from,to),0)
   const drone=bycat('Drone Equipment'), cam=bycat('Camera Equipment'), misc=bycat('Misc')
   const purSub = [
     `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('drone',11)} Drone Equipment</div><div class="val r">${fmt(drone)}</div>`,
@@ -3035,7 +3050,7 @@ function renderPurSummary() {
 function renderPurTable() {
   const el=document.getElementById('pur-table')
   const {from,to}=range(FS.pur)
-  let list=loadP(K.pur).filter(e=>inRange(e.date,from,to))
+  let list=loadP(K.pur).filter(e=>purInPeriod(e,from,to))
   if(FS.pur.cat!=='all') list=list.filter(e=>(e.cat||e.category||'Misc')===FS.pur.cat)
   const vendors=[...new Set(list.map(e=>e.store||e.name||'').filter(Boolean))].sort()
   buildMs('pur-vendor-ms', vendors, FS.pur.vendors)
@@ -3043,7 +3058,7 @@ function renderPurTable() {
   list.sort((a,b)=>b.date.localeCompare(a.date))
   renderPurSummary()
   if(!list.length){el.innerHTML=emptyState('cart','No purchases yet.',{label:'+ Add Purchase',fn:'openForm(\'pur\')'});return}
-  const total=list.reduce((s,e)=>s+(+e.price||0),0)
+  const total=list.reduce((s,e)=>s+purExpense(e,from,to),0)
   el.innerHTML=`<table>
     <thead><tr><th>Date</th><th>Store / Vendor</th><th>Category</th><th>Price</th><th>Description</th><th>Actions</th></tr></thead>
     <tbody>${list.map(e=>{
@@ -3056,23 +3071,24 @@ function renderPurTable() {
           <td><input type="date" class="isel" id="per-date" value="${e.date}" onkeydown="if(event.key==='Enter')savePurRow('${e.id}')"></td>
           <td><input type="text" class="isel" id="per-store" value="${esc(store)}" style="width:120px" onkeydown="if(event.key==='Enter')savePurRow('${e.id}')"></td>
           <td><select class="isel" id="per-cat">${optC('Drone Equipment')}${optC('Camera Equipment')}${optC('Misc')}</select></td>
-          <td><input type="number" class="isel" id="per-price" value="${e.price}" step="0.01" style="width:80px" onkeydown="if(event.key==='Enter')savePurRow('${e.id}')"></td>
+          <td>${purIsInstallment(e) ? purInstPriceCell(e) : `<input type="number" class="isel" id="per-price" value="${e.price}" step="0.01" style="width:80px" onkeydown="if(event.key==='Enter')savePurRow('${e.id}')">`}</td>
           <td><input type="text" class="isel" id="per-desc" value="${esc(desc)}" style="width:140px" onkeydown="if(event.key==='Enter')savePurRow('${e.id}')"></td>
           <td style="white-space:nowrap"><button class="btn btn-sm btn-g" onclick="savePurRow('${e.id}')">${icon('save',13)} Save</button> <button class="btn btn-sm btn-s" onclick="cancelRowEdit('pur')">Cancel</button></td>
         </tr>`
       }
+      const inst=purIsInstallment(e), open=inst&&_purExpanded.has(e.id)
       return `<tr data-rid="${e.id}">
-      <td style="white-space:nowrap">${fmtDate(e.date)}</td>
-      <td><strong>${esc(store)}</strong></td>
+      <td style="white-space:nowrap">${inst?`<button class="inst-chev${open?' open':''}" onclick="togglePurInst('${e.id}')" aria-expanded="${open}" title="${open?'Hide':'Show'} payment schedule">›</button>`:''}${fmtDate(e.date)}</td>
+      <td><strong>${esc(store)}</strong>${inst?` <span class="bdg bdg-b">Installment</span>`:''}</td>
       <td><select class="isel" onchange="updatePurField('${e.id}','cat',this.value)">${optC('Drone Equipment')}${optC('Camera Equipment')}${optC('Misc')}</select></td>
-      <td><span class="${+e.price<0?'pos':'neg'}">${fmt(e.price)}</span></td>
+      <td>${inst?purInstPriceCell(e):`<span class="${+e.price<0?'pos':'neg'}">${fmt(e.price)}</span>`}</td>
       <td style="min-width:120px;white-space:normal;word-break:break-word">${esc(desc||'—')}</td>
       <td>${kebab([
         {label:'Edit', icon:'pencil', fn:`editPurRow('${e.id}')`},
         'sep',
         {label:'Delete', icon:'trash', fn:`delPur('${e.id}')`, danger:true},
       ])}</td>
-    </tr>`}).join('')}</tbody>
+    </tr>${open?purInstSubRow(e):''}`}).join('')}</tbody>
     <tfoot><tr><td colspan="3">Total (${list.length} items)</td><td><span class="neg">${fmt(total)}</span></td><td colspan="2"></td></tr></tfoot>
   </table>`
 }
@@ -4095,6 +4111,7 @@ async function gsLoadAll() {
       }
     }
     await gsEnsureClientsTab()
+    processInstallments()
     setSyncStatus('synced')
     renderDash(); renderIncTable(); renderPurTable(); renderSubTable(); renderTaxes(); renderDataSummary(); renderLinks()
     return true
@@ -4647,6 +4664,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   migrateLastProcessed()
   migrateLastProcessed_v2()
   processSubs()
+  processInstallments()
+  localStorage.removeItem('dt_anthropic_key')   // legacy: key moved server-side
   migrateSubTotalSpent()
   setupFilter('dash-filter','dash',renderDash)
   setupFilter('inc-filter','inc',renderIncTable)
@@ -7168,6 +7187,95 @@ function purNextPayment(p) {
 function purProgress(p) {
   const l = instList(p)
   return { paid: l.filter(i => i.status === 'paid').length, total: l.length }
+}
+function instDay(s) { return String(s || '').slice(0, 10) }   // calendar date, never a timestamp
+function instPaidOn(i) { return instDay(i.paidDate || i.dueDate) }
+// Display status: a payment past its due date that is not paid is overdue
+function instStatus(i) {
+  if (i.status === 'paid') return 'paid'
+  return i.status === 'overdue' || instDay(i.dueDate) < today() ? 'overdue' : 'scheduled'
+}
+// Expense a purchase recognises inside [from, to] (null bounds = open). Installment
+// plans count each PAID payment on its paidDate; everything else counts its price on
+// the purchase date. Every total goes through this, never through `price` directly.
+function purExpense(p, from = null, to = null) {
+  if (!purIsInstallment(p)) return inRange(p.date, from, to) ? (+p.price || 0) : 0
+  return round2(instList(p).filter(i => i.status === 'paid' && inRange(instPaidOn(i), from, to))
+    .reduce((s, i) => s + (+i.amount || 0), 0))
+}
+// Belongs in a filtered view: bought in the period, or paid an installment in it
+function purInPeriod(p, from, to) {
+  return inRange(p.date, from, to) ||
+    (purIsInstallment(p) && instList(p).some(i => i.status === 'paid' && inRange(instPaidOn(i), from, to)))
+}
+
+// ── Auto-log (mirrors processSubs) ──
+// Any scheduled payment whose due date has arrived becomes paid on its due date.
+// A payment the user manually unmarked (`manualUnpaid`) is never auto-paid — it is
+// marked overdue instead. Idempotent: only 'scheduled' rows change, and `price` is
+// re-derived from the schedule so the stored cash-basis figure stays in step.
+function processInstallments() {
+  const list = load(K.pur), now = today()
+  let changed = false
+  for (const p of list) {
+    if (!purIsInstallment(p)) continue
+    for (const i of p.installments) {
+      const due = instDay(i.dueDate)
+      if (!due || due > now || i.status !== 'scheduled') continue
+      if (i.manualUnpaid) i.status = 'overdue'
+      else { i.status = 'paid'; i.paidDate = due }
+      changed = true
+    }
+    const paid = purPaidToDate(p)
+    if (+p.price !== paid) { p.price = paid; changed = true }
+  }
+  if (changed) save(K.pur, list)
+}
+
+// ── Purchases table: expandable schedule ──
+const _purExpanded = new Set()   // purchase ids whose schedule is open; survives re-renders
+function togglePurInst(id) {
+  _purExpanded.has(id) ? _purExpanded.delete(id) : _purExpanded.add(id)
+  renderPurTable()
+}
+// Manual Mark paid / Unmark. Unmarking sets `manualUnpaid` so the auto-logger
+// leaves that payment alone; marking paid clears it.
+function instTogglePaid(purId, idx) {
+  const list = load(K.pur), p = list.find(e => e.id === purId); if (!p) return
+  const i = instList(p)[idx]; if (!i) return
+  if (i.status === 'paid') {
+    i.status = instDay(i.dueDate) < today() ? 'overdue' : 'scheduled'
+    i.paidDate = ''; i.manualUnpaid = true
+  } else {
+    i.status = 'paid'; i.paidDate = today(); delete i.manualUnpaid
+  }
+  p.price = purPaidToDate(p)
+  save(K.pur, list); renderPurTable(); renderDash()
+}
+function instShortDate(s) {
+  const d = fmtDate(s)
+  return instDay(s).slice(0, 4) === today().slice(0, 4) ? d.replace(/, \d{4}$/, '') : d
+}
+function purInstPriceCell(p) {
+  const { paid, total } = purProgress(p), next = purNextPayment(p)
+  const pct = total ? Math.round(paid / total * 100) : 0
+  return `<span class="neg">${fmt(purPaidToDate(p))}</span> <span class="inst-of">/ ${fmt(p.installmentTotal)}</span>
+    <div class="inst-prog"><span class="inst-bar"><span style="width:${pct}%"></span></span>${paid} of ${total} paid</div>
+    ${next ? `<div class="inst-next">Next: ${instShortDate(next.dueDate)} · ${fmt(next.amount)}</div>` : '<div class="inst-next">Paid off</div>'}`
+}
+function purInstSubRow(p) {
+  const badge = { paid:'<span class="bdg bdg-g">Paid</span>', scheduled:'<span class="bdg bdg-gr">Scheduled</span>', overdue:'<span class="bdg bdg-r">Overdue</span>' }
+  const rows = instList(p).map((i, idx) => {
+    const st = instStatus(i)
+    return `<tr>
+      <td>${i.seq || idx + 1}</td><td>${fmt(i.amount)}</td><td>${fmtDate(instDay(i.dueDate))}</td>
+      <td>${badge[st]}</td><td>${st === 'paid' ? fmtDate(instDay(i.paidDate)) : '—'}</td>
+      <td style="text-align:right"><button class="btn btn-sm ${st === 'paid' ? 'btn-s' : 'btn-g'}" onclick="instTogglePaid('${p.id}',${idx})">${st === 'paid' ? 'Unmark' : 'Mark paid'}</button></td>
+    </tr>`
+  }).join('')
+  return `<tr class="inst-sub-row"><td colspan="6"><div class="inst-sched">
+    <table><thead><tr><th>#</th><th>Amount</th><th>Due</th><th>Status</th><th>Paid</th><th></th></tr></thead><tbody>${rows}</tbody></table>
+  </div></td></tr>`
 }
 function round2(n) { return Math.round((+n || 0) * 100) / 100 }
 
