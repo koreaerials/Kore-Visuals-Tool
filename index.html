@@ -472,7 +472,7 @@ body.privacy-mode #privacy-banner{display:block}
   .hdr-right{gap:6px}
   .fbar .lbl{width:100%;margin-left:0!important;margin-top:6px}
   .fbar .lbl:first-child{margin-top:0}
-  .quote-line-item{grid-template-columns:1fr auto auto}
+  .quote-line-item{grid-template-columns:1fr auto auto auto}
   .quote-line-item>select{grid-column:1/-1}
   .kanban-board{flex-direction:column;overflow-x:visible}
   .kanban-col{flex:none;width:100%}
@@ -530,7 +530,11 @@ body.privacy-mode #privacy-banner{display:block}
 .pricing-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
 .pricing-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(255,255,255,0.5);border-radius:var(--r-sm);border:1px solid var(--card-border)}
 [data-theme=dark] .pricing-row{background:rgba(255,255,255,0.06)}
-.quote-line-item{display:grid;grid-template-columns:1fr 120px 80px auto;gap:8px;align-items:center;margin-bottom:8px}
+.quote-line-item{display:grid;grid-template-columns:1fr 120px auto 90px auto;gap:8px;align-items:center;margin-bottom:8px}
+.quote-opt{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--text-2);cursor:pointer;white-space:nowrap;user-select:none}
+.quote-opt input{width:16px;height:16px;min-height:0;padding:0;margin:0;cursor:pointer;accent-color:var(--blue)}
+.quote-line-item.is-opt .quote-line-total{color:var(--text-2);font-weight:600}
+.quote-opt-sum{font-size:12px;color:var(--text-2);margin-top:4px}
 
 /* ── PRINT / QUOTE ── */
 .quote-print-area{display:none}
@@ -1101,14 +1105,26 @@ body.privacy-mode #privacy-banner{display:block}
           <div class="ff"><label>Quote Date</label><div class="date-wrap"><input type="date" id="quote-date"></div></div>
           <div class="ff"><label>Business Name</label><input type="text" id="quote-biz" placeholder="Your business name"></div>
         </div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:10px">Shoot Details</div>
+        <div class="fg" style="margin-bottom:16px">
+          <div class="ff"><label>Location</label><input type="text" id="quote-location" placeholder="e.g. Bethpage State Park" oninput="_saveQuoteMeta()"></div>
+          <div class="ff"><label>Shoot Date</label><div class="date-wrap"><input type="date" id="quote-shoot-date" onchange="_saveQuoteMeta()"></div></div>
+          <div class="ff"><label>Start Time</label><input type="time" id="quote-start" onchange="_saveQuoteMeta()"></div>
+          <div class="ff"><label>End Time</label><input type="time" id="quote-end" onchange="_saveQuoteMeta()"></div>
+        </div>
         <div style="margin-bottom:12px">
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:10px">Line Items</div>
           <div id="quote-items"></div>
           <button class="btn btn-g btn-sm" onclick="quoteAddLine()" style="margin-top:6px">+ Add Line Item</button>
+          <div style="font-size:12px;color:var(--text-2);margin-top:8px">Tick <strong>Optional</strong> to list a line as an add-on that is not counted in the grand total.</div>
+        </div>
+        <div class="ff" style="margin-bottom:16px"><label>Notes <span style="font-weight:400;color:var(--text-2)">(one per line, printed on the quote)</span></label>
+          <textarea id="quote-notes" rows="4" placeholder="Raw footage delivered via download link&#10;Overtime past 5:30pm: $150/hr&#10;Drone use subject to park permit and FAA approval" oninput="_saveQuoteMeta()"></textarea>
         </div>
         <div style="text-align:right;padding:14px;background:rgba(52,199,89,0.08);border-radius:12px;border:1px solid rgba(52,199,89,0.2);margin-bottom:16px">
           <span style="font-size:12px;font-weight:600;color:var(--text-2);margin-right:12px">Grand Total</span>
           <span id="quote-total" style="font-size:24px;font-weight:700;color:var(--green)">$0.00</span>
+          <div class="quote-opt-sum" id="quote-opt-sum"></div>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <button class="btn btn-p" onclick="quotePrint()">Print / Export PDF</button>
@@ -2491,6 +2507,14 @@ let _quoteLines = []
 
 function _saveQuoteDraft() { try{localStorage.setItem('dt_quote_draft',JSON.stringify(_quoteLines))}catch(e){} }
 function _loadQuoteDraft() { try{const d=localStorage.getItem('dt_quote_draft');return d?JSON.parse(d):[]}catch(e){return []} }
+const QUOTE_META_FIELDS={location:'quote-location',shootDate:'quote-shoot-date',start:'quote-start',end:'quote-end',notes:'quote-notes'}
+function _readQuoteMeta() { const m={}; for(const k in QUOTE_META_FIELDS){const el=document.getElementById(QUOTE_META_FIELDS[k]); m[k]=el?el.value:''} return m }
+function _saveQuoteMeta() { try{localStorage.setItem('dt_quote_meta',JSON.stringify(_readQuoteMeta()))}catch(e){} }
+function _loadQuoteMeta() { try{const m=JSON.parse(localStorage.getItem('dt_quote_meta')||'{}'); for(const k in QUOTE_META_FIELDS){const el=document.getElementById(QUOTE_META_FIELDS[k]); if(el&&!el.value&&m[k]) el.value=m[k]}}catch(e){} }
+// Optional lines are add-ons: listed on the quote, excluded from the grand total
+function quoteReqTotal() { return _quoteLines.reduce((s,l)=>s+(l.optional?0:(l.total||0)),0) }
+function quoteOptTotal() { return _quoteLines.reduce((s,l)=>s+(l.optional?(l.total||0):0),0) }
+function fmtTime12(t) { if(!t) return ''; const [h,m]=t.split(':').map(Number); return `${((h+11)%12)+1}:${String(m).padStart(2,'0')}${h<12?'am':'pm'}` }
 
 async function initQuoteBuilder() {
   // Set today's date
@@ -2508,6 +2532,7 @@ async function initQuoteBuilder() {
   renderQuoteServiceOptions()
   // Restore draft if exists, else start with one blank line
   if(!_quoteLines.length){const draft=_loadQuoteDraft();_quoteLines=draft.length?draft:[{svcId:'',qty:1,total:0}]}
+  _loadQuoteMeta()
   renderQuoteLines()
 }
 
@@ -2673,13 +2698,14 @@ function renderQuoteLines() {
   const services=load(K.prc)
   const svcMap={}; services.forEach(s=>svcMap[s.id]=s)
   const el=document.getElementById('quote-items'); if(!el)return
-  el.innerHTML=_quoteLines.map((line,i)=>`<div class="quote-line-item" id="qline-${i}">
+  el.innerHTML=_quoteLines.map((line,i)=>`<div class="quote-line-item${line.optional?' is-opt':''}" id="qline-${i}">
     <select class="quote-svc-sel" onchange="quoteUpdateLine(${i},'svc',this.value)">
       <option value="">— Select Service —</option>
       ${services.map(s=>`<option value="${s.id}"${line.svcId===s.id?' selected':''}>${esc(s.name)} (${s.type})</option>`).join('')}
     </select>
     <input type="number" step="0.01" placeholder="${svcMap[line.svcId]?.type==='Hourly'?'Hours':'Qty'}" value="${line.qty}" oninput="quoteUpdateLine(${i},'qty',this.value)" style="padding:7px 10px">
-    <div style="font-weight:700;color:var(--green);padding:7px 0;text-align:right">${fmt(line.total)}</div>
+    <label class="quote-opt" title="Show as an optional add-on, not counted in the grand total"><input type="checkbox"${line.optional?' checked':''} onchange="quoteUpdateLine(${i},'opt',this.checked)">Optional</label>
+    <div class="quote-line-total" style="font-weight:700;color:var(--green);padding:7px 0;text-align:right">${fmt(line.total)}</div>
     <button class="btn btn-sm btn-d" onclick="quoteRemoveLine(${i})">${icon('trash',12)}</button>
   </div>`).join('')
   quoteCalcTotal()
@@ -2689,6 +2715,7 @@ function quoteUpdateLine(i,field,val) {
   const services=load(K.prc); const svcMap={}; services.forEach(s=>svcMap[s.id]=s)
   if(field==='svc'){_quoteLines[i].svcId=val; _quoteLines[i].qty=1}
   if(field==='qty') _quoteLines[i].qty=parseFloat(val)||0
+  if(field==='opt') _quoteLines[i].optional=!!val
   const svc=svcMap[_quoteLines[i].svcId]
   _quoteLines[i].total=svc?(parseFloat(svc.rate)||0)*(parseFloat(_quoteLines[i].qty)||0):0
   renderQuoteLines(); _saveQuoteDraft()
@@ -2699,8 +2726,9 @@ function quoteRemoveLine(i) {
 }
 
 function quoteCalcTotal() {
-  const total=_quoteLines.reduce((s,l)=>s+(l.total||0),0)
-  const el=document.getElementById('quote-total'); if(el) el.textContent=fmt(total)
+  const el=document.getElementById('quote-total'); if(el) el.textContent=fmt(quoteReqTotal())
+  const opt=quoteOptTotal()
+  const os=document.getElementById('quote-opt-sum'); if(os) os.textContent=opt?`+ ${fmt(opt)} in optional add-ons (not included)`:''
 }
 
 function quotePrint() {
@@ -2708,11 +2736,22 @@ function quotePrint() {
   const date=document.getElementById('quote-date').value
   const biz=document.getElementById('quote-biz').value||''
   const services=load(K.prc); const svcMap={}; services.forEach(s=>svcMap[s.id]=s)
-  const total=_quoteLines.reduce((s,l)=>s+(l.total||0),0)
-  const rows=_quoteLines.filter(l=>l.svcId&&svcMap[l.svcId]).map(l=>{
+  const total=quoteReqTotal()
+  const meta=_readQuoteMeta()
+  const rowHTML=l=>{
     const s=svcMap[l.svcId]
     return `<tr><td style="padding:10px 14px;border-bottom:1px solid #eee">${esc(s.name)}</td><td style="padding:10px 14px;border-bottom:1px solid #eee">${s.type}</td><td style="padding:10px 14px;border-bottom:1px solid #eee;text-align:right">${fmt(s.rate)}${s.type==='Hourly'?'/hr':''}</td><td style="padding:10px 14px;border-bottom:1px solid #eee;text-align:center">${l.qty}</td><td style="padding:10px 14px;border-bottom:1px solid #eee;text-align:right;font-weight:700">${fmt(l.total)}</td></tr>`
-  }).join('')
+  }
+  const valid=_quoteLines.filter(l=>l.svcId&&svcMap[l.svcId])
+  const rows=valid.filter(l=>!l.optional).map(rowHTML).join('')
+  const optLines=valid.filter(l=>l.optional)
+  const lbl='font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888;margin-bottom:4px'
+  const timeStr=meta.start&&meta.end?`${fmtTime12(meta.start)} to ${fmtTime12(meta.end)}`:fmtTime12(meta.start||meta.end)
+  const details=[meta.location&&['Location',esc(meta.location)],meta.shootDate&&['Shoot Date',fmtDate(meta.shootDate)],timeStr&&['Time',timeStr]].filter(Boolean)
+  const detailsHTML=details.length?`<div style="display:flex;gap:36px;flex-wrap:wrap;margin-bottom:28px">${details.map(([k,v])=>`<div><div style="${lbl}">${k}</div><div style="font-size:14px;font-weight:600">${v}</div></div>`).join('')}</div>`:''
+  const optHTML=optLines.length?`<div style="margin-top:28px"><div style="${lbl};margin-bottom:8px">Optional Add-Ons <span style="font-weight:400;text-transform:none;letter-spacing:0">(not included in total)</span></div><table style="width:100%;border-collapse:collapse"><tbody>${optLines.map(l=>`<tr><td style="padding:8px 14px;border-bottom:1px solid #eee">${esc(svcMap[l.svcId].name)}</td><td style="padding:8px 14px;border-bottom:1px solid #eee;text-align:right;font-weight:600">+${fmt(l.total)}</td></tr>`).join('')}</tbody></table></div>`:''
+  const notes=(meta.notes||'').split('\n').map(n=>n.trim()).filter(Boolean)
+  const notesHTML=notes.length?`<div style="margin-top:28px"><div style="${lbl};margin-bottom:8px">Notes</div><ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.7">${notes.map(n=>`<li>${esc(n)}</li>`).join('')}</ul></div>`:''
   const pa=document.getElementById('quote-print-area')
   pa.innerHTML=`<div style="max-width:700px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:40px 30px">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:36px">
@@ -2720,6 +2759,7 @@ function quotePrint() {
       <div style="text-align:right"><div style="font-size:13px;color:#666">Date</div><div style="font-size:14px;font-weight:600">${fmtDate(date)}</div></div>
     </div>
     ${client?`<div style="margin-bottom:28px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888;margin-bottom:4px">Client</div><div style="font-size:16px;font-weight:600">${esc(client)}</div></div>`:''}
+    ${detailsHTML}
     <table style="width:100%;border-collapse:collapse;margin-bottom:24px">
       <thead><tr style="background:#f5f5f7"><th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#666">Service</th><th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#666">Type</th><th style="padding:10px 14px;text-align:right;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#666">Rate</th><th style="padding:10px 14px;text-align:center;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#666">Qty/Hrs</th><th style="padding:10px 14px;text-align:right;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#666">Total</th></tr></thead>
       <tbody>${rows}</tbody>
@@ -2728,19 +2768,24 @@ function quotePrint() {
       <span style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#666;margin-right:16px">Grand Total</span>
       <span style="font-size:28px;font-weight:700">${fmt(total)}</span>
     </div>
+    ${optHTML}
+    ${notesHTML}
   </div>`
   window.print()
 }
 
 function quoteClear() {
-  _quoteLines=[]; localStorage.removeItem('dt_quote_draft'); renderQuoteLines()
+  _quoteLines=[]; localStorage.removeItem('dt_quote_draft'); localStorage.removeItem('dt_quote_meta')
+  for(const k in QUOTE_META_FIELDS){const el=document.getElementById(QUOTE_META_FIELDS[k]); if(el) el.value=''}
+  renderQuoteLines()
   const qd=document.getElementById('quote-date'); if(qd) qd.value=today()
   selectQuoteClient('')
 }
 
 function quoteToJob() {
   const client=document.getElementById('quote-client').value||''
-  const total=_quoteLines.reduce((s,l)=>s+(l.total||0),0)
+  const total=quoteReqTotal()
+  const meta=_readQuoteMeta()
   if(!total){toast('Add at least one line item before converting');return}
   // Switch to Jobs tab and open new job form pre-filled
   document.querySelector('[data-tab="jobs"]').click()
@@ -2750,6 +2795,10 @@ function quoteToJob() {
     if(client) selectJobClient(client)
     document.getElementById('job-amount').value=total.toFixed(2)
     document.getElementById('job-stage').value='Quoted'
+    if(meta.shootDate) document.getElementById('job-filming-date').value=meta.shootDate
+    if(meta.start) document.getElementById('job-filming-time').value=meta.start
+    const jn=[meta.location&&`Location: ${meta.location}`,meta.end&&`Ends: ${fmtTime12(meta.end)}`,meta.notes].filter(Boolean).join('\n')
+    if(jn) document.getElementById('job-notes').value=jn
     document.getElementById('job-name').focus()
   },80)
 }
