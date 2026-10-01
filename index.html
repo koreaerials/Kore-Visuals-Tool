@@ -474,6 +474,8 @@ body.privacy-mode #privacy-banner{display:block}
   .fbar .lbl:first-child{margin-top:0}
   .quote-line-item{grid-template-columns:1fr auto auto auto}
   .quote-line-item>select{grid-column:1/-1}
+  .quote-custom{grid-template-columns:1fr 1fr}
+  .quote-custom>input[type=text]{grid-column:1/-1}
   .kanban-board{flex-direction:column;overflow-x:visible}
   .kanban-col{flex:none;width:100%}
   input[type="date"]{min-width:0;width:100%!important}
@@ -535,6 +537,7 @@ body.privacy-mode #privacy-banner{display:block}
 .quote-opt input{width:16px;height:16px;min-height:0;padding:0;margin:0;cursor:pointer;accent-color:var(--blue)}
 .quote-line-item.is-opt .quote-line-total{color:var(--text-2);font-weight:600}
 .quote-opt-sum{font-size:12px;color:var(--text-2);margin-top:4px}
+.quote-custom{grid-column:1/-1;display:grid;grid-template-columns:1fr 130px 120px auto;gap:8px;align-items:center;padding:8px;border:1px dashed var(--card-border);border-radius:var(--r-sm)}
 
 /* ── PRINT / QUOTE ── */
 .quote-print-area{display:none}
@@ -1077,7 +1080,7 @@ body.privacy-mode #privacy-banner{display:block}
             <div class="fg">
               <div class="ff"><label>Service Name</label><input type="text" id="prc-name" placeholder="e.g. Aerial Photography"></div>
               <div class="ff"><label>Type</label>
-                <select id="prc-type"><option value="Hourly">Hourly</option><option value="Flat Rate">Flat Rate</option></select>
+                <select id="prc-type"><option value="Hourly">Hourly</option><option value="Day Rate">Day Rate</option><option value="Flat Rate">Flat Rate</option></select>
               </div>
               <div class="ff"><label>Rate ($)</label><input type="number" id="prc-rate" placeholder="0.00" step="0.01"></div>
             </div>
@@ -1116,6 +1119,7 @@ body.privacy-mode #privacy-banner{display:block}
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:10px">Line Items</div>
           <div id="quote-items"></div>
           <button class="btn btn-g btn-sm" onclick="quoteAddLine()" style="margin-top:6px">+ Add Line Item</button>
+          <button class="btn btn-s btn-sm" onclick="quoteAddLine(true)" style="margin-top:6px">+ Custom One-Off Item</button>
           <div style="font-size:12px;color:var(--text-2);margin-top:8px">Tick <strong>Optional</strong> to list a line as an add-on that is not counted in the grand total.</div>
         </div>
         <div class="ff" style="margin-bottom:16px"><label>Notes <span style="font-weight:400;color:var(--text-2)">(one per line, printed on the quote)</span></label>
@@ -2494,7 +2498,7 @@ function renderPricingList() {
   el.innerHTML=list.map(p=>`<div class="pricing-row">
     <div style="flex:1"><strong>${esc(p.name)}</strong></div>
     <div style="font-size:12px;color:var(--text-2)">${p.type}</div>
-    <div style="font-weight:700;color:var(--green);min-width:80px;text-align:right">${fmt(p.rate)}${p.type==='Hourly'?'/hr':''}</div>
+    <div style="font-weight:700;color:var(--green);min-width:80px;text-align:right">${fmt(p.rate)}${PRC_UNIT[p.type]||''}</div>
     <button class="btn btn-sm btn-s" onclick="openPrcForm('${p.id}')">${icon('pencil',12)}</button>
     <button class="btn btn-sm btn-d" onclick="delPricing('${p.id}')">${icon('trash',12)}</button>
   </div>`).join('')
@@ -2514,6 +2518,16 @@ function _loadQuoteMeta() { try{const m=JSON.parse(localStorage.getItem('dt_quot
 // Optional lines are add-ons: listed on the quote, excluded from the grand total
 function quoteReqTotal() { return _quoteLines.reduce((s,l)=>s+(l.optional?0:(l.total||0)),0) }
 function quoteOptTotal() { return _quoteLines.reduce((s,l)=>s+(l.optional?(l.total||0):0),0) }
+// Line items are either a saved service ({svcId}) or a one-off custom item ({custom,name,type,rate}) that never touches Services
+const PRC_TYPES=['Hourly','Day Rate','Flat Rate']
+const PRC_UNIT={Hourly:'/hr','Day Rate':'/day'}
+const PRC_QTY={Hourly:'Hours','Day Rate':'Days'}
+function quoteLineSvc(l,svcMap) { return l.custom?{name:l.name||'Custom item',type:l.type||'Flat Rate',rate:parseFloat(l.rate)||0}:(svcMap[l.svcId]||null) }
+function quoteLineValid(l,svcMap) { return l.custom?!!(l.name||'').trim():!!svcMap[l.svcId] }
+function _quoteSvcMap() { const m={}; load(K.prc).forEach(s=>m[s.id]=s); return m }
+function _quoteRecalc(i) { const l=_quoteLines[i], s=quoteLineSvc(l,_quoteSvcMap()); l.total=s?(parseFloat(s.rate)||0)*(parseFloat(l.qty)||0):0 }
+// Update one line's total in place (no re-render, so typing keeps focus)
+function _quoteRefreshLine(i) { const t=document.querySelector(`#qline-${i} .quote-line-total`); if(t) t.textContent=fmt(_quoteLines[i].total); quoteCalcTotal() }
 function fmtTime12(t) { if(!t) return ''; const [h,m]=t.split(':').map(Number); return `${((h+11)%12)+1}:${String(m).padStart(2,'0')}${h<12?'am':'pm'}` }
 
 async function initQuoteBuilder() {
@@ -2684,13 +2698,13 @@ function renderQuoteServiceOptions() {
   const services=load(K.prc)
   document.querySelectorAll('.quote-svc-sel').forEach(sel=>{
     const cur=sel.value
-    sel.innerHTML='<option value="">— Select Service —</option>'+services.map(s=>`<option value="${s.id}">${esc(s.name)} (${s.type})</option>`).join('')
+    sel.innerHTML='<option value="">— Select Service —</option>'+services.map(s=>`<option value="${s.id}">${esc(s.name)} (${s.type})</option>`).join('')+'<option value="__custom">+ Custom one-off item</option>'
     if(cur) sel.value=cur
   })
 }
 
-function quoteAddLine() {
-  _quoteLines.push({svcId:'',qty:1,total:0})
+function quoteAddLine(custom) {
+  _quoteLines.push(custom?{custom:true,svcId:'',name:'',type:'Flat Rate',rate:'',qty:1,total:0}:{svcId:'',qty:1,total:0})
   renderQuoteLines(); _saveQuoteDraft()
 }
 
@@ -2701,24 +2715,48 @@ function renderQuoteLines() {
   el.innerHTML=_quoteLines.map((line,i)=>`<div class="quote-line-item${line.optional?' is-opt':''}" id="qline-${i}">
     <select class="quote-svc-sel" onchange="quoteUpdateLine(${i},'svc',this.value)">
       <option value="">— Select Service —</option>
-      ${services.map(s=>`<option value="${s.id}"${line.svcId===s.id?' selected':''}>${esc(s.name)} (${s.type})</option>`).join('')}
+      ${services.map(s=>`<option value="${s.id}"${!line.custom&&line.svcId===s.id?' selected':''}>${esc(s.name)} (${s.type})</option>`).join('')}
+      <option value="__custom"${line.custom?' selected':''}>+ Custom one-off item</option>
     </select>
-    <input type="number" step="0.01" placeholder="${svcMap[line.svcId]?.type==='Hourly'?'Hours':'Qty'}" value="${line.qty}" oninput="quoteUpdateLine(${i},'qty',this.value)" style="padding:7px 10px">
+    <input type="number" step="0.01" placeholder="${PRC_QTY[quoteLineSvc(line,svcMap)?.type]||'Qty'}" value="${line.qty}" oninput="quoteUpdateLine(${i},'qty',this.value)" style="padding:7px 10px">
     <label class="quote-opt" title="Show as an optional add-on, not counted in the grand total"><input type="checkbox"${line.optional?' checked':''} onchange="quoteUpdateLine(${i},'opt',this.checked)">Optional</label>
     <div class="quote-line-total" style="font-weight:700;color:var(--green);padding:7px 0;text-align:right">${fmt(line.total)}</div>
     <button class="btn btn-sm btn-d" onclick="quoteRemoveLine(${i})">${icon('trash',12)}</button>
+    ${line.custom?`<div class="quote-custom">
+      <input type="text" placeholder="Item name, e.g. Drone footage (if flown)" value="${esc(line.name)}" oninput="quoteUpdateLine(${i},'name',this.value)">
+      <select onchange="quoteUpdateLine(${i},'type',this.value)">${PRC_TYPES.map(t=>`<option${t===line.type?' selected':''}>${t}</option>`).join('')}</select>
+      <input type="number" step="0.01" placeholder="Rate ($)" value="${line.rate===''||line.rate==null?'':line.rate}" oninput="quoteUpdateLine(${i},'rate',this.value)">
+      <button class="btn btn-sm btn-s" onclick="quoteSaveCustomAsService(${i})" title="Add to Services for future quotes">Save as service</button>
+    </div>`:''}
   </div>`).join('')
   quoteCalcTotal()
 }
 
+function quoteSaveCustomAsService(i) {
+  const l=_quoteLines[i]; if(!l||!l.custom) return
+  const name=(l.name||'').trim(); if(!name||l.rate===''){toast('Add a name and rate first');return}
+  const entry={id:uid(),name,type:l.type||'Flat Rate',rate:parseFloat(l.rate)||0}
+  const list=load(K.prc); list.push(entry); save(K.prc,list); gsQueueSync(K.prc)
+  _quoteLines[i]={svcId:entry.id,qty:l.qty,total:l.total,optional:l.optional}
+  renderPricingList(); renderQuoteLines(); _saveQuoteDraft(); toast('Saved to Services')
+}
+
 function quoteUpdateLine(i,field,val) {
-  const services=load(K.prc); const svcMap={}; services.forEach(s=>svcMap[s.id]=s)
-  if(field==='svc'){_quoteLines[i].svcId=val; _quoteLines[i].qty=1}
-  if(field==='qty') _quoteLines[i].qty=parseFloat(val)||0
-  if(field==='opt') _quoteLines[i].optional=!!val
-  const svc=svcMap[_quoteLines[i].svcId]
-  _quoteLines[i].total=svc?(parseFloat(svc.rate)||0)*(parseFloat(_quoteLines[i].qty)||0):0
-  renderQuoteLines(); _saveQuoteDraft()
+  const l=_quoteLines[i]; if(!l) return
+  let rerender=false
+  if(field==='svc'){
+    const opt=l.optional
+    _quoteLines[i]=val==='__custom'?{custom:true,svcId:'',name:'',type:'Flat Rate',rate:'',qty:1,total:0,optional:opt}:{svcId:val,qty:1,total:0,optional:opt}
+    rerender=true
+  }
+  if(field==='qty') l.qty=parseFloat(val)||0
+  if(field==='opt'){l.optional=!!val; rerender=true}
+  if(field==='name') l.name=val
+  if(field==='type'){l.type=val; rerender=true}
+  if(field==='rate') l.rate=val===''?'':(parseFloat(val)||0)
+  _quoteRecalc(i)
+  if(rerender) renderQuoteLines(); else _quoteRefreshLine(i)
+  _saveQuoteDraft()
 }
 
 function quoteRemoveLine(i) {
@@ -2739,17 +2777,17 @@ function quotePrint() {
   const total=quoteReqTotal()
   const meta=_readQuoteMeta()
   const rowHTML=l=>{
-    const s=svcMap[l.svcId]
-    return `<tr><td style="padding:10px 14px;border-bottom:1px solid #eee">${esc(s.name)}</td><td style="padding:10px 14px;border-bottom:1px solid #eee">${s.type}</td><td style="padding:10px 14px;border-bottom:1px solid #eee;text-align:right">${fmt(s.rate)}${s.type==='Hourly'?'/hr':''}</td><td style="padding:10px 14px;border-bottom:1px solid #eee;text-align:center">${l.qty}</td><td style="padding:10px 14px;border-bottom:1px solid #eee;text-align:right;font-weight:700">${fmt(l.total)}</td></tr>`
+    const s=quoteLineSvc(l,svcMap)
+    return `<tr><td style="padding:10px 14px;border-bottom:1px solid #eee">${esc(s.name)}</td><td style="padding:10px 14px;border-bottom:1px solid #eee">${esc(s.type)}</td><td style="padding:10px 14px;border-bottom:1px solid #eee;text-align:right">${fmt(s.rate)}${PRC_UNIT[s.type]||''}</td><td style="padding:10px 14px;border-bottom:1px solid #eee;text-align:center">${l.qty}</td><td style="padding:10px 14px;border-bottom:1px solid #eee;text-align:right;font-weight:700">${fmt(l.total)}</td></tr>`
   }
-  const valid=_quoteLines.filter(l=>l.svcId&&svcMap[l.svcId])
+  const valid=_quoteLines.filter(l=>quoteLineValid(l,svcMap))
   const rows=valid.filter(l=>!l.optional).map(rowHTML).join('')
   const optLines=valid.filter(l=>l.optional)
   const lbl='font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888;margin-bottom:4px'
   const timeStr=meta.start&&meta.end?`${fmtTime12(meta.start)} to ${fmtTime12(meta.end)}`:fmtTime12(meta.start||meta.end)
   const details=[meta.location&&['Location',esc(meta.location)],meta.shootDate&&['Shoot Date',fmtDate(meta.shootDate)],timeStr&&['Time',timeStr]].filter(Boolean)
   const detailsHTML=details.length?`<div style="display:flex;gap:36px;flex-wrap:wrap;margin-bottom:28px">${details.map(([k,v])=>`<div><div style="${lbl}">${k}</div><div style="font-size:14px;font-weight:600">${v}</div></div>`).join('')}</div>`:''
-  const optHTML=optLines.length?`<div style="margin-top:28px"><div style="${lbl};margin-bottom:8px">Optional Add-Ons <span style="font-weight:400;text-transform:none;letter-spacing:0">(not included in total)</span></div><table style="width:100%;border-collapse:collapse"><tbody>${optLines.map(l=>`<tr><td style="padding:8px 14px;border-bottom:1px solid #eee">${esc(svcMap[l.svcId].name)}</td><td style="padding:8px 14px;border-bottom:1px solid #eee;text-align:right;font-weight:600">+${fmt(l.total)}</td></tr>`).join('')}</tbody></table></div>`:''
+  const optHTML=optLines.length?`<div style="margin-top:28px"><div style="${lbl};margin-bottom:8px">Optional Add-Ons <span style="font-weight:400;text-transform:none;letter-spacing:0">(not included in total)</span></div><table style="width:100%;border-collapse:collapse"><tbody>${optLines.map(l=>`<tr><td style="padding:8px 14px;border-bottom:1px solid #eee">${esc(quoteLineSvc(l,svcMap).name)}</td><td style="padding:8px 14px;border-bottom:1px solid #eee;text-align:right;font-weight:600">+${fmt(l.total)}</td></tr>`).join('')}</tbody></table></div>`:''
   const notes=(meta.notes||'').split('\n').map(n=>n.trim()).filter(Boolean)
   const notesHTML=notes.length?`<div style="margin-top:28px"><div style="${lbl};margin-bottom:8px">Notes</div><ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.7">${notes.map(n=>`<li>${esc(n)}</li>`).join('')}</ul></div>`:''
   const pa=document.getElementById('quote-print-area')
