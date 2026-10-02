@@ -618,7 +618,7 @@ body.privacy-mode #privacy-banner{display:block}
 .inst-sched td{padding:5px 12px}
 
 .ren-tag{display:inline-block;font-size:9.5px;padding:1px 6px;margin-right:6px;vertical-align:1px}
-
+/* ── SHOOT WEATHER + CONFETTI ── */ .wx{display:flex;align-items:center;gap:4px 6px;flex-wrap:wrap;margin-top:7px;padding:5px 8px;border-radius:8px;font-size:11px;line-height:1.35;background:rgba(0,0,0,0.04);color:var(--text)}.wx b{font-weight:700}.wx .wx-dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto;background:var(--text-2)}.wx-g .wx-dot{background:var(--green)}.wx-y .wx-dot{background:var(--orange)}.wx-r .wx-dot{background:var(--red)}.wx-g{background:rgba(52,199,89,0.11)}.wx-y{background:rgba(255,149,0,0.13)}.wx-r{background:rgba(255,59,48,0.13)}.wx-na{color:var(--text-2)}[data-theme=dark] .wx-na{background:rgba(255,255,255,0.05)}.wx-sub{flex-basis:100%;color:var(--text-2);padding-left:14px}.ren-item .wx{margin-top:5px;padding:3px 7px}#kv-confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:3000}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.7/dist/pizzip.js"></script>
 <script>
@@ -1196,7 +1196,7 @@ body.privacy-mode #privacy-banner{display:block}
           <input type="date" id="job-filming-date" style="flex:1">
           <input type="time" id="job-filming-time" style="width:120px" placeholder="Start time">
         </div>
-      </div>
+      </div><div class="smod-row"><div class="smod-lbl">Location <span style="font-weight:400;text-transform:none;letter-spacing:0">(place, town, used for the weather forecast)</span></div><input id="job-location" placeholder="e.g. Eisenhower Park, East Meadow"></div>
       <div class="smod-row">
         <div class="smod-lbl">Amount ($)</div>
         <input type="number" id="job-amount" placeholder="0.00" min="0" step="0.01">
@@ -1458,9 +1458,9 @@ const SHEET_SCHEMA = {
   },
   [K.jobs]: {
     tab: 'Jobs',
-    cols: ['id','name','clientName','clientId','stage','filmingDate','filmingTime','amount','notes','incomeId','createdAt','calendarEventId','agrId'],
-    toRow: o => [o.id,o.name,o.clientName||'',o.clientId||'',o.stage||'Lead',o.filmingDate||'',o.filmingTime||'',o.amount||0,o.notes||'',o.incomeId||'',o.createdAt||'',o.calendarEventId||'',o.agrId||''],
-    toObj: r => ({id:r[0]||'',name:r[1]||'',clientName:r[2]||'',clientId:r[3]||'',stage:r[4]||'Lead',filmingDate:r[5]||'',filmingTime:r[6]||'',amount:r[7]||0,notes:r[8]||'',incomeId:r[9]||'',createdAt:r[10]||'',calendarEventId:r[11]||'',agrId:r[12]||''})
+    cols: ['id','name','clientName','clientId','stage','filmingDate','filmingTime','amount','notes','incomeId','createdAt','calendarEventId','agrId','location'],
+    toRow: o => [o.id,o.name,o.clientName||'',o.clientId||'',o.stage||'Lead',o.filmingDate||'',o.filmingTime||'',o.amount||0,o.notes||'',o.incomeId||'',o.createdAt||'',o.calendarEventId||'',o.agrId||'',o.location||''],
+    toObj: r => ({id:r[0]||'',name:r[1]||'',clientName:r[2]||'',clientId:r[3]||'',stage:r[4]||'Lead',filmingDate:r[5]||'',filmingTime:r[6]||'',amount:r[7]||0,notes:r[8]||'',incomeId:r[9]||'',createdAt:r[10]||'',calendarEventId:r[11]||'',agrId:r[12]||'',location:r[13]||''})
   },
   [K.agr]: {
     tab: 'Agreements',
@@ -1955,7 +1955,7 @@ function renderRenewals() {
   if (_dashView === 'shoots' || _dashView === 'both') {
     loadP(K.inc)
       .filter(e => e.calendarEventId && e.date >= todayStr)
-      .map(e => { const nd = toDate(e.date); const days = Math.round((nd - now) / 864e5); return { type:'shoot', date: e.date, nd, days, title: e.client, sub: 'Shoot', amount: e.amount, calLink: gcEventLink(e.calendarEventId), jobTime: e.jobTime||'' } })
+      .map(e => { const nd = toDate(e.date); const days = Math.round((nd - now) / 864e5); return { type:'shoot', date: e.date, nd, days, title: e.client, sub: 'Shoot', amount: e.amount, calLink: gcEventLink(e.calendarEventId), jobTime: e.jobTime||'', wxJob: load(K.jobs).find(j => j.incomeId === e.id && j.location) || null } })
       .filter(s => s.days >= 0 && s.days <= maxDays)
       .forEach(s => items.push(s))
   }
@@ -2011,8 +2011,8 @@ function renderRenewals() {
       : '<span class="ren-tag bdg bdg-o">Subscription</span>'
     const calIcon = item.calLink ? `<a href="${esc(item.calLink)}" target="_blank" title="View in Calendar" style="color:var(--blue);margin-left:5px;vertical-align:middle">${icon('calendar',11)}</a>` : ''
     const timeStr = item.jobTime ? ' · ' + fmtTime(item.jobTime) : ''
-    return `<div class="ren-item" style="border-left:3px solid ${borderColor};padding-left:10px"><div><div class="ren-name">${esc(item.title)}${calIcon}</div><div class="ren-when">${tag}${fmtDate(item.date)}${timeStr} · ${item.sub}</div></div><div style="display:flex;align-items:center;gap:8px"><span class="ren-amt" style="color:${amtColor}">${fmt(item.amount)}</span><span class="d-bdg ${cls}">${dlbl}</span></div></div>`
-  }).join('')
+    return `<div class="ren-item" style="border-left:3px solid ${borderColor};padding-left:10px"><div><div class="ren-name">${esc(item.title)}${calIcon}</div><div class="ren-when">${tag}${fmtDate(item.date)}${timeStr} · ${item.sub}</div>${item.wxJob ? wxSlot(item.wxJob, true) : ''}</div><div style="display:flex;align-items:center;gap:8px"><span class="ren-amt" style="color:${amtColor}">${fmt(item.amount)}</span><span class="d-bdg ${cls}">${dlbl}</span></div></div>`
+  }).join(''); wxHydrate(el)
 }
 
 // ── BACKUP BANNER ─────────────────────────────────────────────
@@ -2835,7 +2835,7 @@ function quoteToJob() {
     document.getElementById('job-stage').value='Quoted'
     if(meta.shootDate) document.getElementById('job-filming-date').value=meta.shootDate
     if(meta.start) document.getElementById('job-filming-time').value=meta.start
-    const jn=[meta.location&&`Location: ${meta.location}`,meta.end&&`Ends: ${fmtTime12(meta.end)}`,meta.notes].filter(Boolean).join('\n')
+    if(meta.location) document.getElementById('job-location').value=meta.location; const jn=[meta.end&&`Ends: ${fmtTime12(meta.end)}`,meta.notes].filter(Boolean).join('\n')
     if(jn) document.getElementById('job-notes').value=jn
     document.getElementById('job-name').focus()
   },80)
@@ -2862,7 +2862,7 @@ async function openJobForm(id) {
     selectJobClient(e.clientName||'')
     document.getElementById('job-stage').value=e.stage||'Lead'
     document.getElementById('job-filming-date').value=e.filmingDate||''
-    document.getElementById('job-filming-time').value=e.filmingTime||''
+    document.getElementById('job-filming-time').value=e.filmingTime||''; document.getElementById('job-location').value=e.location||''
     document.getElementById('job-amount').value=e.amount||''
     document.getElementById('job-notes').value=e.notes||''
     document.getElementById('job-form-ttl').textContent='Edit Job'
@@ -2872,7 +2872,7 @@ async function openJobForm(id) {
     selectJobClient('')
     document.getElementById('job-stage').value='Lead'
     document.getElementById('job-filming-date').value=''
-    document.getElementById('job-filming-time').value=''
+    document.getElementById('job-filming-time').value=''; document.getElementById('job-location').value=''
     document.getElementById('job-amount').value=''
     document.getElementById('job-notes').value=''
     document.getElementById('job-form-ttl').textContent='New Job'
@@ -2910,13 +2910,13 @@ async function saveJob() {
   const clientId=((_clients||[]).find(c=>c.name===clientName)||{}).id||''
   const stage=document.getElementById('job-stage').value
   const filmingDate=document.getElementById('job-filming-date').value||''
-  const filmingTime=document.getElementById('job-filming-time').value||''
+  const filmingTime=document.getElementById('job-filming-time').value||''; const jobLoc=(document.getElementById('job-location')?.value||'').trim()
   const amount=parseFloat(document.getElementById('job-amount').value)||0
   const notes=document.getElementById('job-notes').value.trim()
   const list=load(K.jobs)
   const existing=id?list.find(j=>j.id===id):null
   const entry={
-    id:id||uid(),name,clientName,clientId,stage,filmingDate,filmingTime,amount,notes,
+    id:id||uid(),name,clientName,clientId,stage,filmingDate,filmingTime,amount,notes,location:jobLoc,
     incomeId:existing?.incomeId||'',
     createdAt:existing?.createdAt||today(),
     calendarEventId:existing?.calendarEventId||'',
@@ -2990,7 +2990,7 @@ async function jobMarkPaid(id) {
   }
   list[i].stage='Paid'
   save(K.jobs,list); gsQueueSync(K.jobs)
-  renderJobsBoard(); renderIncTable(); renderDash(); toast(`${job.name} marked as paid`)
+  renderJobsBoard(); renderIncTable(); renderDash(); toast(`${job.name} marked as paid`); kvConfetti()
 }
 
 async function jobCreateIncomeIfNeeded(job) {
@@ -3040,9 +3040,9 @@ function renderJobsBoard() {
       const expanded=_expandedJob===job.id
       return `<div class="job-card" onclick="toggleJobExpand('${job.id}')">
         <div class="job-name">${esc(job.name)}</div>
-        <div class="job-meta">${job.clientName?esc(job.clientName)+'<br>':''}${job.amount?fmt(job.amount):''}${job.filmingDate?' · '+fmtDate(job.filmingDate):''}
+        <div class="job-meta">${job.clientName?esc(job.clientName)+'<br>':''}${job.amount?fmt(job.amount):''}${job.filmingDate?' · '+fmtDate(job.filmingDate):''}${job.location?'<br>'+esc(job.location):''}
         </div>
-        ${expanded?`<div class="job-card-expanded">
+        ${wxSlot(job)}${expanded?`<div class="job-card-expanded">
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:8px">Move to stage:</div>
           <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">
             ${JOB_STAGES.filter(s=>s!==stage&&s!=='Paid'&&s!=='Written Off').map(s=>`<button class="btn btn-sm btn-s" style="font-size:10px;padding:3px 7px" onclick="event.stopPropagation();jobSetStage('${job.id}','${s}')">${s}</button>`).join('')}
@@ -3061,7 +3061,7 @@ function renderJobsBoard() {
       <div class="kanban-col-hdr"><span>${stage}</span><span style="background:rgba(0,0,0,0.08);border-radius:8px;padding:1px 6px;font-size:10px">${jobs.length}</span></div>
       ${cards||emptyState('briefcase','No jobs here',null,{small:true,pad:'14px 6px'})}
     </div>`
-  }).join('')
+  }).join(''); wxHydrate(el)
 }
 
 function toggleJobExpand(id) {
@@ -4442,7 +4442,7 @@ function openSettings() {
   _pendingLogos.dark = null; _pendingLogos.light = null
   refreshLogoPreview('dark')
   refreshLogoPreview('light')
-  const wuEl = document.getElementById('smod-worker-url'); if(wuEl) wuEl.value = socialCfg().workerUrl || ''
+  const wuEl = document.getElementById('smod-worker-url'); if(wuEl) wuEl.value = socialCfg().workerUrl || ''; wxLoadSettingsForm()
   document.getElementById('settings-overlay').classList.add('open')
 }
 
@@ -4473,7 +4473,7 @@ async function saveSettings() {
     } catch (err) { console.warn('Logo upload:', err) }
   }
   const wu = document.getElementById('smod-worker-url')?.value.trim()
-  if (wu !== undefined && wu !== socialCfg().workerUrl) { saveSocialCfg({ workerUrl: wu }); renderSocialStats(); renderSocialIdeas() }
+  if (wu !== undefined && wu !== socialCfg().workerUrl) { saveSocialCfg({ workerUrl: wu }); renderSocialStats(); renderSocialIdeas() }; wxSaveSettingsForm()
   closeSettings()
   toast('Settings saved!')
 }
@@ -7541,10 +7541,186 @@ function instCopyScope(from, to) {
   const sp = document.getElementById(`${from}-inst-provider`), dp = document.getElementById(`${to}-inst-provider`)
   if (sp && dp) dp.value = sp.value
 }
+
+// ── SHOOT WEATHER (OPEN-METEO) ────────────────────────────────
+// Booked/Shooting job cards (and linked shoots in the Upcoming widget) show the
+// forecast for the shoot window: worst gusts, wind and rain chance in the
+// WX_WINDOW_H hours from the start time (midday if none), temp at the start,
+// golden hour and sunset. Badge is green/yellow/red against the thresholds in
+// Settings. Open-Meteo is free with no key. Geocodes are cached forever, forecasts
+// for WX_FC_TTL. All weather state lives in localStorage and is never synced.
+const WX_GEO_KEY = 'dt_wx_geo', WX_FC_KEY = 'dt_wx_fc', WX_CFG_KEY = 'dt_wx_cfg'
+const WX_DEFAULTS = { gustY: 15, gustR: 25, rainY: 40, rainR: 70 }
+const WX_FIELDS = ['gustY', 'gustR', 'rainY', 'rainR']
+const WX_STAGES = ['Booked', 'Shooting']
+const WX_FC_TTL = 60 * 60 * 1000
+const WX_MAX_DAYS = 15   // Open-Meteo forecasts 16 days counting today
+const WX_WINDOW_H = 3
+
+function wxCfg() {
+  try { return { ...WX_DEFAULTS, ...JSON.parse(localStorage.getItem(WX_CFG_KEY) || '{}') } } catch { return { ...WX_DEFAULTS } }
+}
+function wxStore(k) { try { return JSON.parse(localStorage.getItem(k) || '{}') || {} } catch { return {} } }
+function wxPut(k, obj) { try { localStorage.setItem(k, JSON.stringify(obj)) } catch (_) {} }
+
+// Search terms for a free-text location, most specific first: the whole string,
+// then each comma part from the end (the town is usually last; a trailing country
+// is skipped in wxGeocode). State codes and ZIPs are stripped because the geocoder
+// matches place names only.
+function wxCandidates(q) {
+  const clean = s => s.replace(/\s+\d{5}(-\d{4})?$/, '').replace(/\s+[A-Z]{2}$/, '').trim()
+  const parts = q.split(',').map(clean).filter(p => p.length > 2)
+  return [...new Set([clean(q.replace(/,\s*[A-Z]{2}(\s+\d{5})?\s*$/, '')), ...parts.reverse()].filter(Boolean))]
+}
+
+// → {lat, lon, label} | null (not found) | undefined (network error, not cached)
+async function wxGeocode(q) {
+  const key = (q || '').trim().toLowerCase(); if (!key) return null
+  const cache = wxStore(WX_GEO_KEY)
+  if (key in cache) return cache[key]
+  let hit = null
+  const ll = q.match(/^\s*(-?\d{1,2}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)\s*$/)
+  if (ll) hit = { lat: +ll[1], lon: +ll[2], label: `${(+ll[1]).toFixed(3)}, ${(+ll[2]).toFixed(3)}` }
+  else {
+    for (const c of wxCandidates(q)) {
+      let r
+      try { r = await fetch(`https://geocoding-api.open-meteo.com/v1/search?count=3&language=en&format=json&name=${encodeURIComponent(c)}`) } catch (_) { return undefined }
+      if (!r.ok) return undefined
+      // Skip countries/states/regions so "Cortina, Italy" lands on the town, not the country centroid
+      const g = ((await r.json()).results || []).find(x => !/^(PCL|ADM|CONT|RGN)/.test(x.feature_code || ''))
+      if (g) { hit = { lat: g.latitude, lon: g.longitude, label: [g.name, g.admin1 || g.country].filter(Boolean).join(', ') }; break }
+    }
+  }
+  cache[key] = hit; wxPut(WX_GEO_KEY, cache)
+  return hit
+}
+
+// → {h: hourly arrays for that date, sunset} | null. Falls back to a stale cache entry when offline.
+async function wxForecast(lat, lon, date) {
+  const key = `${(+lat).toFixed(3)},${(+lon).toFixed(3)},${date}`
+  const cache = wxStore(WX_FC_KEY), hit = cache[key]
+  if (hit && Date.now() - hit.t < WX_FC_TTL) return hit.d
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`
+    + '&hourly=temperature_2m,precipitation_probability,wind_speed_10m,wind_gusts_10m&daily=sunset'
+    + `&wind_speed_unit=mph&temperature_unit=fahrenheit&timezone=auto&start_date=${date}&end_date=${date}`
+  try {
+    const r = await fetch(url); if (!r.ok) return hit?.d || null
+    const j = await r.json(), now = Date.now()
+    for (const k in cache) if (now - cache[k].t > WX_FC_TTL * 24) delete cache[k]   // prune day-old entries
+    cache[key] = { t: now, d: { h: j.hourly || {}, sunset: (j.daily?.sunset || [])[0] || '' } }
+    wxPut(WX_FC_KEY, cache)
+    return cache[key].d
+  } catch (_) { return hit?.d || null }
+}
+
+// Worst values across the shoot window. Hourly index = local hour of the day.
+function wxSummarize(fc, time) {
+  const h = fc?.h; if (!h?.time?.length) return null
+  const start = time ? Math.min(23, parseInt(time, 10) || 0) : 12
+  const end = Math.min(h.time.length - 1, start + WX_WINDOW_H - 1)
+  let gust = 0, wind = 0, rain = 0
+  for (let i = start; i <= end; i++) {
+    gust = Math.max(gust, +h.wind_gusts_10m?.[i] || 0)
+    wind = Math.max(wind, +h.wind_speed_10m?.[i] || 0)
+    rain = Math.max(rain, +h.precipitation_probability?.[i] || 0)
+  }
+  const temp = h.temperature_2m?.[start]
+  return { gust: Math.round(gust), wind: Math.round(wind), rain: Math.round(rain), temp: temp == null ? null : Math.round(temp), sunset: fc.sunset }
+}
+function wxLevel(s) {
+  const c = wxCfg()
+  if (s.gust >= c.gustR || s.rain >= c.rainR) return 'r'
+  if (s.gust >= c.gustY || s.rain >= c.rainY) return 'y'
+  return 'g'
+}
+// 'YYYY-MM-DDTHH:MM' → '6:04pm', optionally minus some minutes (golden hour)
+function wxClock(iso, minusMin = 0) {
+  if (!iso || iso.length < 16) return ''
+  const t = (+iso.slice(11, 13)) * 60 + (+iso.slice(14, 16)) - minusMin
+  return fmtTime12(`${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`)
+}
+
+// Placeholder rendered synchronously inside a card; wxHydrate fills it in.
+// compact = Upcoming widget (no prompts, shown for any linked job).
+function wxSlot(job, compact) {
+  if (!job || (!compact && !WX_STAGES.includes(job.stage))) return ''
+  return `<div class="wx wx-na" data-wx-job="${esc(job.id)}"${compact ? ' data-wx-compact="1"' : ''}></div>`
+}
+function wxHydrate(root) {
+  const slots = (root || document).querySelectorAll('[data-wx-job]'); if (!slots.length) return
+  const jobs = load(K.jobs)
+  slots.forEach(el => { const job = jobs.find(j => j.id === el.dataset.wxJob); if (job) wxFill(el, job, !!el.dataset.wxCompact) })
+}
+async function wxFill(el, job, compact) {
+  const set = (lvl, html, title) => { el.className = 'wx wx-' + lvl; el.innerHTML = html; el.title = title || '' }
+  const loc = (job.location || '').trim(), todayStr = today()
+  if (job.filmingDate && job.filmingDate < todayStr) { el.remove(); return }
+  if (!job.filmingDate) { compact ? el.remove() : set('na', 'Add a filming date for the forecast'); return }
+  if (!loc) { compact ? el.remove() : set('na', 'Add a location for the forecast'); return }
+  const days = Math.round((toDate(job.filmingDate) - toDate(todayStr)) / 864e5)
+  if (days > WX_MAX_DAYS) {
+    const d = toDate(job.filmingDate); d.setDate(d.getDate() - WX_MAX_DAYS)
+    set('na', `Forecast available ${fmtDate(toStr(d))}`); return
+  }
+  if (!el.innerHTML) set('na', 'Loading forecast…')
+  const geo = await wxGeocode(loc)
+  if (geo === undefined) { set('na', 'Forecast unavailable (offline?)'); return }
+  if (!geo) { set('na', 'Location not found. Try "Place, Town"'); return }
+  const s = wxSummarize(await wxForecast(geo.lat, geo.lon, job.filmingDate), job.filmingTime)
+  if (!s) { set('na', 'Forecast unavailable'); return }
+  const temp = s.temp == null ? '' : ` · ${s.temp}°F`
+  const sun = s.sunset ? `<span class="wx-sub">Golden hour ${wxClock(s.sunset, 60)} · sunset ${wxClock(s.sunset)}</span>` : ''
+  const when = job.filmingTime ? `worst of ${WX_WINDOW_H}h from ${fmtTime12(job.filmingTime)}` : 'midday (no start time set)'
+  set(wxLevel(s), `<span class="wx-dot"></span><b>Gusts ${s.gust} mph</b> · wind ${s.wind} · rain ${s.rain}%${temp}${sun}`,
+    `${geo.label} · ${when}`)
+}
+
+function wxLoadSettingsForm() {
+  const c = wxCfg()
+  WX_FIELDS.forEach(k => { const el = document.getElementById('smod-wx-' + k); if (el) el.value = c[k] })
+}
+function wxSaveSettingsForm() {
+  const c = wxCfg(), next = {}
+  WX_FIELDS.forEach(k => { const v = parseFloat(document.getElementById('smod-wx-' + k)?.value); next[k] = isFinite(v) && v >= 0 ? v : c[k] })
+  next.gustR = Math.max(next.gustR, next.gustY); next.rainR = Math.max(next.rainR, next.rainY)
+  if (WX_FIELDS.every(k => next[k] === c[k])) return
+  wxPut(WX_CFG_KEY, next); renderJobsBoard(); renderRenewals()
+}
+
+// ── CONFETTI (job marked Paid) ────────────────────────────────
+function kvConfetti() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  document.getElementById('kv-confetti')?.remove()
+  const cv = document.createElement('canvas'); cv.id = 'kv-confetti'
+  const W = innerWidth, H = innerHeight, dpr = window.devicePixelRatio || 1
+  cv.width = W * dpr; cv.height = H * dpr
+  document.body.appendChild(cv)
+  const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr)
+  const colors = ['#007AFF', '#34C759', '#FF9500', '#AF52DE', '#FF3B30', '#FFD60A']
+  const ps = Array.from({ length: 150 }, () => ({
+    x: W / 2 + (Math.random() - .5) * 160, y: H * .38,
+    vx: (Math.random() - .5) * 16, vy: -Math.random() * 14 - 5,
+    w: 6 + Math.random() * 6, h: 8 + Math.random() * 8,
+    r: Math.random() * Math.PI, vr: (Math.random() - .5) * .3,
+    c: colors[Math.floor(Math.random() * colors.length)]
+  }))
+  const LIFE = 2600, t0 = performance.now()
+  requestAnimationFrame(function frame(t) {
+    const age = t - t0
+    ctx.clearRect(0, 0, W, H)
+    ctx.globalAlpha = Math.max(0, 1 - age / LIFE)
+    ps.forEach(p => {
+      p.vy += .35; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r)
+      ctx.fillStyle = p.c; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); ctx.restore()
+    })
+    if (age < LIFE) requestAnimationFrame(frame); else cv.remove()
+  })
+}
 </script>
 <!-- SETTINGS MODAL -->
 <div class="smod-overlay" id="settings-overlay" onclick="if(event.target===this)closeSettings()">
-  <div class="smod">
+  <div class="smod" style="max-height:92vh;overflow-y:auto">
     <div class="smod-hdr">
       <span class="smod-ttl">Settings</span>
       <button class="smod-close" onclick="closeSettings()">&#x2715;</button>
@@ -7590,6 +7766,16 @@ function instCopyScope(from, to) {
           <span class="toggle-slider"></span>
         </label>
       </div>
+    </div>
+    <div class="smod-row">
+      <div class="smod-lbl">Shoot Weather Thresholds</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <label style="font-size:12px;color:var(--text-2)">Gusts caution (mph)<input type="number" id="smod-wx-gustY" min="0" step="1" class="isel" style="width:100%;box-sizing:border-box;margin-top:3px"></label>
+        <label style="font-size:12px;color:var(--text-2)">Gusts no-fly (mph)<input type="number" id="smod-wx-gustR" min="0" step="1" class="isel" style="width:100%;box-sizing:border-box;margin-top:3px"></label>
+        <label style="font-size:12px;color:var(--text-2)">Rain caution (%)<input type="number" id="smod-wx-rainY" min="0" max="100" step="5" class="isel" style="width:100%;box-sizing:border-box;margin-top:3px"></label>
+        <label style="font-size:12px;color:var(--text-2)">Rain no-fly (%)<input type="number" id="smod-wx-rainR" min="0" max="100" step="5" class="isel" style="width:100%;box-sizing:border-box;margin-top:3px"></label>
+      </div>
+      <div style="font-size:11px;color:var(--text-2);margin-top:5px">Job cards turn yellow at caution and red at no-fly, using the worst hour in the 3 hours from the job's start time (midday if no time is set). Saved on this device only.</div>
     </div>
     <div class="smod-row">
       <div class="smod-lbl">Social backend URL (Cloudflare Worker)</div>
