@@ -670,6 +670,8 @@ html[data-theme] #qa-btn:hover,html[data-theme] .theme-toggle:hover,html[data-th
   html[data-theme] .hdr-inner #qa-btn{order:2}
   html[data-theme] .hdr-inner .nav{order:3;flex:0 0 auto}
   html[data-theme] .hdr-inner .hdr-right{order:4;margin:auto 0 0;display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center}
+  html[data-theme] .hdr-right .sync-pill{grid-column:1/-1;order:-1}
+  html[data-theme] .hdr-right .theme-toggle{justify-content:center}
   html[data-theme] .nav{flex-direction:column;gap:2px;padding:0;overflow:visible}
   html[data-theme] .tab{width:100%;justify-content:flex-start;gap:11px;padding:9px 12px;border-radius:9px;font-size:13.5px}
   html[data-theme] #qa-btn{width:100%;justify-content:flex-start;gap:10px;height:38px;padding:0 12px;font-size:13px;font-weight:500}
@@ -1156,6 +1158,12 @@ html[data-theme] .cli-ct-row{background:var(--surface-2);border:1px solid var(--
 .wl-hero{margin-bottom:14px}
 .wl-tags{display:flex;gap:6px;margin-top:8px}
 html[data-theme] #panel-wishlist .wish-link{color:var(--accent-text)}
+/* ── APP REFRESH ── */
+#app-refresh{position:relative}
+#app-refresh.spin svg{animation:kvSpin .7s linear infinite}
+@keyframes kvSpin{to{transform:rotate(360deg)}}
+#app-refresh.has-update{color:var(--accent-text)!important;border-color:var(--accent)!important}
+#app-refresh.has-update::after{content:"";position:absolute;top:-3px;right:-3px;width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px var(--bg)}
 /* ── GEAR & FAA ── */
 .gr-hdr-btns{display:flex;gap:8px;flex-wrap:wrap}
 .gr-hero{margin-bottom:14px}
@@ -1319,6 +1327,7 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
       </button>
       <div class="sync-pill" id="sync-indicator" title="Google Sheets sync status"></div>
       <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg> Dark</button>
+      <button class="settings-btn" id="app-refresh" onclick="appRefresh()" title="Reload the app" aria-label="Reload the app"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg></button>
       <button class="settings-btn" onclick="openSettings()" title="Settings"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>
     </div>
   </div>
@@ -8685,7 +8694,15 @@ let _gearF = { type: 'all', retired: false }
 function gearList() { return load(K.gear) }
 function gearIsDrone(g) { return /drone/i.test(g.type || '') }
 function gearFaaSub(g) { return g.faaSubId ? load(K.sub).find(s => s.id === g.faaSubId) || null : null }
-function gearFaaExp(g) { const s = gearFaaSub(g); return s ? nextCharge(s) : (g.faaExpires || '') }
+// Active subscription: paid through its next charge. Inactive (not renewed): the
+// registration ran out one period after the last real payment (or the start date
+// if none was logged), never a "next charge" the app moved forward on its own.
+function gearFaaExp(g) {
+  const s = gearFaaSub(g); if (!s) return g.faaExpires || ''
+  if (s.status === 'Active') return nextCharge(s)
+  const paid = load(K.subx).filter(x => x.subId === s.id).map(x => x.date).concat(s.startDate || []).filter(Boolean).sort().pop()
+  return paid ? toStr(advance(toDate(paid), s.billingType)) : nextCharge(s)
+}
 function gearFaaState(g) {
   if (!gearIsDrone(g)) return null
   const exp = gearFaaExp(g); if (!exp) return { k: 'none', exp: '' }
@@ -8807,8 +8824,8 @@ function gearSubChanged() {
   const s = id ? load(K.sub).find(x => x.id === id) : null
   const inp = document.getElementById('gear-faa-exp'), note = document.getElementById('gear-faa-note')
   inp.disabled = !!s
-  if (s) inp.value = nextCharge(s)
-  note.textContent = s ? 'Comes from the subscription. Renew it there and this updates.' : ''
+  if (s) inp.value = gearFaaExp({ faaSubId: s.id })
+  note.textContent = s ? (s.status === 'Active' ? 'Comes from the subscription. Renew it there and this updates.' : 'Subscription is inactive, so this is when the last paid registration ran out.') : ''
 }
 function openGearModal(id) {
   const g = id ? gearList().find(x => x.id === id) : null
@@ -8895,6 +8912,32 @@ function saveGearLog() {
   save(K.gear, list); closeGearLog(); renderGear()
   toast(`${g.name}: +${min} min · ${gearHrs(g.hours)} total`)
 }
+
+// ── APP REFRESH ───────────────────────────────────────────────
+// The installed app has no browser reload button. ↻ saves any pending change,
+// checks for a new service worker and reloads. Every 5 min and on return to the
+// app, the page's ETag is compared with the live one; a new deploy lights up ↻.
+async function appRefresh() {
+  const b = document.getElementById('app-refresh'); b?.classList.add('spin')
+  try { clearTimeout(_gsSyncTimer); if (_gsSyncQueue.size && gsGetToken()) await gsFlushQueue() } catch {}
+  try { const r = await navigator.serviceWorker?.getRegistration(); await r?.update() } catch {}
+  location.reload()
+}
+let _appTag = null, _appUpdTold = false
+async function appCheckUpdate() {
+  if (location.protocol !== 'https:' || document.hidden) return
+  try {
+    const r = await fetch(location.pathname, { method: 'HEAD', cache: 'no-store' })
+    const tag = r.headers.get('etag') || r.headers.get('last-modified'); if (!tag) return
+    if (_appTag === null) { _appTag = tag; return }
+    if (tag !== _appTag) {
+      document.getElementById('app-refresh')?.classList.add('has-update')
+      if (!_appUpdTold) { _appUpdTold = true; toast('A new version is ready. Tap ↻ to update.', 5000) }
+    }
+  } catch {}
+}
+window.addEventListener('load', () => { appCheckUpdate(); setInterval(appCheckUpdate, 300000) })
+document.addEventListener('visibilitychange', appCheckUpdate)
 
 // ── INSTALLABLE APP ───────────────────────────────────────
 // Service worker (sw.js, network first) so the tool can be added to the home
