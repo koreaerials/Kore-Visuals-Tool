@@ -8896,11 +8896,15 @@ function gearFaaState(g) {
   if (!gearIsDrone(g)) return null
   const exp = gearFaaExp(g); if (!exp) return { k: 'none', exp: '' }
   const t = today(), soon = toStr(addM(toDate(t), 1))
+  // Linked subscription set to Inactive = you chose not to renew: shown as lapsed, never a warning
+  const sub = gearFaaSub(g)
+  if (sub && sub.status !== 'Active' && exp <= soon) return { k: 'lapsed', exp }
   return { k: exp < t ? 'expired' : exp <= soon ? 'soon' : 'ok', exp }
 }
 function gearFaaBadge(g) {
   const st = gearFaaState(g); if (!st) return '<span class="dv-tiny">n/a</span>'
   if (st.k === 'none') return '<span class="bdg bdg-gr">Not set</span>'
+  if (st.k === 'lapsed') return `<span class="bdg bdg-gr" title="Subscription is inactive: not renewing">Not renewed · ${st.exp < today() ? 'lapsed' : 'ends'} ${fmtDate(st.exp)}</span>`
   if (st.k === 'expired') return `<span class="bdg bdg-r">Expired ${fmtDate(st.exp)}</span>`
   if (st.k === 'soon') return `<span class="bdg bdg-o">Due ${fmtDate(st.exp)}</span>`
   return `<span class="bdg bdg-g">Valid to ${fmtDate(st.exp)}</span>`
@@ -8949,6 +8953,7 @@ function renderGear() {
   const drones = act.filter(gearIsDrone)
   const hrs = all.reduce((s, g) => s + (+g.hours || 0), 0), flights = all.reduce((s, g) => s + (+g.flights || 0), 0)
   const exp = drones.filter(g => gearFaaState(g).k === 'expired').length
+  const lapsed = drones.filter(g => gearFaaState(g).k === 'lapsed').length
   const soon = drones.filter(g => gearFaaState(g).k === 'soon').length
   const unset = drones.filter(g => gearFaaState(g).k === 'none').length
   const allDr = all.filter(gearIsDrone), allCam = all.filter(gearIsCam)
@@ -8971,7 +8976,7 @@ function renderGear() {
       <div><div class="dv-lbl">Active drones</div><div class="num dv-mid">${drones.length}</div><div class="dv-tiny">of ${allDr.length} total${inBits ? ` · ${inBits}` : ''}</div></div>
       <div><div class="dv-lbl">Active cameras</div><div class="num dv-mid">${allCam.filter(g => (g.status || 'Active') === 'Active').length}</div><div class="dv-tiny">of ${allCam.length} total${camIn ? ` · ${camIn}` : ''}</div></div>
       <div><div class="dv-lbl">Flights logged</div><div class="num dv-mid">${flights}</div><div class="dv-tiny">${flights ? Math.round(hrs * 60 / flights * 10) / 10 + ' min avg' : 'no flights yet'}</div></div>
-      <div><div class="dv-lbl">FAA</div><div class="num dv-mid">${exp + soon}</div><div class="dv-tiny">${exp} expired · ${soon} due · ${unset} not set</div></div>
+      <div><div class="dv-lbl">FAA</div><div class="num dv-mid">${exp + soon}</div><div class="dv-tiny">${exp} expired · ${soon} due · ${unset} not set${lapsed ? ` · ${lapsed} not renewing` : ''}</div></div>
     </div></div>`
   // List
   const el = document.getElementById('gear-table'); if (!el) return
