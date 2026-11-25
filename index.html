@@ -4073,6 +4073,8 @@ let _gsRetryTimer = null
 
 // ── Sync status UI ────────────────────────────────────────────
 function setSyncStatus(state, detail) {
+  // "Not signed in" always means the data is hidden behind the sign-in screen
+  if (state === 'idle' && !gsGetToken() && !document.documentElement.classList.contains('kv-locked')) showGsSignIn()
   const el = document.getElementById('sync-indicator')
   if (!el) return
   const dot = (color, anim) =>
@@ -4211,7 +4213,8 @@ async function gsReq(url, opts = {}) {
   })
   if (resp.status === 401) {
     _gsToken = null; localStorage.removeItem('dt_gs_token')
-    gsSilentAuth(); return null
+    showGsSignIn('Your Google session expired. Sign in again to keep saving.')
+    return null
   }
   return resp
 }
@@ -4351,7 +4354,7 @@ async function gsFlushQueue() {
     console.error('gsFlushQueue:', err)
     // Put the writes that never landed back on the queue so nothing is silently dropped,
     // then retry once automatically. Data is already safe in localStorage either way.
-    keys.filter(k => !done.has(k)).forEach(k => _gsSyncQueue.add(k))
+    keys.filter(k => !done.has(k)).forEach(k => { _gsSyncQueue.add(k); if (!gsGetToken()) gsMarkDirty(k) })
     setSyncStatus('error', err.message)
     clearTimeout(_gsRetryTimer)
     _gsRetryTimer = setTimeout(() => {
