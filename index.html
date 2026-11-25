@@ -1156,6 +1156,27 @@ html[data-theme] .cli-ct-row{background:var(--surface-2);border:1px solid var(--
 .wl-hero{margin-bottom:14px}
 .wl-tags{display:flex;gap:6px;margin-top:8px}
 html[data-theme] #panel-wishlist .wish-link{color:var(--accent-text)}
+/* ── GEAR & FAA ── */
+.gr-hdr-btns{display:flex;gap:8px;flex-wrap:wrap}
+.gr-hero{margin-bottom:14px}
+.gr-name{font-weight:600}
+.gr-model{font-size:11.5px;color:var(--text-2);margin-top:2px}
+.gr-reg{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:var(--text-2);margin-bottom:4px}
+.gr-faa{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.gr-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.gr-ret td{opacity:.55}
+.gr-fspacer{flex:1}
+.gr-note{font-size:11.5px;color:var(--text-2);margin-top:4px}
+.gr-empty-acts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+#gear-modal-overlay input:disabled{opacity:.55}
+@media(max-width:899px){
+  html[data-theme] #panel-gear .tbl-wrap{border:0;background:none;overflow:visible}
+  #panel-gear .pv-fbar .fbtn{flex:none}
+  .gr-hdr-btns{width:100%;flex-wrap:nowrap}
+  html[data-theme] #panel-gear .gr-hdr-btns .btn{flex:1;width:auto;justify-content:center;white-space:nowrap}
+  #panel-gear .pv-split>div:last-child{display:block}
+  #panel-gear .pv-split>div:first-child{display:none}
+}
 /* ── PRICING, EXPORT, TAXES v4 ── */
 html[data-theme] #jobs-pq-section div[style*="rgba(52,199,89,0.08)"]{background:var(--surface-2)!important;border-color:var(--line)!important}
 html[data-theme] #quote-total{color:var(--text)!important;font-family:var(--font-d)}
@@ -1168,6 +1189,22 @@ html[data-theme] .exp-icon{color:var(--accent-text);width:44px;height:44px;borde
 html[data-theme] .exp-icon svg{width:22px;height:22px}
 html[data-theme] .exp-card h3{font-family:var(--font-d);font-weight:600}
 html[data-theme] .exp-card .btn{justify-content:center}
+/* Actions sit at the bottom of every card so buttons line up across a row;
+   3 export cards on top, backup + restore below, full width both rows */
+html[data-theme] .exp-card>p{margin-bottom:18px}
+html[data-theme] .exp-card>p+*{margin-top:auto}
+html[data-theme] .exp-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+html[data-theme] .exp-grid>.exp-card{grid-column:span 2}
+html[data-theme] .exp-grid>.exp-card:nth-child(n+4){grid-column:span 3}
+@media(max-width:1099px){
+  html[data-theme] .exp-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  html[data-theme] .exp-grid>.exp-card,html[data-theme] .exp-grid>.exp-card:nth-child(n+4){grid-column:span 1}
+  html[data-theme] .exp-grid>.exp-card:nth-child(3){grid-column:span 2}
+}
+@media(max-width:899px){
+  html[data-theme] .exp-grid{grid-template-columns:minmax(0,1fr)}
+  html[data-theme] .exp-grid>.exp-card,html[data-theme] .exp-grid>.exp-card:nth-child(n){grid-column:auto}
+}
 html[data-theme] #export-subnav,html[data-theme] #panel-export .jobs-subnav{margin-bottom:18px}
 /* ── POPUPS v4 ── */
 html[data-theme] .smod{border-radius:20px;padding:24px 24px 20px}
@@ -1271,6 +1308,7 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
       <button data-mode="business" class="tab" data-tab="subscriptions"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg> Subscriptions</button>
       <button data-mode="business" class="tab" data-tab="export"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Taxes &amp; Export</button>
       <div class="nav-grp" data-mode="business">Gear</div>
+      <button data-mode="business" class="tab" data-tab="gear"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><line x1="10.6" y1="10.6" x2="6.5" y2="6.5"/><line x1="13.4" y1="10.6" x2="17.5" y2="6.5"/><line x1="10.6" y1="13.4" x2="6.5" y2="17.5"/><line x1="13.4" y1="13.4" x2="17.5" y2="17.5"/><circle cx="5" cy="5" r="2.5"/><circle cx="19" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="19" r="2.5"/></svg> Gear &amp; FAA</button>
       <button data-mode="business" class="tab" data-tab="wishlist"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.6 6.1.8-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.4l6.1-.8z"/></svg> Wishlist</button>
       <button data-mode="social" class="tab on" data-tab="social-stats"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Stats</button>
       <button data-mode="social" class="tab" data-tab="social-ideas"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> Content Ideas</button>
@@ -1294,6 +1332,7 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
   <button data-mode="business" class="tab" data-tab="income" onclick="mobNavTo('income')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg> Income</button>
   <button data-mode="business" class="tab" data-tab="purchases" onclick="mobNavTo('purchases')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Purchases</button>
   <button data-mode="business" class="tab" data-tab="subscriptions" onclick="mobNavTo('subscriptions')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg> Subscriptions</button>
+  <button data-mode="business" class="tab" data-tab="gear" onclick="mobNavTo('gear')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><line x1="10.6" y1="10.6" x2="6.5" y2="6.5"/><line x1="13.4" y1="10.6" x2="17.5" y2="6.5"/><line x1="10.6" y1="13.4" x2="6.5" y2="17.5"/><line x1="13.4" y1="13.4" x2="17.5" y2="17.5"/><circle cx="5" cy="5" r="2.5"/><circle cx="19" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="19" r="2.5"/></svg> Gear &amp; FAA</button>
   <button data-mode="business" class="tab" data-tab="wishlist" onclick="mobNavTo('wishlist')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.6 6.1.8-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.4l6.1-.8z"/></svg> Wishlist</button>
   <button data-mode="business" class="tab" data-tab="clients" onclick="mobNavTo('clients')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Clients</button>
   <button data-mode="business" class="tab" data-tab="jobs" onclick="mobNavTo('jobs')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Jobs</button>
@@ -1455,6 +1494,14 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
       </div>
       <div id="pur-summary"></div>
       <div class="tbl-wrap" id="pur-table"></div>
+  </section>
+
+  <!-- GEAR & FAA -->
+  <section class="panel" id="panel-gear">
+    <div class="pv-hdr"><div><h2>Gear &amp; FAA</h2><p id="gear-sub">Your drones, registrations and flight time</p></div><div class="gr-hdr-btns"><button class="btn btn-s" onclick="openGearLog()">Log flight</button><button class="btn btn-g" onclick="openGearModal()">+ Add gear</button></div></div>
+    <div class="fbar pv-fbar" id="gear-filter"></div>
+    <div id="gear-summary"></div>
+    <div class="tbl-wrap" id="gear-table"></div>
   </section>
 
   <!-- WISHLIST -->
@@ -1957,7 +2004,7 @@ function toggleKebab(ev, btn) {
 }
 
 // ── STORAGE ──────────────────────────────────────────────────
-const K = { inc:'dt_income', pur:'dt_purchases', sub:'dt_subs', subx:'dt_subx', links:'dt_links', prc:'dt_pricing', jobs:'dt_jobs', agr:'dt_agr', wish:'dt_wishlist', socSnap:'dt_soc_snapshots', socReels:'dt_soc_reels', socCfg:'dt_soc_config' }
+const K = { inc:'dt_income', pur:'dt_purchases', sub:'dt_subs', subx:'dt_subx', links:'dt_links', prc:'dt_pricing', jobs:'dt_jobs', agr:'dt_agr', wish:'dt_wishlist', gear:'dt_gear', socSnap:'dt_soc_snapshots', socReels:'dt_soc_reels', socCfg:'dt_soc_config' }
 const DEFAULT_LINKS = [
   {id:'l1', name:'Kore Aerials Website', url:'https://www.koreaerials.com'},
   {id:'l2', name:'FAA DroneZone', url:'https://faadronezone-operator.faa.gov/#/part107'}
@@ -2109,6 +2156,16 @@ const SHEET_SCHEMA = {
     cols: ['id','workerUrl','igUsername','lastSync'],
     toRow: o => [ o.id||'cfg', o.workerUrl||'', o.igUsername||'', o.lastSync||'' ],
     toObj: r => ({ id: r[0]||'cfg', workerUrl: r[1]||'', igUsername: r[2]||'', lastSync: r[3]||'' }),
+  },
+  [K.gear]: {
+    tab:  'Gear',
+    cols: ['id','name','type','model','serial','status','faaReg','faaExpires','faaSubId','remoteId','hours','flights','lastFlown','lastService','notes','addedAt'],
+    toRow: o => [ o.id, o.name||'', o.type||'FPV drone', o.model||'', o.serial||'', o.status||'Active',
+      o.faaReg||'', o.faaExpires||'', o.faaSubId||'', o.remoteId||'', o.hours||0, o.flights||0,
+      o.lastFlown||'', o.lastService||'', o.notes||'', o.addedAt||'' ],
+    toObj: r => ({ id: r[0], name: r[1]||'', type: r[2]||'FPV drone', model: r[3]||'', serial: r[4]||'', status: r[5]||'Active',
+      faaReg: r[6]||'', faaExpires: r[7]||'', faaSubId: r[8]||'', remoteId: r[9]||'', hours: +r[10]||0, flights: +r[11]||0,
+      lastFlown: r[12]||'', lastService: r[13]||'', notes: r[14]||'', addedAt: r[15]||'' }),
   },
   [K.wish]: {
     tab:  'Wishlist',
@@ -3631,7 +3688,7 @@ function exportExcel() {
 
 function exportJSON() {
   const d=new Date().toISOString().split('T')[0]
-  const data={exportedAt:new Date().toISOString(),version:'1.0',income:load(K.inc),purchases:load(K.pur),subscriptions:load(K.sub),subExpenses:load(K.subx),links:load(K.links),clients:_clients||[]}
+  const data={exportedAt:new Date().toISOString(),version:'1.0',income:load(K.inc),purchases:load(K.pur),subscriptions:load(K.sub),subExpenses:load(K.subx),links:load(K.links),gear:load(K.gear),clients:_clients||[]}
   dl(JSON.stringify(data,null,2), `kore-visuals-backup-${d}.json`, 'application/json')
   toast('Backup exported!')
 }
@@ -4670,7 +4727,7 @@ function toggleTheme() {
 }
 
 // ── TAB SWITCHING ─────────────────────────────────────────────
-const tabRenders={wishlist:renderWishlist,'social-stats':renderSocialStats,'social-ideas':renderSocialIdeas,dashboard:renderDash,income:renderIncTable,purchases:renderPurTable,subscriptions:()=>{renderSubTable()},taxes:renderTaxes,export:()=>{renderDataSummary();switchExportSection('export-main')},clients:renderClientsTab,jobs:renderJobsBoard,pricing:()=>{renderPricingList();initQuoteBuilder()}}
+const tabRenders={gear:renderGear,wishlist:renderWishlist,'social-stats':renderSocialStats,'social-ideas':renderSocialIdeas,dashboard:renderDash,income:renderIncTable,purchases:renderPurTable,subscriptions:()=>{renderSubTable()},taxes:renderTaxes,export:()=>{renderDataSummary();switchExportSection('export-main')},clients:renderClientsTab,jobs:renderJobsBoard,pricing:()=>{renderPricingList();initQuoteBuilder()}}
 
 function openTab(t) {
   const tab=document.querySelector(`#nav [data-tab="${t}"]`); if(!tab)return
@@ -4699,6 +4756,8 @@ const QA_ACTIONS = [
   {label:'Income Entry',  sub:'Log a paid or pending job',      ico:'dollar',    keys:'income job revenue payment earning', run:()=>{navTo('income');      openForm('inc')} },
   {label:'Job',           sub:'Add a job to the pipeline',      ico:'briefcase', keys:'job pipeline lead booking gig',      run:()=>{navTo('jobs');        switchJobsSection('pipeline'); openJobForm()} },
   {label:'Purchase',      sub:'Log equipment or an expense',    ico:'cart',      keys:'purchase expense buy gear equipment',run:()=>{navTo('purchases');   openForm('pur')} },
+  {label:'Gear',          sub:'Add a drone or camera',          ico:'drone',     keys:'gear drone faa registration camera fleet', run:()=>{navTo('gear'); openGearModal()} },
+  {label:'Log Flight',    sub:'Add flight time to a drone',     ico:'plane',     keys:'flight fly log hours battery pack', run:()=>{navTo('gear'); openGearLog()} },
   {label:'Wishlist Item', sub:'Track gear you might buy',        ico:'bag',       keys:'wishlist wish gear want saved idea',  run:()=>{navTo('wishlist');    openWishModal()}},
   {label:'Subscription',  sub:'Track a recurring cost',         ico:'repeat',    keys:'subscription recurring monthly saas',run:()=>{navTo('subscriptions');openForm('sub')} },
   {label:'Client',        sub:'Add a new client record',        ico:'users',     keys:'client customer contact company',    run:()=>{navTo('clients');     openNewClientForm()} },
@@ -7914,7 +7973,9 @@ function dashAttention() {
     title: `Follow up: ${e.client || 'client'} invoice`,
     sub: `${fmt(e.amount)} · ${e.status.toLowerCase()}${e.date ? ' · ' + fmtDate(e.date) : ''}`,
     act: 'Open', fn: "navTo('income')" }))
-  loadP(K.sub).filter(subOverdue).forEach(s => items.push({
+  gearAttention(t).forEach(a => items.push(a))
+  const gearSubs = new Set(load(K.gear).map(g => g.faaSubId).filter(Boolean))
+  loadP(K.sub).filter(s => subOverdue(s) && !gearSubs.has(s.id)).forEach(s => items.push({
     lvl: 2, ico: 'alert', tone: 'red',
     title: `${s.name} renewal overdue`,
     sub: `Due ${fmtDate(nextCharge(s))} · renew or mark inactive`,
@@ -8614,6 +8675,227 @@ window.addEventListener('resize', () => {
   if (document.getElementById('panel-wishlist')?.classList.contains('on')) renderWishTable()
 })
 
+// ── GEAR & FAA ────────────────────────────────────────────────
+// Each drone/camera with its FAA registration, flight time and status.
+// FAA expiry comes from a linked Subscription (its next charge) when one is set,
+// otherwise from the manual date. Expired / due-in-30-days drones show in
+// Needs attention, and a linked subscription's own overdue warning is skipped.
+const GEAR_TYPES = [{ k: 'all', l: 'All' }, { k: 'drone', l: 'Drones' }, { k: 'Camera', l: 'Cameras' }, { k: 'Other', l: 'Other' }]
+let _gearF = { type: 'all', retired: false }
+function gearList() { return load(K.gear) }
+function gearIsDrone(g) { return /drone/i.test(g.type || '') }
+function gearFaaSub(g) { return g.faaSubId ? load(K.sub).find(s => s.id === g.faaSubId) || null : null }
+function gearFaaExp(g) { const s = gearFaaSub(g); return s ? nextCharge(s) : (g.faaExpires || '') }
+function gearFaaState(g) {
+  if (!gearIsDrone(g)) return null
+  const exp = gearFaaExp(g); if (!exp) return { k: 'none', exp: '' }
+  const t = today(), soon = toStr(addM(toDate(t), 1))
+  return { k: exp < t ? 'expired' : exp <= soon ? 'soon' : 'ok', exp }
+}
+function gearFaaBadge(g) {
+  const st = gearFaaState(g); if (!st) return '<span class="dv-tiny">n/a</span>'
+  if (st.k === 'none') return '<span class="bdg bdg-gr">Not set</span>'
+  if (st.k === 'expired') return `<span class="bdg bdg-r">Expired ${fmtDate(st.exp)}</span>`
+  if (st.k === 'soon') return `<span class="bdg bdg-o">Due ${fmtDate(st.exp)}</span>`
+  return `<span class="bdg bdg-g">Valid to ${fmtDate(st.exp)}</span>`
+}
+function gearFaaCell(g) {
+  if (!gearIsDrone(g)) return '<span class="dv-tiny">n/a</span>'
+  return `<div class="gr-faa">${g.faaReg ? `<span class="gr-reg">${esc(g.faaReg)}</span>` : ''}${gearFaaBadge(g)}</div>`
+}
+function gearHrs(h) { const m = Math.round((+h || 0) * 60); return m ? `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}m` : '0h' }
+function gearStatusBadge(g) {
+  const s = g.status || 'Active'
+  return `<span class="bdg ${s === 'Active' ? 'bdg-g' : s === 'Lost' ? 'bdg-r' : 'bdg-gr'}">${esc(s)}</span>`
+}
+function gearAttention(t) {
+  const out = []
+  gearList().filter(g => (g.status || 'Active') === 'Active').forEach(g => {
+    const st = gearFaaState(g); if (!st) return
+    if (st.k === 'expired') out.push({ lvl: 2, ico: 'alert', tone: 'red', title: `FAA registration expired: ${g.name}`,
+      sub: `Expired ${fmtDate(st.exp)} · renew on FAA DroneZone`, act: 'Fix', fn: "navTo('gear')" })
+    else if (st.k === 'soon') out.push({ lvl: 1, ico: 'calendar', tone: 'amber', title: `FAA renewal due: ${g.name}`,
+      sub: `Expires ${fmtDate(st.exp)}`, act: 'Open', fn: "navTo('gear')" })
+  })
+  return out
+}
+function gearFiltered() {
+  return gearList().filter(g =>
+    (_gearF.retired || (g.status || 'Active') === 'Active') &&
+    (_gearF.type === 'all' || (_gearF.type === 'drone' ? gearIsDrone(g) : g.type === _gearF.type)))
+    .sort((a, b) => ((a.status || 'Active') === 'Active' ? 0 : 1) - ((b.status || 'Active') === 'Active' ? 0 : 1) ||
+      (+b.hours || 0) - (+a.hours || 0) || (a.name || '').localeCompare(b.name || ''))
+}
+function setGearFilter(k, v) { _gearF[k] = v; renderGear() }
+function gearMenu(g) {
+  return kebab([
+    ...(gearIsDrone(g) ? [{ label: 'Log flight', icon: 'plane', fn: `openGearLog('${g.id}')` }] : []),
+    { label: 'Edit', icon: 'pencil', fn: `openGearModal('${g.id}')` },
+    ...(gearIsDrone(g) ? [{ label: 'Open FAA DroneZone', icon: 'link', fn: "window.open('https://faadronezone-operator.faa.gov/','_blank','noopener')" }] : []),
+    (g.status || 'Active') === 'Active'
+      ? { label: 'Retire', icon: 'archive' in ICONS ? 'archive' : 'box', fn: `gearSetStatus('${g.id}','Retired')` }
+      : { label: 'Mark active', icon: 'check-circle', fn: `gearSetStatus('${g.id}','Active')` },
+    'sep',
+    { label: 'Delete', icon: 'trash', fn: `delGear('${g.id}')`, danger: true }])
+}
+function renderGear() {
+  const all = gearList(), act = all.filter(g => (g.status || 'Active') === 'Active')
+  const drones = act.filter(gearIsDrone)
+  const hrs = all.reduce((s, g) => s + (+g.hours || 0), 0), flights = all.reduce((s, g) => s + (+g.flights || 0), 0)
+  const exp = drones.filter(g => gearFaaState(g).k === 'expired').length
+  const soon = drones.filter(g => gearFaaState(g).k === 'soon').length
+  const unset = drones.filter(g => gearFaaState(g).k === 'none').length
+  const sub = document.getElementById('gear-sub')
+  if (sub) sub.innerHTML = all.length ? `<b>${act.length}</b> active · <b>${gearHrs(hrs)}</b> flown` : 'Your drones, registrations and flight time'
+  // Filter bar
+  const fb = document.getElementById('gear-filter')
+  if (fb) fb.style.display = all.length ? '' : 'none'
+  if (fb) fb.innerHTML = GEAR_TYPES.map(t => `<button class="fbtn${_gearF.type === t.k ? ' on' : ''}" onclick="setGearFilter('type','${t.k}')">${t.l}</button>`).join('') +
+    `<span class="gr-fspacer"></span><button class="fbtn${_gearF.retired ? ' on' : ''}" onclick="setGearFilter('retired',${!_gearF.retired})">Show retired</button>`
+  // Summary
+  const sm = document.getElementById('gear-summary')
+  if (sm) sm.innerHTML = !all.length ? '' : `<div class="card pv-hero gr-hero">
+    <div class="dv-head"><span class="dv-lbl">Total flight time</span>${exp ? `<span class="dv-pill dv-pill-r">${exp} FAA expired</span>` : soon ? `<span class="dv-pill">${soon} FAA due soon</span>` : drones.length && !unset ? '<span class="dv-pill dv-pill-g">FAA all current</span>' : ''}</div>
+    <div class="num dv-big">${gearHrs(hrs)}</div>
+    <div class="pv-split">
+      <div><div class="dv-lbl">Active drones</div><div class="num dv-mid">${drones.length}</div><div class="dv-tiny">${act.length - drones.length} other item${act.length - drones.length !== 1 ? 's' : ''}</div></div>
+      <div><div class="dv-lbl">Flights logged</div><div class="num dv-mid">${flights}</div><div class="dv-tiny">${flights ? Math.round(hrs * 60 / flights * 10) / 10 + ' min avg' : 'no flights yet'}</div></div>
+      <div><div class="dv-lbl">FAA</div><div class="num dv-mid">${exp + soon}</div><div class="dv-tiny">${exp} expired · ${soon} due · ${unset} not set</div></div>
+    </div></div>`
+  // List
+  const el = document.getElementById('gear-table'); if (!el) return
+  if (!all.length) {
+    const faaSubs = load(K.sub).filter(s => /faa/i.test(s.name || ''))
+    el.innerHTML = `<div class="empty"><div class="ei">${icon('drone', 40)}</div><p>No gear yet. Add your drones to track FAA renewals and flight time.</p>
+      <div class="gr-empty-acts">${faaSubs.length ? `<button class="btn btn-sm btn-g" onclick="gearImportFaa()">Import ${faaSubs.length} from FAA subscriptions</button>` : ''}<button class="btn btn-sm ${faaSubs.length ? 'btn-s' : 'btn-g'}" onclick="openGearModal()">+ Add gear</button></div></div>`
+    return
+  }
+  const list = gearFiltered()
+  if (!list.length) { el.innerHTML = emptyState('search', 'Nothing matches this filter.', null, { small: true, pad: '28px 20px' }); return }
+  if (matchMedia('(max-width:899px)').matches) {
+    el.innerHTML = `<div class="pv-cards">${list.map(g => `<div class="pv-card${(g.status || 'Active') !== 'Active' ? ' gr-ret' : ''}">
+      <div class="pv-card-t"><span class="pv-client">${esc(g.name)}</span><span class="num pv-amt">${gearIsDrone(g) ? gearHrs(g.hours) : ''}</span></div>
+      <div class="pv-card-m">${[esc(g.model || g.type), gearIsDrone(g) ? `${+g.flights || 0} flights` : '', g.lastFlown ? 'flown ' + fmtDate(g.lastFlown) : '', g.faaReg ? esc(g.faaReg) : ''].filter(Boolean).join(' · ')}</div>
+      <div class="gr-tags">${gearIsDrone(g) ? gearFaaBadge(g) : ''}${(g.status || 'Active') !== 'Active' ? gearStatusBadge(g) : ''}</div>
+      <div class="pv-card-f"><span style="flex:1"></span>${gearIsDrone(g) && (g.status || 'Active') === 'Active' ? `<button class="btn btn-sm btn-s" onclick="openGearLog('${g.id}')">Log flight</button>` : ''}${gearMenu(g)}</div>
+    </div>`).join('')}</div>`
+    return
+  }
+  el.innerHTML = `<table class="pv-tbl"><thead><tr><th>Item</th><th>Type</th><th>FAA registration</th><th class="ta-r">Flight time</th><th class="ta-r">Flights</th><th>Last flown</th><th>Status</th><th></th></tr></thead>
+    <tbody>${list.map(g => `<tr data-rid="${g.id}"${(g.status || 'Active') !== 'Active' ? ' class="gr-ret"' : ''}>
+      <td><div class="gr-name">${esc(g.name)}</div>${g.model ? `<div class="gr-model">${esc(g.model)}</div>` : ''}</td>
+      <td>${esc(g.type || '')}</td>
+      <td>${gearFaaCell(g)}</td>
+      <td class="ta-r num">${gearIsDrone(g) ? gearHrs(g.hours) : '—'}</td>
+      <td class="ta-r num">${gearIsDrone(g) ? (+g.flights || 0) : '—'}</td>
+      <td class="pv-date">${g.lastFlown ? fmtDate(g.lastFlown) : '—'}</td>
+      <td>${gearStatusBadge(g)}</td>
+      <td>${gearMenu(g)}</td>
+    </tr>`).join('')}</tbody></table>`
+}
+let _grW = innerWidth < 900
+window.addEventListener('resize', () => {
+  const w = innerWidth < 900; if (w === _grW) return; _grW = w
+  if (document.getElementById('panel-gear')?.classList.contains('on')) renderGear()
+})
+function gearTypeChanged() {
+  const d = /drone/i.test(document.getElementById('gear-type').value)
+  document.querySelectorAll('#gear-modal-overlay .gear-drone-f').forEach(e => e.style.display = d ? '' : 'none')
+}
+function gearSubChanged() {
+  const id = document.getElementById('gear-faa-sub').value
+  const s = id ? load(K.sub).find(x => x.id === id) : null
+  const inp = document.getElementById('gear-faa-exp'), note = document.getElementById('gear-faa-note')
+  inp.disabled = !!s
+  if (s) inp.value = nextCharge(s)
+  note.textContent = s ? 'Comes from the subscription. Renew it there and this updates.' : ''
+}
+function openGearModal(id) {
+  const g = id ? gearList().find(x => x.id === id) : null
+  const set = (k, v) => { document.getElementById(k).value = v }
+  set('gear-edit-id', g ? g.id : '')
+  document.getElementById('gear-modal-ttl').textContent = g ? 'Edit gear' : 'Add gear'
+  document.getElementById('gear-modal-err').textContent = ''
+  const linked = new Set(gearList().filter(x => x.id !== id).map(x => x.faaSubId).filter(Boolean))
+  const subs = load(K.sub).filter(s => !linked.has(s.id)).sort((a, b) => (/faa/i.test(b.name) ? 1 : 0) - (/faa/i.test(a.name) ? 1 : 0) || (a.name || '').localeCompare(b.name || ''))
+  document.getElementById('gear-faa-sub').innerHTML = '<option value="">None (enter date below)</option>' + subs.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('')
+  set('gear-name', g?.name || ''); set('gear-type', g?.type || 'FPV drone'); set('gear-model', g?.model || '')
+  set('gear-serial', g?.serial || ''); set('gear-faa-reg', g?.faaReg || ''); set('gear-rid', g?.remoteId || '')
+  set('gear-faa-sub', g?.faaSubId && subs.some(s => s.id === g.faaSubId) ? g.faaSubId : '')
+  set('gear-faa-exp', g?.faaExpires || ''); set('gear-hours', g ? (Math.round((+g.hours || 0) * 100) / 100 || '') : '')
+  set('gear-flights', g?.flights || ''); set('gear-last-flown', g?.lastFlown || '')
+  set('gear-status', g?.status || 'Active'); set('gear-notes', g?.notes || '')
+  gearTypeChanged(); gearSubChanged()
+  document.getElementById('gear-modal-overlay').classList.add('open')
+  setTimeout(() => document.getElementById('gear-name').focus(), 50)
+}
+function closeGearModal() { document.getElementById('gear-modal-overlay').classList.remove('open') }
+function saveGear() {
+  const v = k => document.getElementById(k).value.trim()
+  const name = v('gear-name')
+  if (!name) { document.getElementById('gear-modal-err').textContent = 'Name is required.'; return }
+  const id = v('gear-edit-id'), list = gearList(), prev = id ? list.find(x => x.id === id) : null
+  const drone = /drone/i.test(v('gear-type')), subId = drone ? v('gear-faa-sub') : ''
+  const entry = { ...(prev || {}), id: id || uid(), name, type: v('gear-type'), model: v('gear-model'), serial: v('gear-serial'),
+    status: v('gear-status'), faaReg: drone ? v('gear-faa-reg') : '', faaSubId: subId,
+    faaExpires: drone && !subId ? v('gear-faa-exp') : (prev?.faaExpires || ''), remoteId: drone ? v('gear-rid') : '',
+    hours: Math.max(0, parseFloat(v('gear-hours')) || 0), flights: Math.max(0, parseInt(v('gear-flights')) || 0),
+    lastFlown: v('gear-last-flown'), notes: v('gear-notes'), addedAt: prev?.addedAt || today() }
+  if (!id && privacyMode()) entry._priv = true
+  if (prev) list[list.indexOf(prev)] = entry; else list.push(entry)
+  save(K.gear, list); closeGearModal(); renderGear()
+  toast(prev ? 'Gear updated' : 'Gear added')
+}
+function gearSetStatus(id, st) {
+  const list = gearList(), g = list.find(x => x.id === id); if (!g) return
+  g.status = st; save(K.gear, list); renderGear(); toast(st === 'Active' ? 'Marked active' : 'Retired')
+}
+function delGear(id) {
+  const g = gearList().find(x => x.id === id); if (!g) return
+  if (!confirm(`Delete "${g.name}"? Its flight time is deleted too.`)) return
+  save(K.gear, gearList().filter(x => x.id !== id)); renderGear(); toast('Gear deleted')
+}
+function gearImportFaa() {
+  const list = gearList(), linked = new Set(list.map(g => g.faaSubId))
+  const subs = load(K.sub).filter(s => /faa/i.test(s.name || '') && !linked.has(s.id))
+  subs.forEach(s => {
+    const nm = (s.name || '').replace(/^\s*faa\s*[-–:]?\s*/i, '').replace(/\s*registration\s*/i, ' ').trim() || s.name
+    list.push({ id: uid(), name: nm, type: 'FPV drone', model: '', serial: '', status: 'Active',
+      faaReg: '', faaExpires: '', faaSubId: s.id, remoteId: '', hours: 0, flights: 0, lastFlown: '', notes: '', addedAt: today() })
+  })
+  save(K.gear, list); renderGear()
+  toast(`Added ${subs.length} drone${subs.length !== 1 ? 's' : ''}. Edit each to set the type and registration #`)
+}
+function openGearLog(id) {
+  const drones = gearList().filter(g => gearIsDrone(g) && (g.status || 'Active') === 'Active')
+  if (!drones.length) { toast('Add a drone first'); openGearModal(); return }
+  const sel = document.getElementById('gear-log-id')
+  sel.innerHTML = drones.map(g => `<option value="${g.id}">${esc(g.name)}${g.model ? ' · ' + esc(g.model) : ''}</option>`).join('')
+  const last = (() => { try { return localStorage.getItem('dt_gear_last') } catch { return null } })()
+  sel.value = id && drones.some(g => g.id === id) ? id : (drones.some(g => g.id === last) ? last : drones[0].id)
+  document.getElementById('gear-log-date').value = today()
+  document.getElementById('gear-log-packs').value = 1
+  document.getElementById('gear-log-min').value = ''
+  document.getElementById('gear-log-err').textContent = ''
+  document.getElementById('gear-log-overlay').classList.add('open')
+  setTimeout(() => document.getElementById('gear-log-min').focus(), 50)
+}
+function closeGearLog() { document.getElementById('gear-log-overlay').classList.remove('open') }
+function saveGearLog() {
+  const id = document.getElementById('gear-log-id').value
+  const min = parseFloat(document.getElementById('gear-log-min').value) || 0
+  const packs = Math.max(1, parseInt(document.getElementById('gear-log-packs').value) || 1)
+  const date = document.getElementById('gear-log-date').value || today()
+  if (min <= 0) { document.getElementById('gear-log-err').textContent = 'Enter the air time in minutes.'; return }
+  const list = gearList(), g = list.find(x => x.id === id); if (!g) return
+  g.hours = Math.round(((+g.hours || 0) + min / 60) * 1000) / 1000
+  g.flights = (+g.flights || 0) + packs
+  if (!g.lastFlown || date > g.lastFlown) g.lastFlown = date
+  try { localStorage.setItem('dt_gear_last', id) } catch {}
+  save(K.gear, list); closeGearLog(); renderGear()
+  toast(`${g.name}: +${min} min · ${gearHrs(g.hours)} total`)
+}
+
 // ── INSTALLABLE APP ───────────────────────────────────────
 // Service worker (sw.js, network first) so the tool can be added to the home
 // screen and still opens offline. Skipped when opened as a local file.
@@ -9172,6 +9454,73 @@ function renderSocReels() {
     <div class="smod-footer">
       <button class="btn btn-p" onclick="saveWishItem()" style="flex:1">Save Item</button>
       <button class="btn btn-s" onclick="closeWishModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- GEAR ADD / EDIT MODAL -->
+<div class="smod-overlay" id="gear-modal-overlay" onclick="if(event.target===this)closeGearModal()">
+  <div class="smod smod-scroll" style="max-width:560px">
+    <div class="smod-hdr">
+      <span class="smod-ttl" id="gear-modal-ttl">Add gear</span>
+      <button class="smod-close" onclick="closeGearModal()">&#x2715;</button>
+    </div>
+    <div class="smod-body">
+      <input type="hidden" id="gear-edit-id">
+      <div class="fg">
+        <div class="ff"><label>Name <span style="color:var(--red)">*</span></label>
+          <input id="gear-name" placeholder="5inch, BOB57, Mini 5 Pro..."></div>
+        <div class="ff"><label>Type</label>
+          <select id="gear-type" onchange="gearTypeChanged()"><option>FPV drone</option><option>Camera drone</option><option>Camera</option><option>Other</option></select></div>
+        <div class="ff"><label>Make / model</label>
+          <input id="gear-model" placeholder="iFlight BOB57, DJI Mini 5 Pro..."></div>
+        <div class="ff"><label>Serial number</label>
+          <input id="gear-serial" placeholder="Optional"></div>
+        <div class="ff gear-drone-f"><label>FAA registration #</label>
+          <input id="gear-faa-reg" placeholder="FA3XXXXXXX"></div>
+        <div class="ff gear-drone-f"><label>Remote ID</label>
+          <select id="gear-rid"><option value="">Not set</option><option>Built-in</option><option>Module</option><option>None</option></select></div>
+        <div class="ff gear-drone-f"><label>Renewal tracked in Subscriptions</label>
+          <select id="gear-faa-sub" onchange="gearSubChanged()"></select></div>
+        <div class="ff gear-drone-f"><label>Registration expires</label>
+          <input type="date" id="gear-faa-exp"><div class="gr-note" id="gear-faa-note"></div></div>
+        <div class="ff gear-drone-f"><label>Flight time (hours)</label>
+          <input type="number" id="gear-hours" min="0" step="0.1" placeholder="0"></div>
+        <div class="ff gear-drone-f"><label>Flights (packs)</label>
+          <input type="number" id="gear-flights" min="0" step="1" placeholder="0"></div>
+        <div class="ff gear-drone-f"><label>Last flown</label>
+          <input type="date" id="gear-last-flown"></div>
+        <div class="ff"><label>Status</label>
+          <select id="gear-status"><option>Active</option><option>Retired</option><option>Sold</option><option>Lost</option></select></div>
+        <div class="ff wide"><label>Notes</label>
+          <input id="gear-notes" placeholder="Props, VTX settings, repairs..."></div>
+      </div>
+      <div id="gear-modal-err" style="font-size:12px;color:var(--red)"></div>
+    </div>
+    <div class="smod-footer">
+      <button class="btn btn-p" onclick="saveGear()" style="flex:1">Save</button>
+      <button class="btn btn-s" onclick="closeGearModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOG FLIGHT MODAL -->
+<div class="smod-overlay" id="gear-log-overlay" onclick="if(event.target===this)closeGearLog()">
+  <div class="smod" style="max-width:420px">
+    <div class="smod-hdr">
+      <span class="smod-ttl">Log flight</span>
+      <button class="smod-close" onclick="closeGearLog()">&#x2715;</button>
+    </div>
+    <div class="fg">
+      <div class="ff wide"><label>Drone</label><select id="gear-log-id"></select></div>
+      <div class="ff"><label>Date</label><input type="date" id="gear-log-date"></div>
+      <div class="ff"><label>Packs flown</label><input type="number" id="gear-log-packs" min="1" step="1" value="1"></div>
+      <div class="ff wide"><label>Total air time (minutes) <span style="color:var(--red)">*</span></label><input type="number" id="gear-log-min" min="1" step="1" placeholder="e.g. 12"></div>
+    </div>
+    <div id="gear-log-err" style="font-size:12px;color:var(--red);margin-top:8px"></div>
+    <div class="smod-footer">
+      <button class="btn btn-p" onclick="saveGearLog()" style="flex:1">Add flight</button>
+      <button class="btn btn-s" onclick="closeGearLog()">Cancel</button>
     </div>
   </div>
 </div>
