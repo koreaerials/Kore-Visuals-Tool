@@ -2,8 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Kore Visuals Tracker</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0A0B0D">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kore">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -43,11 +51,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sa
 .tab:hover{background:rgba(255,255,255,0.6);color:var(--text)}
 .tab.on{background:rgba(255,255,255,0.9);color:var(--blue);box-shadow:0 2px 12px rgba(0,0,0,0.1);font-weight:600}
 
-/* ANIMATED PARTICLE BACKGROUND
-   Sits above the body gradient but behind every piece of content. Never takes clicks.
-   All other body children are already positioned (header 100 … chart-tip 9999); .main
-   is the only unpositioned one, so it gets lifted to z-index 1 below. */
-#bg-canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block}
 
 /* MAIN */
 .main{max-width:1200px;margin:0 auto;padding:24px 20px;position:relative;z-index:1}
@@ -646,7 +649,6 @@ html[data-theme="light"]{
   color-scheme:light;
 }
 html[data-theme] body{background:var(--bg);font-family:var(--font);color:var(--text);font-size:14px}
-html[data-theme] #bg-canvas{display:none}
 html[data-theme] .num,html[data-theme] .sum-card .val,html[data-theme] .sum-sub-card .val{font-family:var(--font-d);font-variant-numeric:tabular-nums}
 
 /* ── SHELL: sidebar on desktop ── */
@@ -1217,6 +1219,9 @@ html[data-theme] .soc-copy:hover{color:var(--accent-text);background:var(--accen
   #panel-social-stats .pv-hdr .btn{width:100%;justify-content:center}
 }
 .chart-wrap .empty .ei svg{width:28px!important;height:28px!important}
+/* ── INSTALLED APP (home screen) ── */
+@media(max-width:899px){html[data-theme] .hdr{padding-top:calc(10px + env(safe-area-inset-top))}}
+@media(display-mode:standalone) and (min-width:900px){html[data-theme] .hdr{padding-top:calc(20px + env(safe-area-inset-top))}}
 .inst-pd{width:auto!important;min-width:0;padding:5px 8px!important;font-size:13px!important;border-radius:8px!important}
 html[data-theme] #dash-widgets .card{grid-column:auto}
 html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
@@ -1648,10 +1653,7 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
       <div id="soc-ideas-out"></div>
   </section>
 
-  <!-- PRICING -->
-  <!-- JOBS & PRICING (combined) -->
-  <!-- JOBS & PRICING (combined) -->
-  <!-- PRICING & QUOTES (own tab since v4) -->
+  <!-- PRICING & QUOTES -->
   <section class="panel" id="panel-pricing">
     <div id="jobs-pq-section">
       <div class="pv-hdr"><div><h2>Pricing &amp; Quotes</h2><p>Your rates and the quote builder</p></div></div>
@@ -2280,132 +2282,7 @@ function inRange(ds, from, to) {
   return true
 }
 
-// ── DASHBOARD ─────────────────────────────────────────────────
-// ── DASHBOARD CARD DRAG-AND-DROP ──────────────────────────────
-// ── Generic grid drag — shared by dashboard and all tab summary grids ──────
-// Container items must have class="dw" and data-wi="N".
-// Placeholder-based: the live node never moves during the drag, eliminating oscillation.
-// Order is persisted to localStorage[key] on every drop.
-function loadGridOrder(key, n) {
-  try {
-    const o = JSON.parse(localStorage.getItem(key) || 'null')
-    if (Array.isArray(o) && o.length === n && new Set(o).size === n) return o
-  } catch {}
-  return Array.from({length:n}, (_, i) => i)
-}
-function initGridDrag(container, key) {
-  if (!container) return
-  let dragging = null, placeholder = null
-
-  container.addEventListener('dragstart', e => {
-    const w = e.target.closest('.dw:not(.dw-ph)')
-    if (!w || !container.contains(w)) return
-    dragging = w
-    e.dataTransfer.effectAllowed = 'move'
-    placeholder = document.createElement('div')
-    placeholder.className = 'dw dw-ph'
-    if (w.dataset.span) placeholder.style.gridColumn = `span ${w.dataset.span}`
-    placeholder.style.minHeight = w.offsetHeight + 'px'
-    requestAnimationFrame(() => { w.classList.add('dw-drag'); w.after(placeholder) })
-  })
-
-  container.addEventListener('dragover', e => {
-    e.preventDefault()
-    if (!dragging || !placeholder) return
-    const target = document.elementFromPoint(e.clientX, e.clientY)
-      ?.closest?.('.dw:not(.dw-ph):not(.dw-drag)')
-    if (!target || !container.contains(target)) return
-    const rect = target.getBoundingClientRect()
-    const dx = (e.clientX - (rect.left + rect.width  / 2)) / rect.width
-    const dy = (e.clientY - (rect.top  + rect.height / 2)) / rect.height
-    if (Math.abs(dx) > Math.abs(dy) ? dx > 0 : dy > 0) target.after(placeholder)
-    else target.before(placeholder)
-  })
-
-  container.addEventListener('dragend', () => {
-    if (!dragging) return
-    dragging.classList.remove('dw-drag')
-    if (placeholder?.parentNode) { placeholder.parentNode.insertBefore(dragging, placeholder); placeholder.remove() }
-    const order = [...container.querySelectorAll('.dw:not(.dw-ph)')].map(c => +c.dataset.wi)
-    try { localStorage.setItem(key, JSON.stringify(order)) } catch {}
-    dragging = null; placeholder = null
-  })
-
-  container.addEventListener('drop', e => e.preventDefault())
-}
-function initDashDrag() { initGridDrag(document.getElementById('dash-widgets'), 'dt_dash_order') }
-
-// Superseded by Dashboard v4 (end of script). Unused, safe to delete.
-function _legacyRenderDash() {
-  const {from,to}=range(FS.dash)
-  const inc=loadP(K.inc).filter(e=>inRange(e.date,from,to))
-  const pur=loadP(K.pur)
-  const rev=inc.reduce((s,e)=>s+(+e.amount||0),0)
-  const trav=inc.reduce((s,e)=>s+(+(e.travel||e.travelExpenses||e.travel_expenses||0)),0)
-  const purAmt=pur.reduce((s,e)=>s+purExpense(e,from,to),0)
-  const subAmt=FS.dash.r==='all'
-    ? (()=>{ const xs=loadP(K.subx); return loadP(K.sub).reduce((s,e)=>s+subSpent(e,xs),0) })()
-    : loadP(K.subx).filter(e=>inRange(e.date,from,to)).reduce((s,e)=>s+(+e.amount||0),0)
-  const exp=purAmt+subAmt+trav
-  const net=rev-exp
-
-  // Card inner HTML indexed by position — order is read from localStorage
-  const mainCards = [
-    `<div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('dollar',13)} Total Revenue</div><div class="val g">${fmt(rev)}</div><div class="sub">${inc.length} job${inc.length!==1?'s':''}</div>`,
-    `<div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('upload',13)} Total Expenses</div><div class="val r">${fmt(exp)}</div><div class="sub">Purchases · Subscriptions · Travel</div>`,
-    `<div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('trending-up',13)} Net Profit</div><div class="val ${net>=0?'g':'r'}">${fmt(net)}</div><div class="sub">${net>=0?'Positive':'Negative'} cash flow</div>`,
-  ]
-  const subCards = [
-    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('bag',11)} Purchases</div><div class="val r">${fmt(purAmt)}</div>`,
-    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('repeat',11)} Subscriptions</div><div class="val r">${fmt(subAmt)}</div>`,
-    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('plane',11)} Job Expenses</div><div class="val r">${fmt(trav)}</div>`,
-  ]
-  // Jobs pipeline widget
-  const allJobs = load(K.jobs)
-  const activeJobs = allJobs.filter(j => j.stage !== 'Paid')
-  const pipelineValue = activeJobs.reduce((s,j) => s + (+j.amount||0), 0)
-  const JOB_STAGE_LIST = ['Lead','Quoted','Booked','Shooting','Editing','Delivered','Invoiced']
-  const stagePills = JOB_STAGE_LIST
-    .map(s => ({s, n: allJobs.filter(j => j.stage === s).length}))
-    .filter(x => x.n > 0)
-    .map(x => `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:rgba(0,122,255,0.08);border-radius:20px;font-size:11px;font-weight:600;color:var(--blue);margin:2px">${x.n} ${x.s}</span>`)
-    .join('')
-  const jobsWidgetHTML = activeJobs.length === 0
-    ? `<div class="card-ttl" style="display:flex;align-items:center;gap:7px;margin-bottom:12px">${icon('briefcase',16)} Jobs Pipeline</div>${emptyState('briefcase','No active jobs',{label:'+ New Job',fn:"navTo('jobs');switchJobsSection('pipeline');openJobForm()"},{small:true,pad:'16px 0'})}`
-    : `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="card-ttl" style="margin-bottom:0;display:flex;align-items:center;gap:7px">${icon('briefcase',16)} Jobs Pipeline</div><button class="btn btn-sm btn-s" onclick="navTo('jobs')">View Jobs</button></div><div style="margin-bottom:12px;line-height:2">${stagePills}</div><div style="display:flex;gap:20px"><div><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:4px">Active Jobs</div><div style="font-size:22px;font-weight:700;color:var(--blue)">${activeJobs.length}</div></div><div><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:4px">Pipeline Value</div><div style="font-size:22px;font-weight:700;color:var(--green)">${fmt(pipelineValue)}</div></div></div>`
-
-  // Outstanding payments widget
-  const outstanding = loadP(K.inc).filter(e => e.status === 'Pending' || e.status === 'Unpaid')
-  const outstandingAmt = outstanding.reduce((s,e) => s + (+e.amount||0), 0)
-  const unpaidCnt = outstanding.filter(e => e.status === 'Unpaid').length
-  const pendingCnt = outstanding.filter(e => e.status === 'Pending').length
-  const outstandingSubParts = [unpaidCnt > 0 ? unpaidCnt+' unpaid' : '', pendingCnt > 0 ? pendingCnt+' pending' : ''].filter(Boolean)
-  const outstandingHTML = outstanding.length === 0
-    ? `<div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('dollar',13)} Outstanding</div><div class="val g">$0.00</div><div class="sub">All paid up</div>`
-    : `<div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('dollar',13)} Outstanding</div><div class="val o">${fmt(outstandingAmt)}</div><div class="sub">${outstandingSubParts.join(' · ')}</div>`
-
-  // Widget catalogue: 0-2 main cards, 3-5 sub-cards, 6 chart, 7 renewals, 8 quick links, 9 jobs pipeline, 10 outstanding
-  const WIDGET_SPANS = [2,2,2, 2,2,2, 4,2, 6, 4, 2]
-  const WIDGET_CLS   = ['sum-card','sum-card','sum-card','sum-sub-card','sum-sub-card','sum-sub-card','card','card','card', 'card', 'sum-card']
-  const WIDGET_HTML  = [
-    ...mainCards,
-    ...subCards,
-    `<div class="card-ttl">Monthly Revenue vs Expenses (Last 12 Months)</div><div class="chart-wrap" id="chart"></div>`,
-    `<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><div style="position:relative"><div id="ren-view-heading" class="card-ttl" style="margin-bottom:0;display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none" onclick="toggleDashViewMenu()">${icon('bell',16)} <span id="ren-view-label">Upcoming Renewals</span><span style="font-size:14px;opacity:.75;margin-left:4px;line-height:1">▾</span></div><div id="ren-view-menu" class="ren-view-menu"><button id="ren-opt-renewals" class="ren-view-opt" onclick="setDashView('renewals')">Renewals</button><button id="ren-opt-shoots" class="ren-view-opt" onclick="setDashView('shoots')">Shoots</button><button id="ren-opt-installments" class="ren-view-opt" onclick="setDashView('installments')">Installments</button><button id="ren-opt-both" class="ren-view-opt" onclick="setDashView('both')">All</button></div></div></div><div style="display:flex;justify-content:flex-end;gap:5px;margin-bottom:12px"><button id="ren-f-30d" class="fbtn" onclick="setRenewalFilter('30d')">30 Days</button><button id="ren-f-1y" class="fbtn" onclick="setRenewalFilter('1y')">1 Year</button><button id="ren-f-all" class="fbtn" onclick="setRenewalFilter('all')">All Active</button></div><div id="renewals-list"></div>`,
-    `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="card-ttl" style="margin-bottom:0;display:flex;align-items:center;gap:7px">${icon('link',16)} Quick Links</div><button class="btn btn-sm btn-g" id="link-add-btn" onclick="toggleLinkForm()">+ Add Link</button></div><div class="link-form-area" id="link-form-area"><div class="form-inner" style="margin-bottom:0"><input type="hidden" id="link-edit-id"><div class="fg" style="grid-template-columns:1fr 1fr;margin-bottom:10px"><div class="ff"><label>Name</label><input type="text" id="link-name" placeholder="e.g. FAA DroneZone"></div><div class="ff"><label>URL</label><input type="text" id="link-url" placeholder="https://..."></div></div><div style="display:flex;gap:8px"><button class="btn btn-g btn-sm" onclick="saveLink()">${icon('save',13)} Save</button><button class="btn btn-s btn-sm" onclick="cancelLinkForm()">Cancel</button></div></div></div><div id="links-list"></div>`,
-    jobsWidgetHTML,
-    outstandingHTML,
-  ]
-  const order = loadGridOrder('dt_dash_order', 11)
-  document.getElementById('dash-widgets').innerHTML = order
-    .map(i => `<div class="dw ${WIDGET_CLS[i]}" draggable="true" data-wi="${i}" data-span="${WIDGET_SPANS[i]}">${WIDGET_HTML[i]}</div>`)
-    .join('')
-  initDashDrag()
-  renderChart()
-  renderRenewals()
-  renderLinks()
-}
-
+// ── DASHBOARD CHART ──────────────────────────────────────
 // Net-profit line overlay preference (on by default), persisted across sessions
 let _chartNet = localStorage.getItem('dt_chart_net') !== '0'
 
@@ -2940,106 +2817,6 @@ async function delInc(id) {
   save(K.inc,list.filter(e=>e.id!==id)); renderIncTable(); renderJobsBoard(); renderDash(); toast('Entry deleted')
 }
 
-// Superseded by Income v4 (end of script). Unused, safe to delete.
-function _legacyRenderIncSummary(list) {
-  const el=document.getElementById('inc-summary'); if(!el)return
-  if(!list.length){el.innerHTML='';return}
-  const totRev   =list.reduce((s,e)=>s+(+e.amount||0),0)
-  const totProfit=list.reduce((s,e)=>s+(+e.profit||0),0)
-  const totTravel=list.reduce((s,e)=>s+(+(e.travel||e.travelExpenses||e.travel_expenses||0)),0)
-  const paidAmt  =list.filter(e=>(e.status||'Paid')==='Paid').reduce((s,e)=>s+(+e.amount||0),0)
-  const pendAmt  =list.filter(e=>(e.status||'Paid')==='Pending').reduce((s,e)=>s+(+e.amount||0),0)
-  const unpaidAmt=list.filter(e=>(e.status||'Paid')==='Unpaid').reduce((s,e)=>s+(+e.amount||0),0)
-  const paidCnt  =list.filter(e=>(e.status||'Paid')==='Paid').length
-  const pendCnt  =list.filter(e=>(e.status||'Paid')==='Pending').length
-  const unpaidCnt=list.filter(e=>(e.status||'Paid')==='Unpaid').length
-  const incMain = [
-    `<div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('dollar',13)} Total Revenue</div><div class="val pos">${fmt(totRev)}</div><div class="sub">${list.length} job${list.length!==1?'s':''}</div>`,
-    `<div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('trending-up',13)} Total Profit</div><div class="val ${totProfit>=0?'pos':'neg'}">${fmt(totProfit)}</div><div class="sub">after job expenses</div>`,
-    `<div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('upload',13)} Job Expenses</div><div class="val r">${fmt(totTravel)}</div><div class="sub">travel, insurance & misc</div>`,
-  ]
-  const incSub = [
-    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('check-circle',11)} Paid</div><div class="val pos">${fmt(paidAmt)}</div><div style="font-size:11px;color:var(--text-2);margin-top:3px">${paidCnt} job${paidCnt!==1?'s':''}</div>`,
-    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('clock',11)} Pending</div><div class="val" style="color:var(--orange)">${fmt(pendAmt)}</div><div style="font-size:11px;color:var(--text-2);margin-top:3px">${pendCnt} job${pendCnt!==1?'s':''}</div>`,
-    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('x',11)} Unpaid</div><div class="val" style="color:var(--red)">${fmt(unpaidAmt)}</div><div style="font-size:11px;color:var(--text-2);margin-top:3px">${unpaidCnt} job${unpaidCnt!==1?'s':''}</div>`,
-  ]
-  const incMainOrd = loadGridOrder('dt_order_inc_main', 3)
-  const incSubOrd  = loadGridOrder('dt_order_inc_sub',  3)
-  el.innerHTML=`
-    <div class="sum-grid" id="inc-main-grid" style="margin-bottom:10px">
-      ${incMainOrd.map(i=>`<div class="dw sum-card" draggable="true" data-wi="${i}">${incMain[i]}</div>`).join('')}
-    </div>
-    <div class="sum-sub-grid" id="inc-sub-grid" style="margin-bottom:0">
-      ${incSubOrd.map(i=>`<div class="dw sum-sub-card" draggable="true" data-wi="${i}">${incSub[i]}</div>`).join('')}
-    </div>`
-  initGridDrag(document.getElementById('inc-main-grid'), 'dt_order_inc_main')
-  initGridDrag(document.getElementById('inc-sub-grid'),  'dt_order_inc_sub')
-}
-
-function _legacyRenderIncTable() {
-  const el=document.getElementById('inc-table')
-  const {from,to}=range(FS.inc)
-  let list=loadP(K.inc).filter(e=>inRange(e.date,from,to))
-  const clients=[...new Set(list.map(e=>e.client||'').filter(Boolean))].sort()
-  buildMs('inc-client-ms', clients, FS.inc.clients)
-  if(FS.inc.clients.length) list=list.filter(e=>FS.inc.clients.includes(e.client))
-  list.sort((a,b)=>b.date.localeCompare(a.date))
-  renderIncSummary(list)
-  if(!list.length){el.innerHTML=emptyState('briefcase','No income entries yet.',{label:'+ Add Job',fn:'openForm(\'inc\')'});return}
-  const totRev=list.reduce((s,e)=>s+(+e.amount||0),0)
-  const totTravel=list.reduce((s,e)=>s+(+(e.travel||e.travelExpenses||e.travel_expenses||0)),0)
-  const totProfit=list.reduce((s,e)=>s+(+e.profit||0),0)
-  el.innerHTML=`<table>
-    <thead><tr><th>Filming</th><th>Payment Date</th><th>Client</th><th>Amount</th><th>Payment</th><th>Status</th><th>Expenses</th><th>Profit</th><th>Description</th><th>Actions</th></tr></thead>
-    <tbody>${list.map(e=>{
-      const pay=e.pay||e.paymentType||e.payment_type||'Other'
-      const status=e.status||e.paymentStatus||e.payment_status||'Paid'
-      const travel=+(e.travel||e.travelExpenses||e.travel_expenses||0)
-      const desc=e.desc||e.description||''
-      const filmingDate=e.filmingDate||''
-      const attCount=(()=>{if(!e.agreementId)return 0;try{const p=JSON.parse(e.agreementId);return Array.isArray(p)?p.length:1}catch{return 1}})()
-      const calLink=(e.calendarEventId&&e.date>=today())?(gcEventLink(e.calendarEventId)||''):''
-      const opt=(val,cur)=>`<option${val===cur?' selected':''}>${val}</option>`
-      if(e.id===editing.inc){
-        const profit=+e.amount-travel
-        return `<tr class="editing-row">
-          <td><input type="date" class="isel" id="ier-filming-date" value="${filmingDate}" style="width:130px"></td>
-          <td><input type="date" class="isel" id="ier-date" value="${e.date}" onkeydown="if(event.key==='Enter')saveIncRow('${e.id}')"></td>
-          <td><input type="text" class="isel" id="ier-client" value="${esc(e.client)}" style="width:110px" onkeydown="if(event.key==='Enter')saveIncRow('${e.id}')"></td>
-          <td><input type="number" class="isel" id="ier-amount" value="${e.amount}" step="0.01" oninput="calcRowProfit()" style="width:80px" onkeydown="if(event.key==='Enter')saveIncRow('${e.id}')"></td>
-          <td><select class="isel" id="ier-pay">${opt('Zelle',pay)}${opt('Cash',pay)}${opt('Check',pay)}${opt('Other',pay)}</select></td>
-          <td><select class="isel isel-status-${statusSlug(status)}" id="ier-status" onchange="this.className='isel isel-status-'+statusSlug(this.value)">${opt('Paid',status)}${opt('Pending',status)}${opt('Unpaid',status)}${opt('Written Off',status)}</select></td>
-          <td><input type="number" class="isel" id="ier-travel" value="${travel}" min="0" step="0.01" oninput="calcRowProfit()" style="width:70px"></td>
-          <td id="ier-profit"><span class="${profit>=0?'pos':'neg'}">${fmt(profit)}</span></td>
-          <td><input type="text" class="isel" id="ier-desc" value="${esc(desc)}" style="width:130px" onkeydown="if(event.key==='Enter')saveIncRow('${e.id}')"></td>
-          <td style="white-space:nowrap"><button class="btn btn-sm btn-g" onclick="saveIncRow('${e.id}')">${icon('save',13)} Save</button> <button class="btn btn-sm btn-s" onclick="cancelRowEdit('inc')">Cancel</button></td>
-        </tr>`
-      }
-      const rowCls=status==='Pending'?'row-pending':status==='Unpaid'?'row-unpaid':''
-      return `<tr class="${rowCls}">
-        <td style="white-space:nowrap;color:var(--text-2);font-size:12px">${filmingDate?fmtDate(filmingDate):'—'}</td>
-        <td style="white-space:nowrap">${fmtDate(e.date)}</td>
-        <td><strong>${esc(e.client)}</strong></td>
-        <td><span class="pos">${fmt(e.amount)}</span></td>
-        <td><select class="isel" onchange="updateIncField('${e.id}','pay',this.value)">${opt('Zelle',pay)}${opt('Cash',pay)}${opt('Check',pay)}${opt('Other',pay)}</select></td>
-        <td><select class="isel isel-status-${statusSlug(status)}" onchange="this.className='isel isel-status-'+statusSlug(this.value);updateIncField('${e.id}','status',this.value)">${opt('Paid',status)}${opt('Pending',status)}${opt('Unpaid',status)}${opt('Written Off',status)}</select></td>
-        <td>${travel>0?`<span class="bdg bdg-o">${fmt(travel)}</span>`:'<span style="color:var(--text-2)">—</span>'}</td>
-        <td><span class="${+e.profit>=0?'pos':'neg'}">${fmt(e.profit)}</span></td>
-        <td style="min-width:140px;white-space:normal;word-break:break-word">${esc(desc||'—')}</td>
-        <td>${kebab([
-          {label:'Edit', icon:'pencil', fn:`editIncRow('${e.id}')`},
-          {label:e.invoiceNum?`Invoice ${esc(e.invoiceNum)}`:'Link Invoice', icon:'receipt', fn:`openInvLinkModal('${e.id}')`, active:!!e.invoiceNum},
-          {label:attCount?`Attachments (${attCount})`:'Link Attachment', icon:'paperclip', fn:`openAgrModal('${e.id}')`, active:!!attCount},
-          ...(calLink?[{label:'View in Calendar', icon:'calendar', fn:`window.open('${esc(calLink)}','_blank')`, active:true}]:[]),
-          'sep',
-          {label:'Delete', icon:'trash', fn:`delInc('${e.id}')`, danger:true},
-        ])}</td>
-      </tr>`
-    }).join('')}</tbody>
-    <tfoot><tr><td></td><td colspan="2">Total (${list.length} jobs)</td><td><span class="pos">${fmt(totRev)}</span></td><td colspan="2"></td><td>${totTravel>0?`<span class="neg">${fmt(totTravel)}</span>`:''}</td><td><span class="${totProfit>=0?'pos':'neg'}">${fmt(totProfit)}</span></td><td colspan="2"></td></tr></tfoot>
-  </table>`
-}
-
 // ── PRICING ───────────────────────────────────────────────────
 function openPrcForm(id) {
   const w=document.getElementById('prc-form-wrap'); w.classList.add('open')
@@ -3424,9 +3201,8 @@ function quoteToJob() {
   },80)
 }
 
-// ── JOBS (KANBAN) ──────────────────────────────────────────────
+// ── JOBS ──────────────────────────────────────────────
 const JOB_STAGES = ['Lead','Quoted','Booked','Shooting','Editing','Delivered','Invoiced','Paid']
-let _expandedJob = null
 
 async function openJobForm(id) {
   const overlay=document.getElementById('job-form-overlay'); if(!overlay)return
@@ -3473,20 +3249,6 @@ function switchExportSection(section) {
 // Pricing & Quotes is its own tab now; kept so older callers still work.
 function switchJobsSection(section) {
   if (section === 'pricing') navTo('pricing')
-}
-function _legacySwitchJobsSection(section) {
-  const pq = document.getElementById('jobs-pq-section')
-  const pl = document.getElementById('jobs-pipeline-section')
-  const btns = document.querySelectorAll('#panel-jobs .jobs-subnav-btn')
-  if (section === 'pricing') {
-    if(pq) pq.style.display = ''
-    if(pl) pl.style.display = 'none'
-    btns.forEach(b => b.classList.toggle('on', b.dataset.section === 'pricing'))
-  } else {
-    if(pq) pq.style.display = 'none'
-    if(pl) pl.style.display = ''
-    btns.forEach(b => b.classList.toggle('on', b.dataset.section === 'pipeline'))
-  }
 }
 
 async function saveJob() {
@@ -3608,54 +3370,6 @@ async function jobCreateIncomeIfNeeded(job) {
   renderIncTable(); renderDash(); toast(`Income entry created for ${job.name}`)
 }
 
-// Superseded by Jobs v4 (end of script). Unused, safe to delete.
-function _legacyRenderJobsBoard() {
-  const el=document.getElementById('jobs-board'); if(!el)return
-  const allJobs=load(K.jobs)
-  const stages=JOB_STAGES.filter(s=>s!=='Paid'&&s!=='Written Off')
-  const STAGE_COLORS = {
-    Lead: '#8e8e93',
-    Quoted: '#007AFF',
-    Booked: '#AF52DE',
-    Shooting: '#FF9500',
-    Editing: '#FF9F0A',
-    Delivered: '#30B0C7',
-    Invoiced: '#34C759'
-  }
-  el.innerHTML=stages.map(stage=>{
-    const jobs=allJobs.filter(j=>j.stage===stage)
-    const cards=jobs.map(job=>{
-      const expanded=_expandedJob===job.id
-      return `<div class="job-card" onclick="toggleJobExpand('${job.id}')">
-        <div class="job-name">${esc(job.name)}</div>
-        <div class="job-meta">${job.clientName?esc(job.clientName)+'<br>':''}${job.amount?fmt(job.amount):''}${job.filmingDate?' · '+fmtDate(job.filmingDate):''}${job.location?'<br>'+esc(job.location):''}
-        </div>
-        ${wxSlot(job)}${expanded?`<div class="job-card-expanded">
-          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:8px">Move to stage:</div>
-          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">
-            ${JOB_STAGES.filter(s=>s!==stage&&s!=='Paid'&&s!=='Written Off').map(s=>`<button class="btn btn-sm btn-s" style="font-size:10px;padding:3px 7px" onclick="event.stopPropagation();jobSetStage('${job.id}','${s}')">${s}</button>`).join('')}
-          </div>
-          <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap">
-            <button class="btn btn-sm btn-g" onclick="event.stopPropagation();jobMarkPaid('${job.id}')">${icon('check-circle',12)} Mark Paid</button>
-            <button class="btn btn-sm btn-s" onclick="event.stopPropagation();openJobForm('${job.id}')">${icon('pencil',12)} Edit</button>
-            <button class="btn btn-sm btn-d" onclick="event.stopPropagation();delJob('${job.id}')">${icon('trash',12)} Delete</button>
-            ${job.agrId?`<button class="btn btn-sm btn-s" style="color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)" onclick="event.stopPropagation();viewJobAgreement('${job.agrId}')">${icon('paperclip',12)} View Agreement</button>`:''}
-          </div>
-        </div>`:''}
-      </div>`
-    }).join('')
-    const stageColor = STAGE_COLORS[stage] || 'var(--text-2)'
-    return `<div class="kanban-col" style="border-left:3px solid ${stageColor}">
-      <div class="kanban-col-hdr"><span>${stage}</span><span style="background:rgba(0,0,0,0.08);border-radius:8px;padding:1px 6px;font-size:10px">${jobs.length}</span></div>
-      ${cards||emptyState('briefcase','No jobs here',null,{small:true,pad:'14px 6px'})}
-    </div>`
-  }).join(''); wxHydrate(el)
-}
-
-function toggleJobExpand(id) {
-  _expandedJob=_expandedJob===id?null:id; renderJobsBoard()
-}
-
 // ── PURCHASES ─────────────────────────────────────────────────
 function savePurchase() {
   const id=document.getElementById('pur-edit-id').value
@@ -3696,77 +3410,6 @@ function editPur(id) {
 function delPur(id) {
   if(!confirm('Delete this purchase?'))return
   save(K.pur,load(K.pur).filter(e=>e.id!==id)); renderPurTable(); renderDash(); toast('Purchase deleted')
-}
-
-// Superseded by Purchases v4 (end of script). Unused, safe to delete.
-function _legacyRenderPurSummary() {
-  const el=document.getElementById('pur-summary'); if(!el)return
-  const {from,to}=range(FS.pur)
-  const all=loadP(K.pur).filter(e=>purInPeriod(e,from,to))
-  if(!all.length){el.innerHTML='';return}
-  const total=all.reduce((s,e)=>s+purExpense(e,from,to),0)
-  const bycat=cat=>all.filter(e=>(e.cat||e.category||'Misc')===cat).reduce((s,e)=>s+purExpense(e,from,to),0)
-  const drone=bycat('Drone Equipment'), cam=bycat('Camera Equipment'), misc=bycat('Misc')
-  const purSub = [
-    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('drone',11)} Drone Equipment</div><div class="val r">${fmt(drone)}</div>`,
-    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('box',11)} Camera Equipment</div><div class="val r">${fmt(cam)}</div>`,
-    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('briefcase',11)} Misc</div><div class="val r">${fmt(misc)}</div>`,
-  ]
-  const purSubOrd = loadGridOrder('dt_order_pur_sub', 3)
-  el.innerHTML=`
-    <div class="sum-grid" style="margin-bottom:10px">
-      <div class="sum-card"><div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('bag',13)} Total Purchases</div><div class="val r">${fmt(total)}</div><div class="sub">${all.length} item${all.length!==1?'s':''}</div></div>
-    </div>
-    <div class="sum-sub-grid" id="pur-sub-grid" style="margin-bottom:0">
-      ${purSubOrd.map(i=>`<div class="dw sum-sub-card" draggable="true" data-wi="${i}">${purSub[i]}</div>`).join('')}
-    </div>`
-  initGridDrag(document.getElementById('pur-sub-grid'), 'dt_order_pur_sub')
-}
-
-function _legacyRenderPurTable() {
-  const el=document.getElementById('pur-table')
-  const {from,to}=range(FS.pur)
-  let list=loadP(K.pur).filter(e=>purInPeriod(e,from,to))
-  if(FS.pur.cat!=='all') list=list.filter(e=>(e.cat||e.category||'Misc')===FS.pur.cat)
-  const vendors=[...new Set(list.map(e=>e.store||e.name||'').filter(Boolean))].sort()
-  buildMs('pur-vendor-ms', vendors, FS.pur.vendors)
-  if(FS.pur.vendors.length) list=list.filter(e=>FS.pur.vendors.includes(e.store||e.name||''))
-  list.sort((a,b)=>b.date.localeCompare(a.date))
-  renderPurSummary()
-  if(!list.length){el.innerHTML=emptyState('cart','No purchases yet.',{label:'+ Add Purchase',fn:'openForm(\'pur\')'});return}
-  const total=list.reduce((s,e)=>s+purExpense(e,from,to),0)
-  el.innerHTML=`<table>
-    <thead><tr><th>Date</th><th>Store / Vendor</th><th>Category</th><th>Price</th><th>Description</th><th>Actions</th></tr></thead>
-    <tbody>${list.map(e=>{
-      const cat=e.cat||e.category||'Misc'
-      const desc=e.desc||e.description||''
-      const store=e.store||e.name||''
-      const optC=(val)=>`<option${val===cat?' selected':''}>${val}</option>`
-      if(e.id===editing.pur){
-        return `<tr class="editing-row">
-          <td><input type="date" class="isel" id="per-date" value="${e.date}" onkeydown="if(event.key==='Enter')savePurRow('${e.id}')"></td>
-          <td><input type="text" class="isel" id="per-store" value="${esc(store)}" style="width:120px" onkeydown="if(event.key==='Enter')savePurRow('${e.id}')"></td>
-          <td><select class="isel" id="per-cat">${optC('Drone Equipment')}${optC('Camera Equipment')}${optC('Misc')}</select></td>
-          <td>${purIsInstallment(e) ? purInstPriceCell(e) : `<input type="number" class="isel" id="per-price" value="${e.price}" step="0.01" style="width:80px" onkeydown="if(event.key==='Enter')savePurRow('${e.id}')">`}</td>
-          <td><input type="text" class="isel" id="per-desc" value="${esc(desc)}" style="width:140px" onkeydown="if(event.key==='Enter')savePurRow('${e.id}')"></td>
-          <td style="white-space:nowrap"><button class="btn btn-sm btn-g" onclick="savePurRow('${e.id}')">${icon('save',13)} Save</button> <button class="btn btn-sm btn-s" onclick="cancelRowEdit('pur')">Cancel</button></td>
-        </tr>`
-      }
-      const inst=purIsInstallment(e), open=inst&&_purExpanded.has(e.id)
-      return `<tr data-rid="${e.id}">
-      <td style="white-space:nowrap">${inst?`<button class="inst-chev${open?' open':''}" onclick="togglePurInst('${e.id}')" aria-expanded="${open}" title="${open?'Hide':'Show'} payment schedule">›</button>`:''}${fmtDate(e.date)}</td>
-      <td><strong>${esc(store)}</strong>${inst?` <span class="bdg bdg-b">Installment</span>`:''}</td>
-      <td><select class="isel" onchange="updatePurField('${e.id}','cat',this.value)">${optC('Drone Equipment')}${optC('Camera Equipment')}${optC('Misc')}</select></td>
-      <td>${inst?purInstPriceCell(e):`<span class="${+e.price<0?'pos':'neg'}">${fmt(e.price)}</span>`}</td>
-      <td style="min-width:120px;white-space:normal;word-break:break-word">${esc(desc||'—')}</td>
-      <td>${kebab([
-        {label:'Edit', icon:'pencil', fn:`editPurRow('${e.id}')`},
-        'sep',
-        {label:'Delete', icon:'trash', fn:`delPur('${e.id}')`, danger:true},
-      ])}</td>
-    </tr>${open?purInstSubRow(e):''}`}).join('')}</tbody>
-    <tfoot><tr><td colspan="3">Total (${list.length} items)</td><td><span class="neg">${fmt(total)}</span></td><td colspan="2"></td></tr></tfoot>
-  </table>`
 }
 
 // ── SUBSCRIPTIONS ─────────────────────────────────────────────
@@ -3921,135 +3564,6 @@ function filterSubs(list) {
   if(FS.sub.bt!=='all')     out=out.filter(e=>e.billingType===FS.sub.bt)
   if(FS.sub.svcs.length)    out=out.filter(e=>FS.sub.svcs.includes(e.name))
   return out
-}
-
-// Superseded by Subscriptions v3 (end of script). Unused, safe to delete.
-function _legacyRenderSubSummary() {
-  const el=document.getElementById('sub-summary'); if(!el)return
-  const subs=filterSubs(loadP(K.sub))
-  if(!subs.length){el.innerHTML='';return}
-  const spent=s=>(s.totalSpent!==undefined&&s.totalSpent!=='')?+s.totalSpent:(s.lastProcessed?(+s.amount||0):0)
-  const sumBy=(pred)=>subs.filter(pred).reduce((s,e)=>s+spent(e),0)
-  const total      =subs.reduce((s,e)=>s+spent(e),0)
-  const activeAmt  =sumBy(s=>s.status==='Active'  &&s.billingType!=='One-Time')
-  const inactiveAmt=sumBy(s=>s.status==='Inactive'&&s.billingType!=='One-Time')
-  const onetimeAmt =sumBy(s=>s.billingType==='One-Time')
-  const activeCnt  =subs.filter(e=>e.status==='Active'  &&e.billingType!=='One-Time').length
-  const inactiveCnt=subs.filter(e=>e.status==='Inactive'&&e.billingType!=='One-Time').length
-  const onetimeCnt =subs.filter(e=>e.billingType==='One-Time').length
-  const subSub = [
-    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('check-circle',11)} Active (Recurring)</div><div class="val r">${fmt(activeAmt)}</div><div style="font-size:11px;color:var(--text-2);margin-top:3px">${activeCnt} sub${activeCnt!==1?'s':''}</div>`,
-    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('x',11)} Inactive</div><div class="val" style="color:var(--text-2)">${fmt(inactiveAmt)}</div><div style="font-size:11px;color:var(--text-2);margin-top:3px">${inactiveCnt} sub${inactiveCnt!==1?'s':''}</div>`,
-    `<div class="lbl" style="display:flex;align-items:center;gap:4px">${icon('dollar',11)} One-Time</div><div class="val r">${fmt(onetimeAmt)}</div><div style="font-size:11px;color:var(--text-2);margin-top:3px">${onetimeCnt} sub${onetimeCnt!==1?'s':''}</div>`,
-  ]
-  const subSubOrd = loadGridOrder('dt_order_sub_sub', 3)
-  el.innerHTML=`
-    <div class="sum-grid" style="margin-bottom:10px">
-      <div class="sum-card"><div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('repeat',13)} Total Spent on Subscriptions</div><div class="val r">${fmt(total)}</div><div class="sub">${subs.length} subscription${subs.length!==1?'s':''} · all time</div></div>
-    </div>
-    <div class="sum-sub-grid" id="sub-sub-grid" style="margin-bottom:0">
-      ${subSubOrd.map(i=>`<div class="dw sum-sub-card" draggable="true" data-wi="${i}">${subSub[i]}</div>`).join('')}
-    </div>`
-  initGridDrag(document.getElementById('sub-sub-grid'), 'dt_order_sub_sub')
-}
-
-// Superseded by Subscriptions v3 (end of script). Unused, safe to delete.
-function _legacyRenderSubTable() {
-  const el=document.getElementById('sub-table')
-  const preSvc=load(K.sub).filter(s=>{
-    if(FS.sub.bt!=='all'&&s.billingType!==FS.sub.bt) return false
-    return true
-  })
-  const svcs=[...new Set(preSvc.map(s=>s.name||'').filter(Boolean))].sort()
-  buildMs('sub-svc-ms', svcs, FS.sub.svcs)
-  const allFiltered=loadP(K.sub).filter(s=>{
-    if(FS.sub.bt!=='all'&&s.billingType!==FS.sub.bt) return false
-    if(FS.sub.svcs.length&&!FS.sub.svcs.includes(s.name)) return false
-    return true
-  })
-  renderSubSummary()
-  if(!allFiltered.length){el.innerHTML=emptyState('refresh','No subscriptions yet.',{label:'+ Add Subscription',fn:'openForm(\'sub\')'});return}
-  const bBdg={Monthly:'bdg-b',Annual:'bdg-g','Every 2 Years':'bdg-o','Every 3 Years':'bdg-v','One-Time':'bdg-gr'}
-  const spent=s=>(s.totalSpent!==undefined&&s.totalSpent!=='')?+s.totalSpent:(s.lastProcessed?(+s.amount||0):0)
-  const active=allFiltered.filter(s=>s.status==='Active'&&s.billingType!=='One-Time').sort((a,b)=>a.name.localeCompare(b.name))
-  const inactive=allFiltered.filter(s=>s.status!=='Active'||s.billingType==='One-Time').sort((a,b)=>a.name.localeCompare(b.name))
-  function buildSubRows(list){return list.map(s=>{
-      const nr=(s.status==='Active'&&s.billingType!=='One-Time')?fmtDate(nextCharge(s)):'—'
-      const optB=(val)=>`<option${val===s.billingType?' selected':''}>${val}</option>`
-      const isManual=s.autoRenew===false
-      if(s.id===editing.sub){
-        const ts=s.totalSpent!==undefined?+s.totalSpent:+s.amount||0
-        return `<tr class="editing-row">
-          <td><input type="text" class="isel" id="ser-name" value="${esc(s.name)}" style="width:120px" onkeydown="if(event.key==='Enter')saveSubRow('${s.id}')"></td>
-          <td><input type="number" class="isel" id="ser-amount" value="${s.amount}" step="0.01" style="width:70px" onkeydown="if(event.key==='Enter')saveSubRow('${s.id}')"></td>
-          <td><select class="isel" id="ser-billing">${optB('Monthly')}${optB('Annual')}${optB('Every 2 Years')}${optB('Every 3 Years')}${optB('One-Time')}</select></td>
-          <td><select class="isel" id="ser-autorenew"><option value="Auto"${!isManual?' selected':''}>Auto</option><option value="Manual"${isManual?' selected':''}>Manual</option></select></td>
-          <td><input type="date" class="isel" id="ser-start" value="${s.startDate||''}" style="width:130px"></td>
-          <td><div style="display:flex;flex-direction:column;gap:4px"><select class="isel" id="ser-status"><option${s.status==='Active'?' selected':''}>Active</option><option${s.status==='Inactive'?' selected':''}>Inactive</option></select><input type="date" class="isel" id="ser-end" value="${s.endDate||''}" style="width:130px" title="Deactivation date"></div></td>
-          <td style="font-size:12px;color:var(--text-2)">${nr}</td>
-          <td><input type="number" class="isel" id="ser-spent" value="${ts}" step="0.01" style="width:80px" title="Override total spent"></td>
-          <td style="white-space:nowrap"><button class="btn btn-sm btn-g" onclick="saveSubRow('${s.id}')">${icon('save',13)} Save</button> <button class="btn btn-sm btn-s" onclick="cancelRowEdit('sub')">Cancel</button></td>
-        </tr>`
-      }
-      const renewTypeBadge=isManual
-        ?`<span class="bdg bdg-o" style="font-size:10px">Manual</span>`
-        :`<span class="bdg bdg-gr" style="font-size:10px">Auto</span>`
-      const manualActionBtn=isManual&&s.status==='Active'&&s.billingType!=='One-Time'
-        ?`<button class="btn btn-sm btn-g" onclick="confirmManualRenew('${s.id}')" style="font-size:10px;padding:2px 7px;margin-top:3px">Mark Renewed</button>`
-        :''
-      const statusSel=`<select class="isel" onchange="updateSubField('${s.id}','status',this.value)"><option${s.status==='Active'?' selected':''}>Active</option><option${s.status==='Inactive'?' selected':''}>Inactive</option></select>`
-      const statusCell=s.status==='Inactive'&&s.endDate
-        ?`<div>${statusSel}<div style="font-size:11px;color:var(--text-2);margin-top:3px;white-space:nowrap">${fmtDate(s.endDate)}</div></div>`
-        :statusSel
-      return `<tr data-rid="${s.id}">
-        <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(s.name)}"><strong>${esc(s.name)}</strong></td>
-        <td><span class="neg">${fmt(s.amount)}</span></td>
-        <td style="white-space:nowrap"><span class="bdg ${bBdg[s.billingType]||'bdg-gr'}">${esc(s.billingType)}</span></td>
-        <td>${renewTypeBadge}${manualActionBtn}</td>
-        <td style="white-space:nowrap">${fmtDate(s.startDate)}</td>
-        <td>${statusCell}</td>
-        <td style="font-size:12px;color:var(--text-2);white-space:nowrap">${nr}</td>
-        <td><span class="neg">${fmt(spent(s))}</span></td>
-        <td style="white-space:nowrap">${kebab([
-          {label:'Edit', icon:'pencil', fn:`editSubRow('${s.id}')`},
-          {label:'Duplicate', icon:'copy', fn:`dupSub('${s.id}')`},
-          'sep',
-          {label:'Delete', icon:'trash', fn:`delSub('${s.id}')`, danger:true},
-        ])}</td>
-      </tr>`
-    }).join('')}
-  function buildSubTable(list){
-    const tot=list.reduce((s,e)=>s+spent(e),0)
-    const amtTot=list.reduce((s,e)=>s+(+e.amount||0),0)
-    return `<table>
-    <thead><tr><th style="min-width:120px">Service</th><th>Amount</th><th>Billing</th><th>Renewal</th><th>Start</th><th>Status</th><th>Next Renewal</th><th>Total Spent</th><th>Actions</th></tr></thead>
-    <tbody>${buildSubRows(list)}</tbody>
-    <tfoot><tr><td>Total (${list.length} subscription${list.length!==1?'s':''})</td><td><span class="neg">${fmt(amtTot)}</span></td><td colspan="4"></td><td></td><td><span class="neg">${fmt(tot)}</span></td><td></td></tr></tfoot>
-  </table>`}
-  const inactiveOpen=localStorage.getItem('dt_sub_inactive_open')!=='false'
-  let html=''
-  if(active.length) html+=`<div style="font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Active (${active.length})</div>${buildSubTable(active)}`
-  if(inactive.length) html+=`<details id="sub-inactive-det"${inactiveOpen?' open':''} style="margin-top:${active.length?'20px':'0'}"><summary style="cursor:pointer;font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:0.05em;padding:6px 0;user-select:none">Inactive &amp; One-Time (${inactive.length})</summary>${buildSubTable(inactive)}</details>`
-  el.innerHTML=html
-  const det=el.querySelector('#sub-inactive-det')
-  if(det) det.addEventListener('toggle',()=>localStorage.setItem('dt_sub_inactive_open',det.open))
-}
-
-function renderSubxTable() {
-  const el=document.getElementById('subexp-table')
-  const list=load(K.subx).sort((a,b)=>b.date.localeCompare(a.date))
-  if(!list.length){el.innerHTML=emptyState('document','No auto-charges yet. Active subscriptions will generate entries here on each open.');return}
-  const total=list.reduce((s,e)=>s+(+e.amount||0),0)
-  el.innerHTML=`<table>
-    <thead><tr><th>Date</th><th>Subscription</th><th>Amount</th><th>Actions</th></tr></thead>
-    <tbody>${list.map(e=>`<tr>
-      <td>${fmtDate(e.date)}</td>
-      <td>${esc(e.name)}</td>
-      <td><span class="neg">${fmt(e.amount)}</span></td>
-      <td><button class="btn btn-sm btn-d" onclick="delSubx('${e.id}')">${icon('trash',13)}</button></td>
-    </tr>`).join('')}</tbody>
-    <tfoot><tr><td colspan="2">Total (${list.length} charges)</td><td><span class="neg">${fmt(total)}</span></td><td></td></tr></tfoot>
-  </table>`
 }
 
 // ── EXPORT ────────────────────────────────────────────────────
@@ -4515,52 +4029,6 @@ function migrateLastProcessed_v2() {
   const pruned=load(K.subx).filter(e=>!(affectedNames.includes((e.name||'').toLowerCase())&&e.date>='2026-01-01'))
   save(K.subx, pruned)
   localStorage.setItem('dt_lp_migrated_v2','1')
-}
-
-// ── SUB TOTAL-SPENT MIGRATION ─────────────────────────────────
-// Retired: reset totals to hardcoded values on every load. Unused, safe to delete.
-function _legacyMigrateSubTotalSpent() {
-  const rules=[
-    {name:'Squarespace Domain',            status:'Inactive', startYM:'2022-09', totalSpent:20.00},
-    {name:'Squarespace Website',           status:'Inactive', startYM:'2022-09', totalSpent:192.00},
-    {name:'Epidemic Sounds',                                                     totalSpent:228.00},
-    {name:'Squarespace Website Business',                                        totalSpent:220.80},
-    {name:'FAA DJI FPV Registration',                                            totalSpent:5.00},
-    {name:'Google Storage',               status:'Inactive', startYM:'2022-08', totalSpent:2.16},
-    {name:'Google Storage',               status:'Inactive', startYM:'2022-10', totalSpent:6.48},
-    {name:'Google Storage',               status:'Inactive', startYM:'2023-04', totalSpent:21.89},
-    {name:'Adobe',                        status:'Inactive', startYM:'2024-08', totalSpent:86.84},
-    {name:'Adobe',                        status:'Inactive', startYM:'2024-11', totalSpent:22.70},
-    {name:'Squarespace Domain',           status:'Active',                       totalSpent:40.00},
-    {name:'Squarespace Website',          status:'Active',                       totalSpent:192.00},
-    {name:'FAA 5inch Registration',                                              totalSpent:5.00},
-    {name:'FAA Protek35 Registration',                                           totalSpent:5.00},
-    {name:'FAA BOB57 Registration',                                              totalSpent:5.00},
-    {name:'FAA CineLog25 Registration',                                          totalSpent:5.00},
-    {name:'FAA Mavic Mini 3 Pro Registration',                                   totalSpent:5.00},
-    {name:'Google Storage',               status:'Active',                       totalSpent:45.36},
-    {name:'Adobe',                        status:'Active',                       totalSpent:455.98},
-    {name:'FAA Certificate Replacement',                                         totalSpent:2.00},
-    {name:'Kore Aerials LLC',                                                    totalSpent:225.00},
-    {name:'Newsday Ad',                                                          totalSpent:382.50},
-    {name:'Beacon Ad',                                                           totalSpent:125.00},
-    {name:'FAA Part 107 Test',                                                   totalSpent:175.00},
-    {name:'ReelSteady',                                                          totalSpent:108.61},
-    {name:'ToneLab Addon',                                                       totalSpent:104.40},
-  ]
-  const subs=load(K.sub); let changed=false
-  for(const rule of rules){
-    const matches=subs.filter(s=>{
-      if(s.name.trim().toLowerCase()!==rule.name.trim().toLowerCase()) return false
-      if(rule.status && s.status!==rule.status) return false
-      if(rule.startYM && !(s.startDate||'').startsWith(rule.startYM)) return false
-      return true
-    })
-    for(const sub of matches){
-      if(sub.totalSpent!==rule.totalSpent){sub.totalSpent=rule.totalSpent;changed=true}
-    }
-  }
-  if(changed) save(K.sub,subs)
 }
 
 // ── CLEAR ALL DATA ────────────────────────────────────────────
@@ -5250,99 +4718,6 @@ function mobNavTo(t){
 // ── INIT ──────────────────────────────────────────────────────
 // Apply theme immediately (before DOMContentLoaded) to avoid flash
 ;(()=>{ const t=localStorage.getItem('dt_theme')||'dark'; document.documentElement.dataset.theme=t })()
-
-// ── ANIMATED PARTICLE BACKGROUND ──────────────────────────────
-// Purely decorative and fully self-contained. Reads the theme from the existing
-// toggle (html[data-theme]) rather than tracking it separately.
-;(function(){
-  const cv = document.getElementById('bg-canvas')
-  if (!cv || !cv.getContext) return
-  const ctx = cv.getContext('2d')
-  if (!ctx) return
-  const reduceMQ = matchMedia('(prefers-reduced-motion: reduce)')
-
-  const PALETTE = {
-    dark:  { dot:'hsla(200,80%,70%,0.6)',  lh:210, ls:60, ll:65, la:0.25 },
-    light: { dot:'hsla(212,55%,42%,0.38)', lh:215, ls:60, ll:45, la:0.16 },
-  }
-  const pal = () => PALETTE[document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light']
-
-  let dpr=1, W=0, H=0, parts=[], raf=null, link=0, link2=0, dotR=1, lineW=1
-
-  function init(){
-    // Measure the element itself so scrollbars can never skew the backing store
-    const r = cv.getBoundingClientRect()
-    const cssW = r.width  || innerWidth
-    const cssH = r.height || innerHeight
-    if (cssW < 2 || cssH < 2) return false
-    dpr = Math.min(devicePixelRatio || 1, 2)        // cap dpr at 2
-    W = cv.width  = Math.round(cssW * dpr)
-    H = cv.height = Math.round(cssH * dpr)
-    link = 110 * dpr; link2 = link * link
-    dotR = 1.3 * dpr; lineW = Math.max(0.5, 0.6 * dpr)
-    // Phones get a much sparser field so mid-range GPUs keep up (~55% fewer)
-    const divisor = cssW < 640 ? 62000 : 28000
-    const n = Math.max(10, Math.min(150, Math.round((cssW * cssH) / divisor)))
-    const v = 0.3 * dpr
-    parts = new Array(n)
-    for (let i = 0; i < n; i++) parts[i] = {
-      x: Math.random()*W, y: Math.random()*H,
-      vx: (Math.random()-0.5)*v, vy: (Math.random()-0.5)*v,
-    }
-    return true
-  }
-
-  function draw(){
-    const p = pal()
-    ctx.clearRect(0, 0, W, H)
-    ctx.lineWidth = lineW
-    for (let i = 0; i < parts.length; i++) {
-      const a = parts[i]
-      for (let j = i+1; j < parts.length; j++) {
-        const b = parts[j]
-        const dx = a.x-b.x, dy = a.y-b.y, d2 = dx*dx + dy*dy
-        if (d2 >= link2) continue                    // squared compare avoids sqrt on most pairs
-        ctx.strokeStyle = `hsla(${p.lh},${p.ls}%,${p.ll}%,${p.la * (1 - Math.sqrt(d2)/link)})`
-        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke()
-      }
-    }
-    ctx.fillStyle = p.dot
-    for (const q of parts) { ctx.beginPath(); ctx.arc(q.x, q.y, dotR, 0, Math.PI*2); ctx.fill() }
-  }
-
-  function step(){
-    for (const q of parts) {
-      q.x += q.vx; q.y += q.vy
-      if (q.x <= 0) { q.x = 0; q.vx =  Math.abs(q.vx) } else if (q.x >= W) { q.x = W; q.vx = -Math.abs(q.vx) }
-      if (q.y <= 0) { q.y = 0; q.vy =  Math.abs(q.vy) } else if (q.y >= H) { q.y = H; q.vy = -Math.abs(q.vy) }
-    }
-  }
-
-  function frame(){ step(); draw(); raf = requestAnimationFrame(frame) }
-  function start(){ if (raf === null && !reduceMQ.matches && !document.hidden) raf = requestAnimationFrame(frame) }
-  function stop(){ if (raf !== null) { cancelAnimationFrame(raf); raf = null } }
-  // Reduced motion → one static frame instead of a running loop
-  function render(){ if (reduceMQ.matches) { stop(); draw() } else start() }
-
-  if (!init()) return
-  render()
-
-  // Don't burn frames on a hidden tab
-  document.addEventListener('visibilitychange', () => document.hidden ? stop() : render())
-
-  let rt = null
-  const reflow = d => { clearTimeout(rt); rt = setTimeout(() => { stop(); if (init()) render() }, d) }
-  addEventListener('resize', () => reflow(180))
-  addEventListener('orientationchange', () => reflow(250))
-
-  // While animating, pal() is read every frame so a theme flip swaps live. This only
-  // covers the paused cases (reduced motion / hidden tab), where no frame is coming.
-  new MutationObserver(() => { if (raf === null) draw() })
-    .observe(document.documentElement, { attributes:true, attributeFilter:['data-theme'] })
-
-  const onReduce = () => { stop(); render() }
-  reduceMQ.addEventListener ? reduceMQ.addEventListener('change', onReduce) : reduceMQ.addListener(onReduce)
-})()
 
 document.addEventListener('click', e=>{
   if(!e.target.closest('.ms-wrap')) document.querySelectorAll('.ms-panel.open').forEach(p=>p.classList.remove('open'))
@@ -6634,70 +6009,6 @@ function cliSortClients(clients) {
   return withStats
 }
 
-// Superseded by Clients v4 (end of script). Unused, safe to delete.
-function _legacyRenderClientList() {
-  _cliDetailName = null
-  document.getElementById('cli-list-view').style.display = ''
-  document.getElementById('cli-detail-view').style.display = 'none'
-  const clients = getClientList()
-  const q = (document.getElementById('cli-search')||{value:''}).value.toLowerCase()
-  const filtered = q ? clients.filter(c => c.name.toLowerCase().includes(q) || (c.company||'').toLowerCase().includes(q)) : clients
-  const sorted = cliSortClients(filtered)
-  const recentActive = _cliSort === 'recent-desc' || _cliSort === 'recent-asc'
-  const recentNext  = _cliSort === 'recent-desc' ? 'recent-asc' : 'recent-desc'
-  const recentArrow = _cliSort === 'recent-desc' ? ' ↓' : _cliSort === 'recent-asc' ? ' ↑' : ''
-  const azActive    = _cliSort === 'az-asc' || _cliSort === 'az-desc'
-  const azNext      = _cliSort === 'az-asc' ? 'az-desc' : 'az-asc'
-  const azArrow     = _cliSort === 'az-asc' ? ' ↑' : _cliSort === 'az-desc' ? ' ↓' : ''
-  const revActive   = _cliSort === 'revenue-desc' || _cliSort === 'revenue-asc'
-  const revNext     = _cliSort === 'revenue-desc' ? 'revenue-asc' : 'revenue-desc'
-  const revArrow    = _cliSort === 'revenue-desc' ? ' ↓' : _cliSort === 'revenue-asc' ? ' ↑' : ''
-  const jobsActive  = _cliSort === 'jobs-desc' || _cliSort === 'jobs-asc'
-  const jobsNext    = _cliSort === 'jobs-desc' ? 'jobs-asc' : 'jobs-desc'
-  const jobsArrow   = _cliSort === 'jobs-desc' ? ' ↓' : _cliSort === 'jobs-asc' ? ' ↑' : ''
-  const sortPills =
-    `<button class="fbtn${recentActive?' on':''}" onclick="_cliSort='${recentNext}';renderClientList()">Recent${recentArrow}</button>` +
-    `<button class="fbtn${azActive?' on':''}" onclick="_cliSort='${azNext}';renderClientList()">A–Z${azArrow}</button>` +
-    `<button class="fbtn${revActive?' on':''}" onclick="_cliSort='${revNext}';renderClientList()">Revenue${revArrow}</button>` +
-    `<button class="fbtn${jobsActive?' on':''}" onclick="_cliSort='${jobsNext}';renderClientList()">Job Count${jobsArrow}</button>`
-  document.getElementById('cli-list-view').innerHTML = `
-    <div class="sec-hdr">
-      <h2>Clients</h2>
-      <p>Client CRM and contact management</p>
-    </div>
-    <div class="fbar" style="margin-bottom:12px">
-      <span class="lbl">Sort:</span>
-      ${sortPills}
-    </div>
-    <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
-      <input id="cli-search" class="inp" placeholder="Search clients..." value="${esc(q)}" oninput="renderClientList()" style="flex:1;min-width:180px">
-      <button class="btn btn-g" onclick="openNewClientForm()">+ Add Client</button>
-    </div>
-    <div style="display:grid;gap:10px">
-      ${sorted.length ? sorted.map(({c, s: stats}) => {
-        const fu = getFuStatus(c.followUpDate)
-        const initials = c.name.split(' ').map(w=>w[0]||'').slice(0,2).join('').toUpperCase()
-        return `<div class="cli-card" onclick="openClientDetail('${esc(c.name).replace(/'/g,"\\'")}')">
-          <div class="cli-avatar">${initials}</div>
-          <div class="cli-card-info">
-            <div class="cli-card-name">${esc(c.name)}</div>
-            <div class="cli-card-sub">
-              ${c.company ? `<span>${esc(c.company)}</span><span>·</span>` : ''}
-              <span>${stats.jobs} job${stats.jobs!==1?'s':''}</span>
-              ${stats.lastJob ? `<span>· Last: ${fmtDate(stats.lastJob)}</span>` : ''}
-              ${c.clientType ? `<span class="cli-type-badge cli-type-${cliTypeSlug(c.clientType)}">${esc(c.clientType)}</span>` : ''}
-              ${fu ? `<span class="fu-badge ${fu.cls}">${esc(fu.label)}</span>` : ''}
-            </div>
-          </div>
-          <div class="cli-card-meta">
-            <div class="cli-card-rev">${privacyMode()?'—':fmt(stats.revenue)}</div>
-            <div>${stats.jobs} jobs</div>
-          </div>
-        </div>`
-      }).join('') : (q ? emptyState('users',`No clients match “${esc(q)}”.`) : emptyState('users','No clients yet.',{label:'+ Add Client',fn:'openNewClientForm()'}))}
-    </div>
-  `
-}
 
 function openClientDetail(name) {
   _cliDetailName = name
@@ -7146,50 +6457,9 @@ function setMode(mode) {
   navTo(localStorage.getItem(MODE_TAB_KEY[mode]) || MODE_HOME[mode])
 }
 
-// Superseded by Social v4 (end of script). Unused, safe to delete.
-function _legacyRenderSocConnBanner() {
-  const el = document.getElementById('soc-conn-banner'); if (!el) return
-  const cfg = socialCfg()
-  if (!socWorker()) {
-    el.innerHTML = `<div class="soc-conn">${icon('alert',17)}
-      <div><div class="t">Instagram not connected</div>
-      <div class="d">Stats sync and AI content ideas activate once your Cloudflare Worker is live. Paste its URL under
-      <b>Settings → Social backend URL</b>. Your Instagram token and Claude API key stay on the Worker — never in this app.</div></div></div>`
-    return
-  }
-  const last = cfg.lastSync ? new Date(cfg.lastSync) : null
-  el.innerHTML = `<div class="soc-conn" style="background:rgba(52,199,89,0.07)">${icon('check-circle',17)}
-    <div><div class="t">Connected${cfg.igUsername ? ' — @' + esc(cfg.igUsername) : ''}</div>
-    <div class="d">Last synced: ${last ? last.toLocaleString() : 'never'}</div></div></div>`
-}
-
+// ── SOCIAL (continued) ────────────────────────────────────
 // Delta vs the previous snapshot. Never invents a comparison when there is no history.
-function socDelta(cur, prev) {
-  if (prev === undefined || prev === null || !isFinite(+prev)) return '<div class="sub">no prior data</div>'
-  const d = (+cur || 0) - (+prev || 0)
-  if (!d) return '<div class="sub">no change</div>'
-  const cls = d > 0 ? 'g' : 'r'
-  return `<div class="sub"><span class="${cls}">${d > 0 ? '+' : '−'}${socNum(Math.abs(d))}</span> vs previous</div>`
-}
 
-function _legacyRenderSocSummary() {
-  const el = document.getElementById('soc-summary'); if (!el) return
-  const s = socSnaps()
-  const cur = s[s.length-1] || {}
-  const prv = s[s.length-2]
-  const has = s.length > 0
-  const card = (ic, label, key) => `<div class="sum-card">
-      <div class="lbl" style="display:flex;align-items:center;gap:5px">${icon(ic,13)} ${label}</div>
-      <div class="val">${has ? socNum(cur[key]) : '—'}</div>
-      ${has ? socDelta(cur[key], prv ? prv[key] : null) : '<div class="sub">awaiting first sync</div>'}
-    </div>`
-  el.innerHTML = `<div class="sum-grid">
-    ${card('users','Followers','followers')}
-    ${card('trending-up','Reach (30d)','reach')}
-    ${card('bar-chart','Views (30d)','views')}
-    ${card('search','Profile Visits (30d)','profileVisits')}
-  </div>`
-}
 
 function renderSocChart() {
   const el = document.getElementById('soc-chart'); if (!el) return
@@ -7260,28 +6530,6 @@ function showSocTip(e, lbl, v) {
   posChartTip(e)
 }
 
-function _legacyRenderSocReels() {
-  const el = document.getElementById('soc-reels-table'); if (!el) return
-  const list = load(K.socReels).slice().sort((a,b) => (+b.views||0) - (+a.views||0))
-  if (!list.length) {
-    el.innerHTML = emptyState('bar-chart',
-      socWorker() ? 'No reels yet — hit Sync now to pull your latest posts.'
-                  : 'Reel performance appears here once Instagram is connected.',
-      null, {small:true, pad:'28px 20px'})
-    return
-  }
-  el.innerHTML = `<table>
-    <thead><tr><th>Posted</th><th>Caption</th><th>Views</th><th>Likes</th><th>Shares</th><th>Saves</th><th>Actions</th></tr></thead>
-    <tbody>${list.map(r => `<tr>
-      <td>${r.posted ? fmtDate(r.posted) : '—'}</td>
-      <td><span class="soc-cap" title="${esc(r.caption||'')}">${esc(r.caption||'—')}</span></td>
-      <td class="amt">${socNum(r.views)}</td>
-      <td>${socNum(r.likes)}</td>
-      <td>${socNum(r.shares)}</td>
-      <td>${socNum(r.saves)}</td>
-      <td>${r.permalink ? kebab([{label:'Open on Instagram', icon:'link', fn:`window.open('${esc(r.permalink)}','_blank')`}]) : '—'}</td>
-    </tr>`).join('')}</tbody></table>`
-}
 
 async function socialSyncNow() {
   const base = socWorker()
@@ -7481,32 +6729,6 @@ function wishSort(list) {
 // ── Render ──
 function renderWishlist() { renderWishSummary(); renderWishTable(); renderWishArchive() }
 
-// Superseded by Wishlist v4 (end of script). Unused, safe to delete.
-function _legacyRenderWishSummary() {
-  const el = document.getElementById('wish-summary'); if (!el) return
-  const active = wishApplyFilters(wishList().filter(w => (w.status || 'active') === 'active'))
-  const tot = active.reduce((s, w) => s + wishVal(w), 0)
-  const by = k => active.filter(w => (w.priority || 'nice-to-have') === k)
-  const sub = k => {
-    const l = by(k), v = l.reduce((s, w) => s + wishVal(w), 0)
-    return `<div class="lbl" style="display:flex;align-items:center;gap:4px">${WISH_PRI[k].lbl}</div>
-            <div class="val">${fmt(v)}</div>
-            <div style="font-size:11px;color:var(--text-2);margin-top:3px">${l.length} item${l.length === 1 ? '' : 's'}</div>`
-  }
-  el.innerHTML = `
-    <div class="sum-grid" style="margin-bottom:10px">
-      <div class="sum-card">
-        <div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('bag',13)} Total Wishlist Value</div>
-        <div class="val">${fmt(tot)}</div>
-        <div class="sub">${active.length} active item${active.length === 1 ? '' : 's'}</div>
-      </div>
-    </div>
-    <div class="sum-sub-grid" style="margin-bottom:0">
-      <div class="sum-sub-card">${sub('must-have')}</div>
-      <div class="sum-sub-card">${sub('nice-to-have')}</div>
-      <div class="sum-sub-card">${sub('someday')}</div>
-    </div>`
-}
 
 function wishNameCell(w) {
   return `<div class="wish-name">${esc(w.name || '—')}</div>` +
@@ -7972,13 +7194,6 @@ function instSetPaidDate(purId, idx, val) {
 function instShortDate(s) {
   const d = fmtDate(s)
   return instDay(s).slice(0, 4) === today().slice(0, 4) ? d.replace(/, \d{4}$/, '') : d
-}
-function purInstPriceCell(p) {
-  const { paid, total } = purProgress(p), next = purNextPayment(p)
-  const pct = total ? Math.round(paid / total * 100) : 0
-  return `<span class="neg">${fmt(purPaidToDate(p))}</span> <span class="inst-of">/ ${fmt(p.installmentTotal)}</span>
-    <div class="inst-prog"><span class="inst-bar"><span style="width:${pct}%"></span></span>${paid} of ${total} paid</div>
-    ${next ? `<div class="inst-next">Next: ${instShortDate(next.dueDate)} · ${fmt(next.amount)}</div>` : '<div class="inst-next">Paid off</div>'}`
 }
 function purInstSubRow(p) {
   const badge = { paid:'<span class="bdg bdg-g">Paid</span>', scheduled:'<span class="bdg bdg-gr">Scheduled</span>', overdue:'<span class="bdg bdg-r">Overdue</span>' }
@@ -8522,39 +7737,6 @@ function subBurn(s, xs) {
 function subLogRefill(id) { _subExpanded.add(id); renderSubTable(); setTimeout(() => document.getElementById('subx-new-amt-' + id)?.focus(), 30) }
 function setSubShowInactive(on) { try { localStorage.setItem('dt_sub_show_inactive', on ? '1' : '') } catch (_) {} renderSubTable() }
 
-// Superseded by Subscriptions v4 (end of script). Unused, safe to delete.
-function _legacyRenderSubSummary() {
-  const el = document.getElementById('sub-summary'); if (!el) return
-  const subs = filterSubs(loadP(K.sub)), xs = loadP(K.subx)
-  if (!subs.length) { el.innerHTML = ''; return }
-  const ids = new Set(subs.map(s => s.id)), yr = today().slice(0, 4)
-  const burn = subs.reduce((t, s) => t + subBurn(s, xs), 0)
-  const ytd = xs.filter(x => ids.has(x.subId) && x.date.startsWith(yr)).reduce((t, x) => t + (+x.amount || 0), 0)
-  const all = subs.reduce((t, s) => t + subSpent(s, xs), 0)
-  // Upcoming: next 30 days of recurring charges, plus overdue manual renewals
-  const lim = toDate(today()); lim.setDate(lim.getDate() + 30); const limS = toStr(lim)
-  const up = subs.filter(s => s.status === 'Active' && subIsRecurring(s))
-    .map(s => ({ s, d: nextCharge(s), od: subOverdue(s) }))
-    .filter(u => u.od || u.d <= limS).sort((a, b) => (b.od - a.od) || a.d.localeCompare(b.d))
-  const days = d => Math.round((toDate(d) - toDate(today())) / 864e5)
-  const upHtml = up.length ? `<div class="subup">${up.map(({ s, d, od }) => {
-      const n = days(d), when = od ? `${-n}d overdue` : n === 0 ? 'Today' : n === 1 ? 'Tomorrow' : `in ${n}d`
-      const price = s.nextPriceDate && s.nextPriceDate <= d ? +s.nextPrice : +s.amount
-      return `<div class="subup-chip${od ? ' od' : ''}"><div><b>${esc(s.name)}</b><span>${fmtDate(d)} · ${when}</span></div><div class="subup-amt">${fmt(price)}${od && s.autoRenew === false ? `<button class="btn btn-sm btn-g" onclick="confirmManualRenew('${s.id}')">Renewed</button>` : ''}</div></div>`
-    }).join('')}</div>` : ''
-  const kindTot = SUB_KINDS.map(K2 => {
-    const list = subs.filter(s => subKind(s) === K2.k)
-    return `<div class="sum-sub-card"><div class="lbl" style="display:flex;align-items:center;gap:4px">${icon(K2.icon, 11)} ${K2.label}</div><div class="val">${fmt(list.reduce((t, s) => t + subSpent(s, xs), 0))}</div><div style="font-size:11px;color:var(--text-2);margin-top:3px">${list.filter(s => s.status === 'Active').length} active · all time</div></div>`
-  }).join('')
-  el.innerHTML = `
-    <div class="sum-grid" style="margin-bottom:10px">
-      <div class="sum-card"><div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('repeat', 13)} Monthly burn</div><div class="val">${fmt(burn)}</div><div class="sub">≈ ${fmt(burn * 12)} / year at current prices</div></div>
-      <div class="sum-card"><div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('calendar', 13)} Spent in ${yr}</div><div class="val">${fmt(ytd)}</div><div class="sub">logged charges</div></div>
-      <div class="sum-card"><div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('dollar', 13)} All time</div><div class="val">${fmt(all)}</div><div class="sub">${subs.length} item${subs.length !== 1 ? 's' : ''}</div></div>
-    </div>
-    <div class="sum-sub-grid" style="margin-bottom:${up.length ? 12 : 0}px">${kindTot}</div>
-    ${up.length ? `<div class="subup-hdr">Coming up · next 30 days</div>${upHtml}` : ''}`
-}
 
 // Desktop tables (v3 layout, v4 styling). renderSubTable (v4) wraps this.
 function _subTableDesktop() {
@@ -9052,7 +8234,7 @@ function setPurCat(c) {
   FS.pur.cat = FS.pur.cat === c ? 'all' : c
   renderPurTable()
 }
-function renderPurSummary() {}   // folded into renderPurTable (kept for old callers)
+   // folded into renderPurTable (kept for old callers)
 
 function pvPlans() {
   return loadP(K.pur).filter(p => purIsInstallment(p) && purNextPayment(p))
@@ -9358,6 +8540,13 @@ window.addEventListener('resize', () => {
   const w = innerWidth < 900; if (w === _wlW) return; _wlW = w
   if (document.getElementById('panel-wishlist')?.classList.contains('on')) renderWishTable()
 })
+
+// ── INSTALLABLE APP ───────────────────────────────────────
+// Service worker (sw.js, network first) so the tool can be added to the home
+// screen and still opens offline. Skipped when opened as a local file.
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW:', err)))
+}
 
 // ── SOCIAL v4 ─────────────────────────────────────────────────
 // Followers hero + 30-day metrics, cleaner reels list (cards on phones),
