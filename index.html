@@ -978,6 +978,72 @@ html[data-theme] .jv-paid input{width:16px;height:16px;accent-color:var(--accent
   .jv-row .jv-row-a{grid-area:act;justify-content:stretch;margin-top:4px}
   .jv-row .jv-row-a .jv-next{flex:1}
 }
+/* ── MONEY PAGES v4 (Income first) ── */
+.pv-hdr{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.pv-hdr h2{margin:0;font-family:var(--font-d);font-size:28px;font-weight:600;letter-spacing:-.01em}
+.pv-hdr p{margin:4px 0 0;color:var(--text-2);font-size:13.5px}
+.pv-hdr p b{color:var(--text);font-weight:600}
+.pv-formcard{margin-bottom:0}
+.pv-formcard:has(.form-wrap.open){background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 18px 4px;margin-bottom:16px}
+html[data-theme] .pv-formcard .form-inner{background:none;border:0;padding:0}
+.pv-formcard .form-ttl{display:block;margin-bottom:12px;font-size:16px}
+html[data-theme] .pv-fbar{margin-bottom:14px}
+html[data-theme] .pv-fbar .lbl{text-transform:none;letter-spacing:0;font-size:12.5px;font-weight:500}
+.pv-sum{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px;margin-bottom:14px}
+.pv-hero{padding:20px 22px!important}
+.pv-split{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.pv-status{padding:18px 20px!important;display:flex;flex-direction:column}
+.pv-bar{display:flex;gap:3px;height:8px;border-radius:4px;overflow:hidden;background:var(--surface-3);margin:4px 0 12px}
+.pv-seg{display:block;min-width:4px}
+.pv-paid{--pc:var(--green)}.pv-pending{--pc:var(--orange)}.pv-unpaid{--pc:var(--red)}.pv-off{--pc:var(--text-3)}
+.pv-seg{background:var(--pc)}
+.pv-st-list{display:flex;flex-direction:column;gap:2px}
+.pv-st{display:flex;align-items:center;gap:10px;border:0;background:none;font:inherit;color:var(--text);padding:8px 8px;border-radius:9px;cursor:pointer;text-align:left;min-height:38px}
+.pv-st:hover{background:var(--hover)}
+.pv-st.on{background:color-mix(in srgb,var(--pc) 12%,transparent)}
+.pv-st.dim{opacity:.5}
+.pv-dot{width:8px;height:8px;border-radius:50%;background:var(--pc);flex:none}
+.pv-st-l{font-weight:500;font-size:13.5px}
+.pv-st-n{font-size:12px;color:var(--text-2);background:var(--hover);border-radius:6px;padding:1px 7px}
+.pv-st-a{margin-left:auto;font-weight:600;font-size:14px}
+.pv-none{padding:28px;text-align:center;color:var(--text-2);background:var(--surface);border:1px solid var(--line);border-radius:14px}
+/* Table */
+html[data-theme] .pv-tbl th{font-size:11px}
+html[data-theme] .pv-tbl td{vertical-align:middle;padding-top:11px;padding-bottom:11px}
+.pv-tbl .ta-r{text-align:right}
+.pv-tbl td.pv-date{white-space:nowrap}
+.pv-client{font-weight:600}
+.pv-desc{font-size:12px;color:var(--text-2);margin-top:2px;max-width:340px;overflow-wrap:anywhere}
+.pv-muted{color:var(--text-2);white-space:nowrap}
+.pv-amt{font-weight:600}
+.pv-row td:first-child{box-shadow:inset 3px 0 0 transparent}
+.pv-r-pending td:first-child{box-shadow:inset 3px 0 0 var(--orange)}
+.pv-r-unpaid td:first-child{box-shadow:inset 3px 0 0 var(--red)}
+html[data-theme] .pv-tbl .row-pending td,html[data-theme] .pv-tbl tr.pv-r-pending td{background:transparent!important}
+html[data-theme] .pv-tbl tbody tr:hover td{background:var(--hover)!important}
+html[data-theme] .pv-tbl tfoot td{font-weight:600;color:var(--text-2)}
+html[data-theme] .pv-tbl tfoot td.num{color:var(--text)}
+.pv-cards{display:none}
+@media(max-width:1100px){.pv-sum{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:899px){
+  .pv-hdr .btn-g{width:100%;justify-content:center}
+  html[data-theme] #panel-income .tbl-wrap{border:0;background:none;overflow:visible}
+  .pv-tbl{display:none}
+  .pv-cards{display:flex;flex-direction:column;gap:8px}
+  .pv-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;position:relative}
+  .pv-card.pv-r-pending{border-left:3px solid var(--orange)}.pv-card.pv-r-unpaid{border-left:3px solid var(--red)}
+  .pv-card-t{display:flex;gap:10px;align-items:baseline}
+  .pv-card-t .pv-client{flex:1;min-width:0}
+  .pv-card-m{font-size:12px;color:var(--text-2);margin-top:6px}
+  .pv-card-f{display:flex;gap:8px;align-items:center;margin-top:10px}
+  .pv-card-f select{flex:1}
+  .pv-split{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pv-split>div:last-child{display:none}
+  html[data-theme] .pv-fbar .lbl{display:none}
+  html[data-theme] .pv-fbar .fbtn{flex:1;padding-left:6px;padding-right:6px}
+  html[data-theme] .pv-fbar .ms-wrap{flex:1 1 100%}
+  html[data-theme] .pv-fbar .ms-btn{width:100%}
+}
 .inst-pd{width:auto!important;min-width:0;padding:5px 8px!important;font-size:13px!important;border-radius:8px!important}
 html[data-theme] #dash-widgets .card{grid-column:auto}
 html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
@@ -1008,7 +1074,8 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
     <nav class="nav" id="nav" aria-label="Main">
       <button data-mode="business" class="tab on" data-tab="dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg> Dashboard</button>
       <div class="nav-grp" data-mode="business">Work</div>
-      <button data-mode="business" class="tab" data-tab="jobs"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Jobs & Pricing</button>
+      <button data-mode="business" class="tab" data-tab="jobs"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Jobs</button>
+      <button data-mode="business" class="tab" data-tab="pricing"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> Pricing &amp; Quotes</button>
       <button data-mode="business" class="tab" data-tab="clients"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Clients</button>
       <div class="nav-grp" data-mode="business">Money</div>
       <button data-mode="business" class="tab" data-tab="income"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg> Income</button>
@@ -1041,7 +1108,8 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
   <button data-mode="business" class="tab" data-tab="subscriptions" onclick="mobNavTo('subscriptions')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg> Subscriptions</button>
   <button data-mode="business" class="tab" data-tab="wishlist" onclick="mobNavTo('wishlist')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.6 6.1.8-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.4l6.1-.8z"/></svg> Wishlist</button>
   <button data-mode="business" class="tab" data-tab="clients" onclick="mobNavTo('clients')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Clients</button>
-  <button data-mode="business" class="tab" data-tab="jobs" onclick="mobNavTo('jobs')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Jobs & Pricing</button>
+  <button data-mode="business" class="tab" data-tab="jobs" onclick="mobNavTo('jobs')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Jobs</button>
+  <button data-mode="business" class="tab" data-tab="pricing" onclick="mobNavTo('pricing')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> Pricing &amp; Quotes</button>
   <button data-mode="business" class="tab" data-tab="export" onclick="mobNavTo('export')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Export</button>
   <button data-mode="social" class="tab on" data-tab="social-stats" onclick="mobNavTo('social-stats')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Stats</button>
   <button data-mode="social" class="tab" data-tab="social-ideas" onclick="mobNavTo('social-ideas')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> Content Ideas</button>
@@ -1087,14 +1155,9 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
 
   <!-- INCOME -->
   <section class="panel" id="panel-income">
-    <div class="sec-hdr"><h2>Income</h2><p>Track client jobs and revenue</p></div>
-    <div class="card">
-      <div class="form-toggle-hdr">
-        <span class="form-ttl" id="inc-form-ttl">Add New Job</span>
-        <div style="display:flex;gap:8px;align-items:center">
-          <button class="btn btn-g" id="inc-toggle-btn" onclick="toggleForm('inc')">+ Add Job</button>
-        </div>
-      </div>
+    <div class="pv-hdr"><div><h2>Income</h2><p id="inc-sub">Payments from clients</p></div><button class="btn btn-g" id="inc-toggle-btn" onclick="toggleForm('inc')">+ Add payment</button></div>
+    <div class="pv-formcard">
+      <span class="form-ttl" id="inc-form-ttl" style="display:none">Add payment</span>
       <div class="form-wrap" id="inc-form-wrap">
         <div class="form-inner">
           <input type="hidden" id="inc-edit-id">
@@ -1122,7 +1185,8 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
           </div>
         </div>
       </div>
-      <div class="fbar" id="inc-filter">
+    </div>
+      <div class="fbar pv-fbar" id="inc-filter">
         <span class="lbl">View:</span>
         <button class="fbtn on" data-r="all">All Time</button>
         <button class="fbtn" data-r="month">This Month</button>
@@ -1146,9 +1210,8 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
           </div>
         </div>
       </div>
-      <div id="inc-summary" style="margin-bottom:14px"></div>
+      <div id="inc-summary"></div>
       <div class="tbl-wrap" id="inc-table"></div>
-    </div>
   </section>
 
   <!-- PURCHASES -->
@@ -1439,15 +1502,9 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
   <!-- PRICING -->
   <!-- JOBS & PRICING (combined) -->
   <!-- JOBS & PRICING (combined) -->
-  <section class="panel" id="panel-jobs">
-    <!-- Sub-nav -->
-    <div class="jobs-subnav">
-      <button class="jobs-subnav-btn on" data-section="pipeline" onclick="switchJobsSection('pipeline')">Pipeline</button>
-      <button class="jobs-subnav-btn" data-section="pricing" onclick="switchJobsSection('pricing')">Pricing & Quotes</button>
-    </div>
-
-    <!-- Pricing & Quotes section (hidden by default) -->
-    <div id="jobs-pq-section" style="display:none">
+  <!-- PRICING & QUOTES (own tab since v4) -->
+  <section class="panel" id="panel-pricing">
+    <div id="jobs-pq-section">
       <div class="sec-hdr"><h2>Pricing & Quotes</h2><p>Manage your service rates and build quotes</p></div>
       <div class="card" style="margin-bottom:16px">
         <div class="form-toggle-hdr">
@@ -1518,7 +1575,9 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
       </div>
     </div>
 
-    <!-- Pipeline section (shown by default) -->
+  </section>
+
+  <section class="panel" id="panel-jobs">
     <div id="jobs-pipeline-section">
       <div class="jv-hdr">
         <div>
@@ -2714,7 +2773,7 @@ function editInc(id) {
   document.getElementById('inc-status').value=e.status||e.paymentStatus||e.payment_status||'Paid'
   document.getElementById('inc-desc').value=e.desc||e.description||''
   calcProfit(); openForm('inc')
-  document.getElementById('inc-form-ttl').textContent='Edit Job'
+  document.getElementById('inc-form-ttl').textContent='Edit payment'
 }
 
 async function delInc(id) {
@@ -2732,7 +2791,8 @@ async function delInc(id) {
   save(K.inc,list.filter(e=>e.id!==id)); renderIncTable(); renderJobsBoard(); renderDash(); toast('Entry deleted')
 }
 
-function renderIncSummary(list) {
+// Superseded by Income v4 (end of script). Unused, safe to delete.
+function _legacyRenderIncSummary(list) {
   const el=document.getElementById('inc-summary'); if(!el)return
   if(!list.length){el.innerHTML='';return}
   const totRev   =list.reduce((s,e)=>s+(+e.amount||0),0)
@@ -2767,7 +2827,7 @@ function renderIncSummary(list) {
   initGridDrag(document.getElementById('inc-sub-grid'),  'dt_order_inc_sub')
 }
 
-function renderIncTable() {
+function _legacyRenderIncTable() {
   const el=document.getElementById('inc-table')
   const {from,to}=range(FS.inc)
   let list=loadP(K.inc).filter(e=>inRange(e.date,from,to))
@@ -3261,7 +3321,11 @@ function switchExportSection(section) {
   document.getElementById('export-taxes-section').style.display = section === 'export-taxes' ? '' : 'none'
   if(section === 'export-taxes') renderTaxes()
 }
+// Pricing & Quotes is its own tab now; kept so older callers still work.
 function switchJobsSection(section) {
+  if (section === 'pricing') navTo('pricing')
+}
+function _legacySwitchJobsSection(section) {
   const pq = document.getElementById('jobs-pq-section')
   const pl = document.getElementById('jobs-pipeline-section')
   const btns = document.querySelectorAll('#panel-jobs .jobs-subnav-btn')
@@ -4149,7 +4213,7 @@ function cancelForm(type) {
     document.getElementById('inc-travel').value='0'
     document.getElementById('profit-preview').textContent='$0.00'
     document.getElementById('profit-preview').style.color='var(--green)'
-    document.getElementById('inc-form-ttl').textContent='Add New Job'
+    document.getElementById('inc-form-ttl').textContent='Add payment'
     document.getElementById('inc-form-ttl').style.display='none'
   } else if(type==='pur'){
     ['pur-edit-id','pur-date','pur-store','pur-price','pur-desc'].forEach(id=>document.getElementById(id).value='')
@@ -4920,7 +4984,7 @@ function toggleTheme() {
 }
 
 // ── TAB SWITCHING ─────────────────────────────────────────────
-const tabRenders={wishlist:renderWishlist,'social-stats':renderSocialStats,'social-ideas':renderSocialIdeas,dashboard:renderDash,income:renderIncTable,purchases:renderPurTable,subscriptions:()=>{renderSubTable()},taxes:renderTaxes,export:()=>{renderDataSummary();switchExportSection('export-main')},clients:renderClientsTab,jobs:()=>{renderPricingList();initQuoteBuilder();renderJobsBoard()}}
+const tabRenders={wishlist:renderWishlist,'social-stats':renderSocialStats,'social-ideas':renderSocialIdeas,dashboard:renderDash,income:renderIncTable,purchases:renderPurTable,subscriptions:()=>{renderSubTable()},taxes:renderTaxes,export:()=>{renderDataSummary();switchExportSection('export-main')},clients:renderClientsTab,jobs:renderJobsBoard,pricing:()=>{renderPricingList();initQuoteBuilder()}}
 
 function openTab(t) {
   const tab=document.querySelector(`#nav [data-tab="${t}"]`); if(!tab)return
@@ -8692,6 +8756,131 @@ function jvDrop(ev, col) {
   const id = _jvDrag || ev.dataTransfer.getData('text/plain'); _jvDrag = null
   const job = load(K.jobs).find(j => j.id === id)
   if (job && job.stage !== col.dataset.stage) jobSetStage(id, col.dataset.stage)
+}
+
+// ── INCOME v4 ─────────────────────────────────────────────────
+// Revenue hero + status breakdown (click a status to filter), cleaner table on
+// desktop, cards on phones. Replaces _legacyRenderIncSummary/_legacyRenderIncTable.
+const IV_ST = [['Paid','paid'],['Pending','pending'],['Unpaid','unpaid'],['Written Off','off']]
+const ivStatus = e => e.status || e.paymentStatus || e.payment_status || 'Paid'
+const ivTravel = e => +(e.travel || e.travelExpenses || e.travel_expenses || 0)
+function ivRangeLbl(st) {
+  return st.r === 'month' ? 'This month' : st.r === 'year' ? 'This year' : st.r === 'custom' ? (st.from ? `${fmtDate(st.from)} to ${fmtDate(st.to)}` : 'Custom range') : 'All time'
+}
+function setIncStatus(s) { FS.inc.status = FS.inc.status === s ? '' : s; renderIncTable() }
+
+function renderIncSummary(list) {
+  const el = document.getElementById('inc-summary'); if (!el) return
+  const sub = document.getElementById('inc-sub')
+  if (!list.length) { el.innerHTML = ''; if (sub) sub.textContent = 'Payments from clients'; return }
+  const rev = list.reduce((s, e) => s + (+e.amount || 0), 0)
+  const exp = list.reduce((s, e) => s + ivTravel(e), 0)
+  const profit = list.reduce((s, e) => s + (+e.profit || 0), 0)
+  const margin = rev > 0 && !privacyMode() ? Math.round(profit / rev * 100) : null
+  const by = IV_ST.map(([k, c]) => { const xs = list.filter(e => ivStatus(e) === k); return { k, c, n: xs.length, amt: xs.reduce((s, e) => s + (+e.amount || 0), 0) } })
+  const owed = by[1].amt + by[2].amt
+  if (sub) sub.innerHTML = `<b>${list.length}</b> payment${list.length !== 1 ? 's' : ''} · ${ivRangeLbl(FS.inc).toLowerCase()}${owed ? ` · <b>${fmt(owed)}</b> still owed` : ''}`
+  const tot = by.reduce((s, b) => s + b.amt, 0) || 1
+  const cur = FS.inc.status || ''
+  el.innerHTML = `<div class="pv-sum">
+    <div class="card pv-hero">
+      <div class="dv-head"><span class="dv-lbl">Revenue · ${ivRangeLbl(FS.inc)}</span>${margin !== null ? `<span class="dv-pill ${margin >= 0 ? 'dv-pill-g' : 'dv-pill-r'}">${margin}% kept</span>` : ''}</div>
+      <div class="num dv-big">${fmt(rev)}</div>
+      <div class="pv-split">
+        <div><div class="dv-lbl">Profit</div><div class="num dv-mid">${fmt(profit)}</div></div>
+        <div><div class="dv-lbl">Job expenses</div><div class="num dv-mid">${fmt(exp)}</div></div>
+        <div><div class="dv-lbl">Avg per payment</div><div class="num dv-mid">${fmt(rev / list.length)}</div></div>
+      </div>
+    </div>
+    <div class="card pv-status">
+      <div class="dv-card-h"><h3>By status</h3>${cur ? `<button class="dv-link" onclick="setIncStatus('')">Clear filter</button>` : '<span class="dv-tiny">Tap to filter</span>'}</div>
+      <div class="pv-bar">${by.filter(b => b.amt > 0).map(b => `<span class="pv-seg pv-${b.c}" style="flex:${b.amt / tot}"></span>`).join('')}</div>
+      <div class="pv-st-list">${by.filter(b => b.n || b.k !== 'Written Off').map(b => `
+        <button class="pv-st pv-${b.c}${cur === b.k ? ' on' : ''}${cur && cur !== b.k ? ' dim' : ''}" onclick="setIncStatus('${b.k}')" aria-pressed="${cur === b.k}">
+          <span class="pv-dot"></span><span class="pv-st-l">${b.k}</span><span class="pv-st-n">${b.n}</span><span class="num pv-st-a">${fmt(b.amt)}</span>
+        </button>`).join('')}</div>
+    </div>
+  </div>`
+}
+
+function ivMenu(e, phone) {
+  const attCount = (() => { if (!e.agreementId) return 0; try { const p = JSON.parse(e.agreementId); return Array.isArray(p) ? p.length : 1 } catch { return 1 } })()
+  const calLink = (e.calendarEventId && e.date >= today()) ? (gcEventLink(e.calendarEventId) || '') : ''
+  return kebab([
+    { label: 'Edit', icon: 'pencil', fn: phone ? `editInc('${e.id}')` : `editIncRow('${e.id}')` },
+    { label: e.invoiceNum ? `Invoice ${esc(e.invoiceNum)}` : 'Link invoice', icon: 'receipt', fn: `openInvLinkModal('${e.id}')`, active: !!e.invoiceNum },
+    { label: attCount ? `Attachments (${attCount})` : 'Link attachment', icon: 'paperclip', fn: `openAgrModal('${e.id}')`, active: !!attCount },
+    ...(calLink ? [{ label: 'View in Calendar', icon: 'calendar', fn: `window.open('${esc(calLink)}','_blank')`, active: true }] : []),
+    'sep',
+    { label: 'Delete', icon: 'trash', fn: `delInc('${e.id}')`, danger: true },
+  ])
+}
+function ivStatusSel(e, st) {
+  const opt = v => `<option${v === st ? ' selected' : ''}>${v}</option>`
+  return `<select class="isel isel-status-${statusSlug(st)}" aria-label="Status" onclick="event.stopPropagation()" onchange="this.className='isel isel-status-'+statusSlug(this.value);updateIncField('${e.id}','status',this.value)">${opt('Paid')}${opt('Pending')}${opt('Unpaid')}${opt('Written Off')}</select>`
+}
+
+function renderIncTable() {
+  const el = document.getElementById('inc-table'); if (!el) return
+  const { from, to } = range(FS.inc)
+  let list = loadP(K.inc).filter(e => inRange(e.date, from, to))
+  const clients = [...new Set(list.map(e => e.client || '').filter(Boolean))].sort()
+  buildMs('inc-client-ms', clients, FS.inc.clients)
+  if (FS.inc.clients.length) list = list.filter(e => FS.inc.clients.includes(e.client))
+  list.sort((a, b) => b.date.localeCompare(a.date))
+  renderIncSummary(list)
+  if (FS.inc.status) list = list.filter(e => ivStatus(e) === FS.inc.status)
+  if (!list.length) {
+    el.innerHTML = FS.inc.status ? `<div class="pv-none">No ${FS.inc.status.toLowerCase()} payments in this view. <button class="dv-link" onclick="setIncStatus('')">Show all</button></div>`
+      : emptyState('briefcase', 'No income yet.', { label: '+ Add payment', fn: 'openForm(\'inc\')' }); return
+  }
+  const rev = list.reduce((s, e) => s + (+e.amount || 0), 0)
+  const exp = list.reduce((s, e) => s + ivTravel(e), 0)
+  const profit = list.reduce((s, e) => s + (+e.profit || 0), 0)
+  const opt = (v, c) => `<option${v === c ? ' selected' : ''}>${v}</option>`
+  const rows = list.map(e => {
+    const pay = e.pay || e.paymentType || e.payment_type || 'Other'
+    const st = ivStatus(e), travel = ivTravel(e), desc = e.desc || e.description || ''
+    if (e.id === editing.inc) {
+      const p = +e.amount - travel
+      return `<tr class="editing-row">
+        <td><input type="date" class="isel" id="ier-date" value="${e.date}" onkeydown="if(event.key==='Enter')saveIncRow('${e.id}')"></td>
+        <td><input type="text" class="isel" id="ier-client" value="${esc(e.client)}" placeholder="Client" onkeydown="if(event.key==='Enter')saveIncRow('${e.id}')"><input type="text" class="isel" id="ier-desc" value="${esc(desc)}" placeholder="Description" style="margin-top:6px" onkeydown="if(event.key==='Enter')saveIncRow('${e.id}')"></td>
+        <td><input type="date" class="isel" id="ier-filming-date" value="${e.filmingDate || ''}"></td>
+        <td><select class="isel" id="ier-pay">${opt('Zelle', pay)}${opt('Cash', pay)}${opt('Check', pay)}${opt('Other', pay)}</select></td>
+        <td><select class="isel isel-status-${statusSlug(st)}" id="ier-status" onchange="this.className='isel isel-status-'+statusSlug(this.value)">${opt('Paid', st)}${opt('Pending', st)}${opt('Unpaid', st)}${opt('Written Off', st)}</select></td>
+        <td class="ta-r"><input type="number" class="isel" id="ier-amount" value="${e.amount}" step="0.01" oninput="calcRowProfit()" style="width:90px" onkeydown="if(event.key==='Enter')saveIncRow('${e.id}')"></td>
+        <td class="ta-r"><input type="number" class="isel" id="ier-travel" value="${travel}" min="0" step="0.01" oninput="calcRowProfit()" style="width:80px"></td>
+        <td class="ta-r" id="ier-profit"><span class="${p >= 0 ? 'pos' : 'neg'}">${fmt(p)}</span></td>
+        <td style="white-space:nowrap"><button class="btn btn-sm btn-g" onclick="saveIncRow('${e.id}')">Save</button> <button class="btn btn-sm btn-s" onclick="cancelRowEdit('inc')">Cancel</button></td>
+      </tr>`
+    }
+    return `<tr class="pv-row pv-r-${statusSlug(st)}">
+      <td class="pv-date">${fmtDate(e.date)}</td>
+      <td><div class="pv-client">${esc(e.client)}</div>${desc ? `<div class="pv-desc">${esc(desc)}</div>` : ''}</td>
+      <td class="pv-muted">${e.filmingDate ? fmtDate(e.filmingDate) : '—'}</td>
+      <td><select class="isel" aria-label="Payment method" onchange="updateIncField('${e.id}','pay',this.value)">${opt('Zelle', pay)}${opt('Cash', pay)}${opt('Check', pay)}${opt('Other', pay)}</select></td>
+      <td>${ivStatusSel(e, st)}</td>
+      <td class="ta-r num pv-amt">${fmt(e.amount)}</td>
+      <td class="ta-r num pv-muted">${travel ? fmt(travel) : '—'}</td>
+      <td class="ta-r num"><span class="${+e.profit >= 0 ? '' : 'neg'}">${fmt(e.profit)}</span></td>
+      <td class="ta-r">${ivMenu(e)}</td>
+    </tr>`
+  }).join('')
+  const cards = list.map(e => {
+    const st = ivStatus(e), travel = ivTravel(e), desc = e.desc || e.description || '', pay = e.pay || e.paymentType || e.payment_type || 'Other'
+    return `<div class="pv-card pv-r-${statusSlug(st)}">
+      <div class="pv-card-t"><span class="pv-client">${esc(e.client)}</span><span class="num pv-amt">${fmt(e.amount)}</span></div>
+      ${desc ? `<div class="pv-desc">${esc(desc)}</div>` : ''}
+      <div class="pv-card-m">${fmtDate(e.date)} · ${esc(pay)}${travel ? ` · expenses ${fmt(travel)}` : ''}${e.filmingDate ? ` · shot ${fmtDate(e.filmingDate)}` : ''}</div>
+      <div class="pv-card-f">${ivStatusSel(e, st)}${ivMenu(e, true)}</div>
+    </div>`
+  }).join('')
+  el.innerHTML = `<table class="pv-tbl">
+    <thead><tr><th>Paid on</th><th>Client</th><th>Shoot</th><th>Method</th><th>Status</th><th class="ta-r">Amount</th><th class="ta-r">Expenses</th><th class="ta-r">Profit</th><th></th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr><td colspan="5">${list.length} payment${list.length !== 1 ? 's' : ''}${FS.inc.status ? ' · ' + FS.inc.status.toLowerCase() : ''}</td><td class="ta-r num">${fmt(rev)}</td><td class="ta-r num">${exp ? fmt(exp) : ''}</td><td class="ta-r num">${fmt(profit)}</td><td></td></tr></tfoot>
+  </table><div class="pv-cards">${cards}</div>`
 }
 </script>
 <!-- SUBSCRIPTION PRICE CHANGE MODAL -->
