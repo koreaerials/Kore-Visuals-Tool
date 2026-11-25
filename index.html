@@ -1186,6 +1186,37 @@ html[data-theme] .smod-footer{border-color:var(--line);margin-top:18px;padding-t
   #panel-wishlist .pv-fbar .fbtn{flex:none}
   #cli-list-view .jv-bar .jv-seg{width:100%}
 }
+/* ── SOCIAL v4 ── */
+.soc-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:7px;vertical-align:1px}
+.soc-hero{margin-bottom:14px}
+.soc-up{color:var(--green)}.soc-dn{color:var(--red)}
+html[data-theme] .soc-conn{background:rgba(245,196,81,.08);border-color:rgba(245,196,81,.3);border-radius:14px;color:var(--orange)}
+html[data-theme] .soc-conn .t,html[data-theme] .soc-conn .d{color:var(--text)}html[data-theme] .soc-conn .d{color:var(--text-2)}
+.soc-cap2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:520px;font-weight:500}
+.soc-bar{width:70px;height:4px;border-radius:2px;background:var(--surface-3);margin:5px 0 0 auto;overflow:hidden}
+.soc-bar>i{display:block;height:100%;background:var(--accent)}
+.soc-open{display:inline-flex;width:30px;height:30px;align-items:center;justify-content:center;border-radius:8px;border:1px solid var(--line-2);color:var(--text-2);flex:none}
+.soc-open:hover{color:var(--text);background:var(--hover)}
+.soc-rank{width:24px;height:24px;border-radius:7px;background:var(--accent-soft);color:var(--accent-text);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex:none}
+.soc-mets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:10px}
+.soc-mets>div{background:var(--surface-2);border-radius:9px;padding:7px 8px;display:flex;flex-direction:column}
+.soc-mets b{font-weight:600;font-size:14px}.soc-mets span{font-size:11px;color:var(--text-2)}
+html[data-theme] .soc-bucket{background:var(--surface-2);border-color:var(--line-2);color:var(--text-2);border-radius:10px;min-height:36px;font-family:var(--font)}
+html[data-theme] .soc-bucket:hover{border-color:var(--line-2);color:var(--text)}
+html[data-theme] .soc-bucket.on{background:var(--accent-soft);border-color:rgba(255,162,76,.45);color:var(--accent-text)}
+#soc-ideas-out{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:10px}
+html[data-theme] .soc-idea{background:var(--surface);border-color:var(--line);border-radius:14px;padding:16px;margin:0}
+html[data-theme] .soc-idea-tag{color:var(--accent-text);background:var(--accent-soft);border-radius:6px}
+html[data-theme] .soc-idea-fld{padding-top:10px;border-top:1px solid var(--line);margin-top:10px}
+html[data-theme] .soc-copy:hover{color:var(--accent-text);background:var(--accent-soft)}
+@media(max-width:899px){
+  html[data-theme] #panel-social-stats .tbl-wrap{border:0;background:none;overflow:visible}
+  #panel-social-stats .card:has(#soc-reels-table){background:none;border:0;padding:0}
+  #soc-ideas-out{grid-template-columns:minmax(0,1fr)}
+  .soc-cap2{max-width:none}
+  #panel-social-stats .pv-hdr .btn{width:100%;justify-content:center}
+}
+.chart-wrap .empty .ei svg{width:28px!important;height:28px!important}
 .inst-pd{width:auto!important;min-width:0;padding:5px 8px!important;font-size:13px!important;border-radius:8px!important}
 html[data-theme] #dash-widgets .card{grid-column:auto}
 html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
@@ -1584,33 +1615,24 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
 
   <!-- SOCIAL — STATS -->
   <section class="panel" id="panel-social-stats">
-      <div class="sec-hdr">
-        <h2>Instagram Stats</h2>
-        <p>Follower growth, reach, and what's working</p>
-      </div>
+      <div class="pv-hdr"><div><h2>Instagram</h2><p id="soc-sub">Follower growth, reach and what's working</p></div><button class="btn btn-s" id="soc-sync-btn" onclick="socialSyncNow()">Sync now</button></div>
       <div id="soc-conn-banner"></div>
-      <div id="soc-summary" style="margin-bottom:14px"></div>
-      <div class="card" style="margin-bottom:16px">
-        <div class="form-toggle-hdr">
-          <span class="card-ttl" style="margin-bottom:0">Followers Over Time</span>
-          <button class="btn btn-s btn-sm" id="soc-sync-btn" onclick="socialSyncNow()">Sync now</button>
-        </div>
+      <div id="soc-summary"></div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="dv-card-h"><h3>Followers over time</h3><span class="dv-tiny" id="soc-chart-sub"></span></div>
         <div class="chart-wrap" id="soc-chart"></div>
       </div>
       <div class="card">
-        <div class="card-ttl">Top Reels</div>
+        <div class="dv-card-h"><h3>Top reels</h3><span class="dv-tiny">By views</span></div>
         <div class="tbl-wrap" id="soc-reels-table"></div>
       </div>
   </section>
 
   <!-- SOCIAL — CONTENT IDEAS -->
   <section class="panel" id="panel-social-ideas">
-      <div class="sec-hdr">
-        <h2>Content Ideas</h2>
-        <p>AI-generated hooks, captions, and CTAs for your content buckets</p>
-      </div>
-      <div class="card" style="margin-bottom:16px">
-        <div class="card-ttl">What are we making?</div>
+      <div class="pv-hdr"><div><h2>Content ideas</h2><p>Hooks, captions and share CTAs for your content buckets</p></div></div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="dv-card-h"><h3>What are we making?</h3><span class="dv-tiny">Pick one or more</span></div>
         <div class="soc-bucket-row" id="soc-buckets"></div>
         <div class="fg" style="margin-bottom:12px">
           <div class="ff wide">
@@ -7124,7 +7146,8 @@ function setMode(mode) {
   navTo(localStorage.getItem(MODE_TAB_KEY[mode]) || MODE_HOME[mode])
 }
 
-function renderSocConnBanner() {
+// Superseded by Social v4 (end of script). Unused, safe to delete.
+function _legacyRenderSocConnBanner() {
   const el = document.getElementById('soc-conn-banner'); if (!el) return
   const cfg = socialCfg()
   if (!socWorker()) {
@@ -7149,7 +7172,7 @@ function socDelta(cur, prev) {
   return `<div class="sub"><span class="${cls}">${d > 0 ? '+' : '−'}${socNum(Math.abs(d))}</span> vs previous</div>`
 }
 
-function renderSocSummary() {
+function _legacyRenderSocSummary() {
   const el = document.getElementById('soc-summary'); if (!el) return
   const s = socSnaps()
   const cur = s[s.length-1] || {}
@@ -7203,9 +7226,10 @@ function renderSocChart() {
   let dots='', hit='', xlab=''
   pts.forEach((p,i) => {
     const x = X(i), y = Y(+p.followers||0)
-    dots += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.8" fill="var(--dropdown-bg)" stroke="#007AFF" stroke-width="2"/>`
+    dots += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.8" fill="var(--dropdown-bg)" stroke="var(--accent)" stroke-width="2"/>`
     hit  += `<rect class="chart-col" x="${(x-colW/2).toFixed(1)}" y="${pad.t}" width="${colW.toFixed(1)}" height="${cH}" fill="rgba(0,0,0,0)" pointer-events="all" data-lbl="${esc(fmtDate(p.date))}" data-v="${+p.followers||0}"/>`
-    if (i === 0 || i === pts.length-1 || i % Math.ceil(pts.length/8) === 0) {
+    const step = Math.ceil(pts.length/8)
+    if (i === 0 || i === pts.length-1 || (i % step === 0 && pts.length-1-i >= step*0.75)) {
       // Anchor the end labels inward so they can't be clipped by the viewBox
       const anc = i === 0 ? 'start' : (i === pts.length-1 ? 'end' : 'middle')
       xlab += `<text x="${x.toFixed(1)}" y="${H-8}" text-anchor="${anc}" font-size="9" fill="var(--text-2)">${esc(fmtDate(p.date))}</text>`
@@ -7213,8 +7237,8 @@ function renderSocChart() {
   })
   el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
     ${grid}${ylab}
-    <polygon points="${area}" fill="rgba(0,122,255,0.10)"/>
-    <polyline points="${line}" fill="none" stroke="#007AFF" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    <polygon points="${area}" fill="var(--accent-soft)"/>
+    <polyline points="${line}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
     ${dots}${hit}${xlab}
   </svg>`
   el.querySelectorAll('.chart-col').forEach(r => {
@@ -7228,7 +7252,7 @@ function showSocTip(e, lbl, v) {
   const tip = document.getElementById('chart-tip')
   tip.innerHTML = `<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px">${lbl}</div>
     <div style="display:flex;align-items:center;gap:7px;margin-top:4px">
-      <span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#007AFF;flex-shrink:0"></span>
+      <span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--accent);flex-shrink:0"></span>
       <span style="color:var(--text-2);font-size:12px">Followers</span>
       <span style="margin-left:auto;font-weight:700;font-size:12px;color:var(--text)">${(+v||0).toLocaleString()}</span>
     </div>`
@@ -7236,7 +7260,7 @@ function showSocTip(e, lbl, v) {
   posChartTip(e)
 }
 
-function renderSocReels() {
+function _legacyRenderSocReels() {
   const el = document.getElementById('soc-reels-table'); if (!el) return
   const list = load(K.socReels).slice().sort((a,b) => (+b.views||0) - (+a.views||0))
   if (!list.length) {
@@ -9334,6 +9358,76 @@ window.addEventListener('resize', () => {
   const w = innerWidth < 900; if (w === _wlW) return; _wlW = w
   if (document.getElementById('panel-wishlist')?.classList.contains('on')) renderWishTable()
 })
+
+// ── SOCIAL v4 ─────────────────────────────────────────────────
+// Followers hero + 30-day metrics, cleaner reels list (cards on phones),
+// connection info folded into the page subtitle. Replaces _legacyRenderSoc*.
+function socDeltaPill(cur, prev) {
+  if (prev === undefined || prev === null || !isFinite(+prev)) return ''
+  const d = (+cur || 0) - (+prev || 0)
+  if (!d) return '<span class="dv-pill sv-pill">No change</span>'
+  return `<span class="dv-pill ${d > 0 ? 'dv-pill-g' : 'dv-pill-r'}">${d > 0 ? '+' : '−'}${socNum(Math.abs(d))} vs last sync</span>`
+}
+function socDeltaTiny(cur, prev) {
+  if (prev === undefined || prev === null || !isFinite(+prev)) return ''
+  const d = (+cur || 0) - (+prev || 0)
+  return d ? `<div class="dv-tiny"><span class="${d > 0 ? 'soc-up' : 'soc-dn'}">${d > 0 ? '▲' : '▼'} ${socNum(Math.abs(d))}</span></div>` : '<div class="dv-tiny">no change</div>'
+}
+function renderSocConnBanner() {
+  const el = document.getElementById('soc-conn-banner'); if (!el) return
+  const cfg = socialCfg(), sub = document.getElementById('soc-sub')
+  if (!socWorker()) {
+    if (sub) sub.textContent = 'Follower growth, reach and what\'s working'
+    el.innerHTML = `<div class="soc-conn">${icon('alert', 17)}
+      <div><div class="t">Instagram not connected</div>
+      <div class="d">Stats sync and AI content ideas turn on once your Cloudflare Worker is live. Paste its URL under
+      <b>Settings → Social backend URL</b>. Your Instagram token and Claude API key stay on the Worker, never in this app.</div></div></div>`
+    return
+  }
+  el.innerHTML = ''
+  const last = cfg.lastSync ? new Date(cfg.lastSync) : null
+  if (sub) sub.innerHTML = `<span class="soc-dot"></span>${cfg.igUsername ? '<b>@' + esc(cfg.igUsername) + '</b> · ' : 'Connected · '}${last ? 'synced ' + last.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'not synced yet'}`
+}
+function renderSocSummary() {
+  const el = document.getElementById('soc-summary'); if (!el) return
+  const s = socSnaps(), cur = s[s.length - 1] || {}, prv = s[s.length - 2], has = s.length > 0
+  const v = k => has ? socNum(cur[k]) : '—'
+  const csub = document.getElementById('soc-chart-sub')
+  if (csub) csub.textContent = s.length > 1 ? `${Math.min(s.length, 26)} syncs` : ''
+  el.innerHTML = `<div class="card pv-hero soc-hero">
+    <div class="dv-head"><span class="dv-lbl">Followers</span>${has && prv ? socDeltaPill(cur.followers, prv.followers) : has ? '' : '<span class="dv-pill sv-pill">Awaiting first sync</span>'}</div>
+    <div class="num dv-big">${v('followers')}</div>
+    <div class="pv-split">
+      <div><div class="dv-lbl">Reach · 30d</div><div class="num dv-mid">${v('reach')}</div>${has && prv ? socDeltaTiny(cur.reach, prv.reach) : ''}</div>
+      <div><div class="dv-lbl">Views · 30d</div><div class="num dv-mid">${v('views')}</div>${has && prv ? socDeltaTiny(cur.views, prv.views) : ''}</div>
+      <div><div class="dv-lbl">Profile visits · 30d</div><div class="num dv-mid">${v('profileVisits')}</div>${has && prv ? socDeltaTiny(cur.profileVisits, prv.profileVisits) : ''}</div>
+    </div>
+  </div>`
+}
+function renderSocReels() {
+  const el = document.getElementById('soc-reels-table'); if (!el) return
+  const list = load(K.socReels).slice().sort((a, b) => (+b.views || 0) - (+a.views || 0))
+  if (!list.length) {
+    el.innerHTML = emptyState('bar-chart', socWorker() ? 'No reels yet. Hit Sync now to pull your latest posts.' : 'Reel performance shows up here once Instagram is connected.', null, { small: true, pad: '28px 20px' })
+    return
+  }
+  const top = +list[0].views || 1
+  const open = r => r.permalink ? `<a class="soc-open" href="${esc(r.permalink)}" target="_blank" rel="noopener" title="Open on Instagram" aria-label="Open on Instagram">${icon('link', 14)}</a>` : ''
+  el.innerHTML = `<table class="pv-tbl soc-tbl">
+    <thead><tr><th>#</th><th>Reel</th><th class="ta-r">Views</th><th class="ta-r">Likes</th><th class="ta-r">Shares</th><th class="ta-r">Saves</th><th></th></tr></thead>
+    <tbody>${list.map((r, i) => `<tr>
+      <td class="pv-muted">${i + 1}</td>
+      <td><div class="soc-cap2">${esc(r.caption || '(no caption)')}</div><div class="pv-desc">${r.posted ? fmtDate(r.posted) : ''}</div></td>
+      <td class="ta-r"><div class="num pv-amt">${socNum(r.views)}</div><div class="soc-bar"><i style="width:${Math.round((+r.views || 0) / top * 100)}%"></i></div></td>
+      <td class="ta-r num">${socNum(r.likes)}</td><td class="ta-r num">${socNum(r.shares)}</td><td class="ta-r num">${socNum(r.saves)}</td>
+      <td class="ta-r">${open(r)}</td>
+    </tr>`).join('')}</tbody></table>
+  <div class="pv-cards">${list.map((r, i) => `<div class="pv-card">
+    <div class="pv-card-t"><span class="soc-rank">${i + 1}</span><span class="pv-client soc-cap2">${esc(r.caption || '(no caption)')}</span>${open(r)}</div>
+    <div class="pv-card-m">${r.posted ? fmtDate(r.posted) : ''}</div>
+    <div class="soc-mets"><div><b class="num">${socNum(r.views)}</b><span>views</span></div><div><b class="num">${socNum(r.likes)}</b><span>likes</span></div><div><b class="num">${socNum(r.shares)}</b><span>shares</span></div><div><b class="num">${socNum(r.saves)}</b><span>saves</span></div></div>
+  </div>`).join('')}</div>`
+}
 </script>
 <!-- SUBSCRIPTION PRICE CHANGE MODAL -->
 <div class="smod-overlay" id="sub-price-overlay" onclick="if(event.target===this)closeSubPrice()">
