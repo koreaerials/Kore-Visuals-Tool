@@ -1189,6 +1189,9 @@ html[data-theme] .cli-ct-row{background:var(--surface-2);border:1px solid var(--
 .wl-hero{margin-bottom:14px}
 .wl-tags{display:flex;gap:6px;margin-top:8px}
 html[data-theme] #panel-wishlist .wish-link{color:var(--accent-text)}
+/* ── DASHBOARD: second action ── */
+.dv-acts{display:flex;align-items:center;gap:4px;flex:none}
+.dv-link-2{color:var(--text-2)!important}
 /* ── SEND INVOICE ── */
 .inv-send{display:flex;align-items:center;gap:12px;margin-bottom:14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2)}
 .inv-send-txt{flex:1;min-width:0}
@@ -1710,7 +1713,7 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
       <div class="card exp-card">
         <div class="exp-icon"><svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg></div>
         <h3>Backup to Google Sheets</h3>
-        <p>Save a full snapshot to your Drive. Keeps the last 5 backups automatically.</p>
+        <p>Save a full snapshot of every tab to your Drive. Keeps the last 6 plus one per month for a year. <span id="backup-last" style="display:block;margin-top:6px"></span></p>
         <button class="btn btn-p" id="backup-btn" style="width:100%" onclick="backupToSheets()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg> Backup to Sheets</button>
         <button class="btn btn-s" style="width:100%;margin-top:8px" onclick="viewBackups()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg> View Backups</button>
       </div>
@@ -3794,7 +3797,6 @@ function importJSON(input) {
 // ── GOOGLE SHEETS BACKUP ───────────────────────────────────────
 const GD_BACKUP_PATH = ['Files', 'Kore Aerials Tool', 'Data Backups']
 const GD_AGR_PATH = ['Files', 'Kore Aerials Tool', 'Agreements']
-const GD_BACKUP_MAX  = 5
 
 // ── GOOGLE CALENDAR ───────────────────────────────────────────
 const GC_CAL_API = 'https://www.googleapis.com/calendar/v3'
@@ -3878,81 +3880,126 @@ async function gsWriteTabToSheet(spreadsheetId, tabName, cols, rows) {
   return resp?.ok ?? false
 }
 
-async function backupToSheets() {
-  if (!gsGetToken()) { toast('Sign in with Google to create a backup'); return }
-  const btn = document.getElementById('backup-btn')
-  const origHTML = btn.innerHTML
-  btn.disabled = true
-  btn.textContent = 'Creating backup…'
-  try {
-    // 1. Find Data Backups folder
-    const folderId = await gdResolvePath(GD_BACKUP_PATH)
-    if (!folderId) { toast('Data Backups folder not found in Drive'); return }
-
-    // 2. List existing backups (oldest first)
-    const q = encodeURIComponent(`'${folderId}' in parents and name contains 'Kore Visuals Backup - ' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false`)
-    const listResp = await gsReq(`${GD_DRIVE_API}/files?q=${q}&orderBy=createdTime&fields=files(id,name)&spaces=drive`)
-    let backups = []
-    if (listResp?.ok) backups = (await listResp.json()).files || []
-
-    // 3. Delete oldest if already at limit
-    while (backups.length >= GD_BACKUP_MAX) {
-      const oldest = backups.shift()
-      await gsReq(`${GD_DRIVE_API}/files/${oldest.id}`, { method:'DELETE' })
+// ── BACKUPS ───────────────────────────────────────────────────
+// A backup is a copy of every tab of the live Sheet (read straight from Sheets, so
+// it's exactly what's stored, Gear/Wishlist/Clients included) into
+// Files/Kore Aerials Tool/Data Backups. Runs by itself once a week when you open the
+// app signed in. Before saving, row counts are compared with the newest backup: if a
+// tab lost more than half its rows (like Clients 25 → 2), the backup is held back so a
+// bad copy never pushes out a good one. Kept: newest 6, plus the first backup of each
+// month for the last 12 months.
+const GD_BACKUP_KEEP_RECENT = 6, GD_BACKUP_KEEP_MONTHS = 12, GD_BACKUP_EVERY_DAYS = 7
+function bkTabs() { return [...new Set([...Object.values(SHEET_SCHEMA).map(x => x.tab), CLI_TAB])] }
+function bkName() {
+  const now = new Date(), pad = n => String(n).padStart(2, '0')
+  return `Kore Visuals Backup - ${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`
+}
+async function bkList(folderId) {
+  const q = encodeURIComponent(`'${folderId}' in parents and name contains 'Kore Visuals Backup - ' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false`)
+  const r = await gsReqRetry(`${GD_DRIVE_API}/files?q=${q}&orderBy=createdTime desc&pageSize=200&fields=files(id,name,createdTime)&spaces=drive`)
+  if (!r?.ok) throw new Error('Could not list backups (' + (r ? r.status : 'not signed in') + ')')
+  return (await r.json()).files || []   // newest first
+}
+// Data-row counts per tab of a spreadsheet (header excluded)
+async function bkCounts(spreadsheetId, tabs) {
+  const meta = await gsReqRetry(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=sheets.properties.title`)
+  if (!meta?.ok) return null
+  const have = new Set(((await meta.json()).sheets || []).map(x => x.properties.title))
+  const list = tabs.filter(t => have.has(t)); if (!list.length) return {}
+  const q = list.map(t => 'ranges=' + encodeURIComponent(`'${t.replace(/'/g, "''")}'!A1:A`)).join('&')
+  const r = await gsReqRetry(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchGet?${q}`)
+  if (!r?.ok) return null
+  const out = {}
+  ;((await r.json()).valueRanges || []).forEach((vr, i) => { out[list[i]] = Math.max(0, (vr.values || []).filter(x => x && x[0]).length - 1) })
+  return out
+}
+function bkShrinks(prev, now) {
+  if (!prev) return []
+  return Object.keys(prev).filter(t => prev[t] >= 4 && (now[t] || 0) < prev[t] * 0.5).map(t => ({ tab: t, from: prev[t], to: now[t] || 0 }))
+}
+function bkPickDeletes(files) {
+  const keep = new Set(files.slice(0, GD_BACKUP_KEEP_RECENT).map(f => f.id))
+  const months = {}
+  files.slice().reverse().forEach(f => { const m = (f.createdTime || '').slice(0, 7); if (m && !months[m]) months[m] = f.id })
+  Object.keys(months).sort().reverse().slice(0, GD_BACKUP_KEEP_MONTHS).forEach(m => keep.add(months[m]))
+  return files.filter(f => !keep.has(f.id))
+}
+function bkLastAt() { try { return localStorage.getItem('dt_backup_last') || '' } catch { return '' } }
+// opts.auto: no prompts; a big drop holds the backup and raises a dashboard item instead
+async function bkRun(opts = {}) {
+  if (!gsGetToken()) throw new Error('Sign in with Google to back up')
+  const folderId = await gdResolvePath(GD_BACKUP_PATH)
+  if (!folderId) throw new Error('Data Backups folder not found in Drive')
+  const tabs = bkTabs()
+  const live = await gsReadAll(tabs)                  // throws if Sheets can't be read
+  const now = {}; Object.keys(live).forEach(t => { now[t] = Math.max(0, (live[t] || []).filter(x => x && x[0]).length - 1) })
+  const files = await bkList(folderId)
+  const prev = files[0] ? await bkCounts(files[0].id, tabs) : null
+  const drops = bkShrinks(prev, now)
+  if (drops.length) {
+    const txt = drops.map(d => `${d.tab} ${d.from} → ${d.to}`).join(', ')
+    if (opts.auto) {
+      try { localStorage.setItem('dt_backup_warn', JSON.stringify({ at: today(), txt })) } catch {}
+      renderDash?.()
+      return { held: true, txt }
     }
-
-    // 4. Build timestamp name
-    const now = new Date()
-    const pad = n => String(n).padStart(2,'0')
-    const ts = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`
-    const sheetName = `Kore Visuals Backup - ${ts}`
-
-    // 5. Create new spreadsheet in the backup folder
-    const createResp = await gsReq(`${GD_DRIVE_API}/files`, {
-      method: 'POST',
-      body: JSON.stringify({ name:sheetName, mimeType:'application/vnd.google-apps.spreadsheet', parents:[folderId] })
-    })
-    if (!createResp?.ok) { toast('Failed to create backup sheet'); return }
-    const { id: newId } = await createResp.json()
-
-    // 6. Get Sheet1's sheetId so we can rename it
-    const metaResp = await gsReq(`https://sheets.googleapis.com/v4/spreadsheets/${newId}?fields=sheets.properties`)
-    const sheet1Id = metaResp?.ok ? ((await metaResp.json()).sheets?.[0]?.properties?.sheetId ?? 0) : 0
-
-    // 7. Rename Sheet1 → Income, add remaining tabs
-    const tabsToAdd = ['Purchases','Subscriptions','Settings','Links','Clients','Pricing','Jobs']
-    await gsReq(`https://sheets.googleapis.com/v4/spreadsheets/${newId}:batchUpdate`, {
-      method: 'POST',
-      body: JSON.stringify({ requests: [
-        { updateSheetProperties:{ properties:{ sheetId:sheet1Id, title:'Income' }, fields:'title' } },
-        ...tabsToAdd.map(t => ({ addSheet:{ properties:{ title:t } } }))
-      ]})
-    })
-
-    // 8. Write data to each tab
-    const schema = SHEET_SCHEMA
-    const incRows = gsObjsToRows(K.inc);   if(incRows.length)  await gsWriteTabToSheet(newId,'Income',      schema[K.inc].cols,  incRows)
-    const purRows = gsObjsToRows(K.pur);   if(purRows.length)  await gsWriteTabToSheet(newId,'Purchases',   schema[K.pur].cols,  purRows)
-    const subRows = gsObjsToRows(K.sub);   if(subRows.length)  await gsWriteTabToSheet(newId,'Subscriptions',schema[K.sub].cols, subRows)
-    const setRows = gsSettingsRows();       if(setRows.length)  await gsWriteTabToSheet(newId,'Settings',    schema[K.subx].cols, setRows)
-    const lnkRows = gsObjsToRows(K.links); if(lnkRows.length)  await gsWriteTabToSheet(newId,'Links',       schema[K.links].cols,lnkRows)
-    const prcRows = gsObjsToRows(K.prc); if(prcRows.length) await gsWriteTabToSheet(newId,'Pricing',schema[K.prc].cols,prcRows)
-    const jobRows = gsObjsToRows(K.jobs); if(jobRows.length) await gsWriteTabToSheet(newId,'Jobs',schema[K.jobs].cols,jobRows)
-    // Read Clients directly from the main sheet so we get the live data regardless of in-memory state
-    const cliSheetRows = await gsReadTab(CLI_TAB)
-    if (cliSheetRows && cliSheetRows.length > 1) {
-      // cliSheetRows[0] is the header; copy data rows as-is
-      const cliDataRows = cliSheetRows.slice(1).filter(r => r && r[0])
-      if (cliDataRows.length) await gsWriteTabToSheet(newId,'Clients',CLI_COLS,cliDataRows)
-    }
-
-    toast(`Backup created: ${sheetName}`)
-  } catch(e) {
-    toast('Backup failed: ' + (e.message||String(e)))
-  } finally {
-    btn.disabled = false
-    btn.innerHTML = origHTML
+    if (!confirm(`Rows dropped since the last backup: ${txt}.\n\nIf that's not on purpose, cancel and check your data. Back up anyway? Older backups are kept either way.`)) return { cancelled: true }
   }
+  // Create the backup spreadsheet with one tab per live tab
+  const name = bkName()
+  const cr = await gsReqRetry(`${GD_DRIVE_API}/files`, { method: 'POST', body: JSON.stringify({ name, mimeType: 'application/vnd.google-apps.spreadsheet', parents: [folderId] }) })
+  if (!cr?.ok) throw new Error('Could not create the backup sheet')
+  const { id: newId } = await cr.json()
+  const names = Object.keys(live)
+  const metaResp = await gsReqRetry(`https://sheets.googleapis.com/v4/spreadsheets/${newId}?fields=sheets.properties`)
+  const sheet1Id = metaResp?.ok ? ((await metaResp.json()).sheets?.[0]?.properties?.sheetId ?? 0) : 0
+  await gsReqRetry(`https://sheets.googleapis.com/v4/spreadsheets/${newId}:batchUpdate`, { method: 'POST', body: JSON.stringify({ requests: [
+    { updateSheetProperties: { properties: { sheetId: sheet1Id, title: names[0] }, fields: 'title' } },
+    ...names.slice(1).map(t => ({ addSheet: { properties: { title: t } } }))] }) })
+  // One write for all tabs
+  const data = names.filter(t => (live[t] || []).length).map(t => ({ range: `'${t.replace(/'/g, "''")}'!A1`, majorDimension: 'ROWS', values: live[t] }))
+  if (data.length) {
+    const w = await gsReqRetry(`https://sheets.googleapis.com/v4/spreadsheets/${newId}/values:batchUpdate`, { method: 'POST', body: JSON.stringify({ valueInputOption: 'RAW', data }) })
+    if (!w?.ok) throw new Error('Could not write the backup (' + (w ? w.status : '') + ')')
+  }
+  // Retention (only after the new backup is safely written)
+  for (const f of bkPickDeletes([{ id: newId, name, createdTime: new Date().toISOString() }, ...files]))
+    await gsReqRetry(`${GD_DRIVE_API}/files/${f.id}`, { method: 'DELETE' })
+  try { localStorage.setItem('dt_backup_last', new Date().toISOString()); localStorage.removeItem('dt_backup_warn') } catch {}
+  bkRenderStatus(); renderDash?.()
+  return { ok: true, name, counts: now }
+}
+async function backupToSheets() {
+  const btn = document.getElementById('backup-btn'), orig = btn?.innerHTML
+  if (btn) { btn.disabled = true; btn.textContent = 'Creating backup…' }
+  try {
+    const r = await bkRun({ auto: false })
+    if (r.ok) toast(`Backup created: ${r.name}`)
+  } catch (e) { toast('Backup failed: ' + (e.message || String(e)), 5000) }
+  finally { if (btn) { btn.disabled = false; btn.innerHTML = orig } }
+}
+let _bkAutoRan = false
+async function bkAutoMaybe() {
+  if (_bkAutoRan || !gsGetToken() || privacyMode()) return
+  _bkAutoRan = true
+  try {
+    const last = bkLastAt()
+    if (last && (Date.now() - Date.parse(last)) < GD_BACKUP_EVERY_DAYS * 864e5) return
+    // Another device may have backed up recently: check Drive before making one
+    const folderId = await gdResolvePath(GD_BACKUP_PATH); if (!folderId) return
+    const files = await bkList(folderId)
+    if (files[0] && (Date.now() - Date.parse(files[0].createdTime)) < GD_BACKUP_EVERY_DAYS * 864e5) {
+      try { localStorage.setItem('dt_backup_last', files[0].createdTime) } catch {}
+      bkRenderStatus(); return
+    }
+    const r = await bkRun({ auto: true })
+    if (r.ok) toast('Weekly backup saved to Drive', 3000)
+  } catch (e) { console.warn('Auto backup:', e) }
+}
+function bkRenderStatus() {
+  const el = document.getElementById('backup-last'); if (!el) return
+  const last = bkLastAt()
+  el.textContent = last ? `Automatic weekly. Last backup ${fmtDate(toStr(new Date(last)))}.` : 'Automatic weekly once you are signed in.'
 }
 
 async function viewBackups() {
@@ -3963,6 +4010,7 @@ async function viewBackups() {
 }
 
 function renderDataSummary() {
+  bkRenderStatus()
   const el=document.getElementById('data-summary')
   const inc=load(K.inc),pur=load(K.pur),sub=load(K.sub)
   const box=(n,lbl,color)=>`<div style="padding:14px;background:rgba(${color},0.1);border-radius:12px;text-align:center"><div style="font-size:26px;font-weight:700;color:rgb(${color})">${n}</div><div style="font-size:12px;color:var(--text-2)">${lbl}</div></div>`
@@ -4462,6 +4510,7 @@ async function gsLoadAll() {
     migrateSubsV3(); processSubs()
     setSyncStatus('synced')
     renderDash(); renderIncTable(); renderPurTable(); renderSubTable(); renderTaxes(); renderDataSummary(); renderLinks()
+    setTimeout(bkAutoMaybe, 4000)   // weekly backup, after the load settles
     return true
   } catch(err) {
     console.error('gsLoadAll:', err)
@@ -8165,11 +8214,14 @@ const DASH_RANGE_LBL = { all:'All time', month:'This month', year:'This year', c
 function dashAttention() {
   const t = today(), items = []
   const days = d => Math.round((toDate(t) - toDate(d)) / 864e5)
+  try { const w = JSON.parse(localStorage.getItem('dt_backup_warn') || 'null'); if (w) items.push({
+    lvl: 3, ico: 'alert', tone: 'red', title: 'Weekly backup held back',
+    sub: `Rows dropped: ${esc(w.txt)} · check before backing up`, act: 'Review', fn: "navTo('export')" }) } catch {}
   loadP(K.inc).filter(e => e.status === 'Pending' || e.status === 'Unpaid').forEach(e => items.push({
     lvl: e.status === 'Unpaid' ? 2 : 1, ico: 'clock', tone: 'amber',
     title: `Follow up: ${e.client || 'client'} invoice`,
     sub: `${fmt(e.amount)} · ${e.status.toLowerCase()}${e.date ? ' · ' + fmtDate(e.date) : ''}`,
-    act: 'Open', fn: "navTo('income')" }))
+    act: 'Mark paid', fn: `dashMarkPaid('${e.id}')`, act2: 'Open', fn2: "navTo('income')" }))
   gearAttention(t).forEach(a => items.push(a))
   const gearSubs = new Set(load(K.gear).map(g => g.faaSubId).filter(Boolean))
   loadP(K.sub).filter(s => subOverdue(s) && !gearSubs.has(s.id)).forEach(s => items.push({
@@ -8192,6 +8244,13 @@ function dashAttention() {
     else if ((j.stage === 'Lead' || j.stage === 'Quoted') && j.createdAt && days(j.createdAt) >= 7) items.push({ lvl: 0, ico: 'users', tone: 'amber', title: `Follow up: ${job.name}`, sub: `${j.stage} for ${days(j.createdAt)} days${job.amt}`, act: 'Open', fn: "navTo('jobs')" })
   })
   return items.sort((a, b) => b.lvl - a.lvl)
+}
+
+function dashMarkPaid(id) {
+  const e = load(K.inc).find(x => x.id === id); if (!e) return
+  if (!confirm(`Mark ${fmt(e.amount)} from ${e.client || 'this client'} as paid?`)) return
+  updateIncField(id, 'status', 'Paid')
+  toast(`${e.client || 'Invoice'} marked paid`)
 }
 
 function renderDash() {
@@ -8226,7 +8285,7 @@ function renderDash() {
     <div class="dv-att-row">
       <span class="dv-ico dv-${a.tone}">${icon(a.ico, 15)}</span>
       <div class="dv-att-txt"><div class="dv-att-t">${esc(a.title)}</div><div class="dv-att-s">${a.sub}</div></div>
-      <button class="dv-link" onclick="${a.fn}">${a.act}</button>
+      <span class="dv-acts">${a.act2 ? `<button class="dv-link dv-link-2" onclick="${a.fn2}">${a.act2}</button>` : ''}<button class="dv-link" onclick="${a.fn}">${a.act}</button></span>
     </div>`).join('') + (att.length > 6 ? `<div class="dv-more">+${att.length - 6} more</div>` : '')
     : `<div class="dv-clear">${icon('check-circle', 20)}<div><b>All caught up</b><span>Nothing needs you right now.</span></div></div>`
 
