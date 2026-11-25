@@ -1167,6 +1167,7 @@ html[data-theme] #panel-wishlist .wish-link{color:var(--accent-text)}
 /* ── GEAR & FAA ── */
 .gr-hdr-btns{display:flex;gap:8px;flex-wrap:wrap}
 .gr-hero{margin-bottom:14px}
+.pv-split.gr-split{grid-template-columns:repeat(4,minmax(0,1fr))}
 .gr-name{font-weight:600}
 .gr-model{font-size:11.5px;color:var(--text-2);margin-top:2px}
 .gr-reg{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:var(--text-2);margin-bottom:4px}
@@ -1182,8 +1183,8 @@ html[data-theme] #panel-wishlist .wish-link{color:var(--accent-text)}
   #panel-gear .pv-fbar .fbtn{flex:none}
   .gr-hdr-btns{width:100%;flex-wrap:nowrap}
   html[data-theme] #panel-gear .gr-hdr-btns .btn{flex:1;width:auto;justify-content:center;white-space:nowrap}
-  #panel-gear .pv-split>div:last-child{display:block}
-  #panel-gear .pv-split>div:first-child{display:none}
+  .pv-split.gr-split{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:14px}
+  #panel-gear .pv-split>div{display:block!important}
 }
 /* ── PRICING, EXPORT, TAXES v4 ── */
 html[data-theme] #jobs-pq-section div[style*="rgba(52,199,89,0.08)"]{background:var(--surface-2)!important;border-color:var(--line)!important}
@@ -8693,6 +8694,7 @@ const GEAR_TYPES = [{ k: 'all', l: 'All' }, { k: 'drone', l: 'Drones' }, { k: 'C
 let _gearF = { type: 'all', retired: false }
 function gearList() { return load(K.gear) }
 function gearIsDrone(g) { return /drone/i.test(g.type || '') }
+function gearIsCam(g) { return /^(camera|action camera)$/i.test(g.type || '') }
 function gearFaaSub(g) { return g.faaSubId ? load(K.sub).find(s => s.id === g.faaSubId) || null : null }
 // Active subscription: paid through its next charge. Inactive (not renewed): the
 // registration ran out one period after the last real payment (or the start date
@@ -8739,7 +8741,7 @@ function gearAttention(t) {
 function gearFiltered() {
   return gearList().filter(g =>
     (_gearF.retired || (g.status || 'Active') === 'Active') &&
-    (_gearF.type === 'all' || (_gearF.type === 'drone' ? gearIsDrone(g) : g.type === _gearF.type)))
+    (_gearF.type === 'all' || (_gearF.type === 'drone' ? gearIsDrone(g) : _gearF.type === 'Camera' ? gearIsCam(g) : g.type === _gearF.type)))
     .sort((a, b) => ((a.status || 'Active') === 'Active' ? 0 : 1) - ((b.status || 'Active') === 'Active' ? 0 : 1) ||
       (+b.hours || 0) - (+a.hours || 0) || (a.name || '').localeCompare(b.name || ''))
 }
@@ -8762,7 +8764,9 @@ function renderGear() {
   const exp = drones.filter(g => gearFaaState(g).k === 'expired').length
   const soon = drones.filter(g => gearFaaState(g).k === 'soon').length
   const unset = drones.filter(g => gearFaaState(g).k === 'none').length
-  const allDr = all.filter(gearIsDrone)
+  const allDr = all.filter(gearIsDrone), allCam = all.filter(gearIsCam)
+  const inactBits = list => ['Retired', 'Parted out', 'Sold', 'Lost'].map(st => { const n = list.filter(g => g.status === st).length; return n ? `${n} ${st.toLowerCase()}` : '' }).filter(Boolean).join(', ')
+  const camIn = inactBits(allCam)
   const inBits = ['Retired', 'Parted out', 'Sold', 'Lost'].map(st => { const n = allDr.filter(g => g.status === st).length; return n ? `${n} ${st.toLowerCase()}` : '' }).filter(Boolean).join(', ')
   const sub = document.getElementById('gear-sub')
   if (sub) sub.innerHTML = all.length ? `<b>${act.length}</b> active${all.length - act.length ? ` · <b>${all.length - act.length}</b> inactive` : ''} · <b>${gearHrs(hrs)}</b> flown` : 'Your drones, registrations and flight time'
@@ -8776,8 +8780,9 @@ function renderGear() {
   if (sm) sm.innerHTML = !all.length ? '' : `<div class="card pv-hero gr-hero">
     <div class="dv-head"><span class="dv-lbl">Total flight time</span>${exp ? `<span class="dv-pill dv-pill-r">${exp} FAA expired</span>` : soon ? `<span class="dv-pill">${soon} FAA due soon</span>` : drones.length && !unset ? '<span class="dv-pill dv-pill-g">FAA all current</span>' : ''}</div>
     <div class="num dv-big">${gearHrs(hrs)}</div>
-    <div class="pv-split">
-      <div><div class="dv-lbl">Drones</div><div class="num dv-mid">${allDr.length}</div><div class="dv-tiny">${drones.length} active · ${allDr.length - drones.length} inactive${inBits ? ` (${inBits})` : ''}</div></div>
+    <div class="pv-split gr-split">
+      <div><div class="dv-lbl">Active drones</div><div class="num dv-mid">${drones.length}</div><div class="dv-tiny">of ${allDr.length} total${inBits ? ` · ${inBits}` : ''}</div></div>
+      <div><div class="dv-lbl">Active cameras</div><div class="num dv-mid">${allCam.filter(g => (g.status || 'Active') === 'Active').length}</div><div class="dv-tiny">of ${allCam.length} total${camIn ? ` · ${camIn}` : ''}</div></div>
       <div><div class="dv-lbl">Flights logged</div><div class="num dv-mid">${flights}</div><div class="dv-tiny">${flights ? Math.round(hrs * 60 / flights * 10) / 10 + ' min avg' : 'no flights yet'}</div></div>
       <div><div class="dv-lbl">FAA</div><div class="num dv-mid">${exp + soon}</div><div class="dv-tiny">${exp} expired · ${soon} due · ${unset} not set</div></div>
     </div></div>`
@@ -9516,7 +9521,7 @@ function renderSocReels() {
         <div class="ff"><label>Name <span style="color:var(--red)">*</span></label>
           <input id="gear-name" placeholder="5inch, BOB57, Mini 5 Pro..."></div>
         <div class="ff"><label>Type</label>
-          <select id="gear-type" onchange="gearTypeChanged()"><option>FPV drone</option><option>Camera drone</option><option>Camera</option><option>Other</option></select></div>
+          <select id="gear-type" onchange="gearTypeChanged()"><option>FPV drone</option><option>Camera drone</option><option>Camera</option><option>Action camera</option><option>Other</option></select></div>
         <div class="ff"><label>Make / model</label>
           <input id="gear-model" placeholder="iFlight BOB57, DJI Mini 5 Pro..."></div>
         <div class="ff"><label>Serial number</label>
