@@ -1125,6 +1125,67 @@ html[data-theme] .subx-next{color:var(--orange)}
   .sv-kinds{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -14px 12px;padding:0 14px}
   .sv-kind{flex:none}
 }
+/* ── CLIENTS v4 ── */
+.cli-type-re{--tc:var(--info)}.cli-type-wed{--tc:#F07AA0}.cli-type-biz{--tc:var(--green)}.cli-type-per{--tc:var(--accent)}.cli-type-prod{--tc:var(--purple)}.cli-type-oth{--tc:var(--text-2)}
+html[data-theme] .cli-type-badge{color:var(--tc);background:color-mix(in srgb,var(--tc) 14%,transparent);border-radius:6px}
+html[data-theme] .fu-badge{border-radius:6px}
+html[data-theme] .fu-overdue{background:rgba(255,107,94,.13);color:var(--red)}
+html[data-theme] .fu-soon{background:rgba(245,196,81,.13);color:var(--orange)}
+html[data-theme] .fu-ok{background:var(--hover);color:var(--text-2)}
+.cl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:10px}
+.cl-card{display:flex;align-items:center;gap:14px;text-align:left;font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer;transition:border-color .15s}
+.cl-card:hover{border-color:var(--line-2);background:var(--surface-2)}
+.cl-av{width:42px;height:42px;border-radius:12px;background:var(--accent-soft);color:var(--accent-text);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:600;font-size:15px;flex:none}
+.cl-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.cl-name{font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cl-sub{font-size:12.5px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:1em}
+.cl-sub:empty{display:none}
+.cl-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
+.cl-tags:empty{display:none}
+.cl-meta{display:flex;flex-direction:column;align-items:flex-end;gap:3px;font-size:12px;color:var(--text-2);flex:none;text-align:right}
+.cl-rev{font-size:15px;font-weight:600;color:var(--text)}
+html[data-theme] .cli-detail-avatar{background:var(--accent-soft);color:var(--accent-text);border-radius:14px;font-family:var(--font-d)}
+html[data-theme] #cli-name-display{font-family:var(--font-d);font-weight:600}
+.cl-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:18px}
+.cl-stat{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.cl-stat>div:first-child{font-family:var(--font-d);font-size:20px!important;font-weight:600!important;color:var(--text)!important}
+html[data-theme] .cli-ct-row{background:var(--surface-2);border:1px solid var(--line);border-radius:12px}
+/* ── WISHLIST v4 ── */
+.wl-hero{margin-bottom:14px}
+.wl-tags{display:flex;gap:6px;margin-top:8px}
+html[data-theme] #panel-wishlist .wish-link{color:var(--accent-text)}
+/* ── PRICING, EXPORT, TAXES v4 ── */
+html[data-theme] #jobs-pq-section div[style*="rgba(52,199,89,0.08)"]{background:var(--surface-2)!important;border-color:var(--line)!important}
+html[data-theme] #quote-total{color:var(--text)!important;font-family:var(--font-d)}
+html[data-theme] #tax-content [style*="border-radius:14px"]{background:var(--surface-2)!important;border:1px solid var(--line)}
+html[data-theme] #tax-content .card{padding:20px}
+html[data-theme] #data-summary [style*="border-radius:12px"]{background:var(--surface-2)!important;border:1px solid var(--line)}
+html[data-theme] #data-summary [style*="font-size:26px"]{color:var(--text)!important;font-family:var(--font-d)}
+html[data-theme] .exp-card{display:flex;flex-direction:column;text-align:left;padding:20px}
+html[data-theme] .exp-icon{color:var(--accent-text);width:44px;height:44px;border-radius:12px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;margin:0 0 14px}
+html[data-theme] .exp-icon svg{width:22px;height:22px}
+html[data-theme] .exp-card h3{font-family:var(--font-d);font-weight:600}
+html[data-theme] .exp-card .btn{justify-content:center}
+html[data-theme] #export-subnav,html[data-theme] #panel-export .jobs-subnav{margin-bottom:18px}
+/* ── POPUPS v4 ── */
+html[data-theme] .smod{border-radius:20px;padding:24px 24px 20px}
+html[data-theme] .smod-hdr{margin-bottom:18px}
+html[data-theme] .smod-ttl{font-size:19px}
+html[data-theme] .smod-lbl{font-size:11.5px;font-weight:600;text-transform:uppercase}
+html[data-theme] .smod-row{margin-bottom:14px}
+html[data-theme] .smod-footer{border-color:var(--line);margin-top:18px;padding-top:16px}
+@media(max-width:899px){
+  html[data-theme] .smod-overlay{align-items:flex-end;padding:0}
+  html[data-theme] .smod{max-width:none!important;width:100%;border-radius:20px 20px 0 0;border-bottom:0;padding:20px 18px calc(18px + env(safe-area-inset-bottom))}
+  html[data-theme] .smod:not(.smod-scroll){max-height:92vh;overflow-y:auto;overscroll-behavior:contain}
+  html[data-theme] .smod::before{content:"";display:block;width:38px;height:4px;border-radius:2px;background:var(--line-2);margin:-8px auto 14px}
+  .cl-grid{grid-template-columns:minmax(0,1fr)}
+  .cl-stats{gap:8px}.cl-stat{padding:10px}
+  .cl-stat>div:first-child{font-size:16px!important}
+  html[data-theme] #panel-wishlist .tbl-wrap{border:0;background:none;overflow:visible}
+  #panel-wishlist .pv-fbar .fbtn{flex:none}
+  #cli-list-view .jv-bar .jv-seg{width:100%}
+}
 .inst-pd{width:auto!important;min-width:0;padding:5px 8px!important;font-size:13px!important;border-radius:8px!important}
 html[data-theme] #dash-widgets .card{grid-column:auto}
 html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
@@ -1352,13 +1413,9 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
 
   <!-- WISHLIST -->
   <section class="panel" id="panel-wishlist">
-    <div class="sec-hdr"><h2>Wishlist</h2><p>Gear and services you're tracking but haven't bought yet</p></div>
-    <div class="card">
-      <div class="form-toggle-hdr">
-        <span class="form-ttl">Tracked Items</span>
-        <button class="btn btn-g" onclick="openWishModal()">+ Add Item</button>
-      </div>
-      <div class="fbar" id="wish-filter">
+    <div class="pv-hdr"><div><h2>Wishlist</h2><p id="wish-sub">Gear and services you're eyeing</p></div><button class="btn btn-g" onclick="openWishModal()">+ Add item</button></div>
+    <div>
+      <div class="fbar pv-fbar" id="wish-filter">
         <span class="lbl">Type:</span>
         <button class="fbtn on" data-f="type" data-v="all">All</button>
         <button class="fbtn" data-f="type" data-v="product">Product</button>
@@ -1374,7 +1431,7 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
         <button class="fbtn" data-f="pri" data-v="nice-to-have">Nice-to-have</button>
         <button class="fbtn" data-f="pri" data-v="someday">Someday</button>
       </div>
-      <div id="wish-summary" style="margin-bottom:14px"></div>
+      <div id="wish-summary"></div>
       <div class="tbl-wrap" id="wish-table"></div>
     </div>
 
@@ -1575,7 +1632,7 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
   <!-- PRICING & QUOTES (own tab since v4) -->
   <section class="panel" id="panel-pricing">
     <div id="jobs-pq-section">
-      <div class="sec-hdr"><h2>Pricing & Quotes</h2><p>Manage your service rates and build quotes</p></div>
+      <div class="pv-hdr"><div><h2>Pricing &amp; Quotes</h2><p>Your rates and the quote builder</p></div></div>
       <div class="card" style="margin-bottom:16px">
         <div class="form-toggle-hdr">
           <span class="card-ttl" style="margin-bottom:0">Services</span>
@@ -6555,7 +6612,8 @@ function cliSortClients(clients) {
   return withStats
 }
 
-function renderClientList() {
+// Superseded by Clients v4 (end of script). Unused, safe to delete.
+function _legacyRenderClientList() {
   _cliDetailName = null
   document.getElementById('cli-list-view').style.display = ''
   document.getElementById('cli-detail-view').style.display = 'none'
@@ -6669,16 +6727,16 @@ function renderClientDetail(name) {
         </div>
         <button class="btn btn-d btn-sm" onclick="deleteClient('${esc(c.id||'')}','${esc(name).replace(/'/g,"\\'")}')">Delete</button>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px">
-        <div class="card" style="text-align:center;padding:12px 8px">
+      <div class="cl-stats">
+        <div class="cl-stat">
           <div style="font-size:22px;font-weight:700;color:var(--blue)">${privacyMode()?'—':fmt(stats.revenue)}</div>
           <div style="font-size:11px;color:var(--text-2);margin-top:2px">Total Revenue</div>
         </div>
-        <div class="card" style="text-align:center;padding:12px 8px">
+        <div class="cl-stat">
           <div style="font-size:22px;font-weight:700">${stats.jobs}</div>
           <div style="font-size:11px;color:var(--text-2);margin-top:2px">Jobs</div>
         </div>
-        <div class="card" style="text-align:center;padding:12px 8px">
+        <div class="cl-stat">
           <div style="font-size:14px;font-weight:700">${stats.lastJob ? fmtDate(stats.lastJob) : '—'}</div>
           <div style="font-size:11px;color:var(--text-2);margin-top:2px">Last Job</div>
         </div>
@@ -7399,7 +7457,8 @@ function wishSort(list) {
 // ── Render ──
 function renderWishlist() { renderWishSummary(); renderWishTable(); renderWishArchive() }
 
-function renderWishSummary() {
+// Superseded by Wishlist v4 (end of script). Unused, safe to delete.
+function _legacyRenderWishSummary() {
   const el = document.getElementById('wish-summary'); if (!el) return
   const active = wishApplyFilters(wishList().filter(w => (w.status || 'active') === 'active'))
   const tot = active.reduce((s, w) => s + wishVal(w), 0)
@@ -7470,7 +7529,8 @@ function wishCatCell(w) {
   return `<select class="isel" onchange="wishSetField('${w.id}','category',this.value)">${opt('Drone Equipment')}${opt('Camera Equipment')}${opt('Misc')}</select>`
 }
 
-function renderWishTable() {
+// Desktop table; renderWishTable (v4) wraps this and swaps in cards on phones.
+function _wishTableDesktop() {
   const el = document.getElementById('wish-table'); if (!el) return
   const active = wishList().filter(w => (w.status || 'active') === 'active')
   const list = wishSort(wishApplyFilters(active))
@@ -9189,6 +9249,90 @@ let _svW = innerWidth < 900
 window.addEventListener('resize', () => {
   const w = innerWidth < 900; if (w === _svW) return; _svW = w
   if (document.getElementById('panel-subscriptions')?.classList.contains('on')) renderSubTable()
+})
+
+// ── CLIENTS / WISHLIST v4 ─────────────────────────────────────
+// Clients: header + search/sort bar rendered once, results re-rendered on
+// typing (keeps focus). Wishlist: value hero + phone cards.
+const CL_SORTS = [['recent', 'Recent'], ['az', 'A–Z'], ['revenue', 'Revenue'], ['jobs', 'Jobs']]
+function clSort(k) {
+  const desc = k + '-desc', asc = k + '-asc'
+  _cliSort = _cliSort === desc ? asc : _cliSort === asc ? desc : (k === 'az' ? asc : desc)
+  renderClientList()
+}
+function renderClientList() {
+  _cliDetailName = null
+  const lv = document.getElementById('cli-list-view'), dv = document.getElementById('cli-detail-view')
+  lv.style.display = ''; dv.style.display = 'none'
+  if (!document.getElementById('cli-results')) lv.innerHTML = `
+    <div class="pv-hdr"><div><h2>Clients</h2><p id="cli-sub">Your clients and contacts</p></div><button class="btn btn-g" onclick="openNewClientForm()">+ Add client</button></div>
+    <div class="jv-bar">
+      <label class="jv-search"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" id="cli-search" placeholder="Search clients or companies" aria-label="Search clients" oninput="renderClientList()"></label>
+      <div class="jv-seg" role="group" aria-label="Sort" id="cli-sort"></div>
+    </div>
+    <div id="cli-results"></div>`
+  const clients = getClientList()
+  const q = (document.getElementById('cli-search') || { value: '' }).value.toLowerCase()
+  const filtered = q ? clients.filter(c => c.name.toLowerCase().includes(q) || (c.company || '').toLowerCase().includes(q)) : clients
+  const sorted = cliSortClients(filtered)
+  const base = _cliSort.replace(/-(asc|desc)$/, ''), dir = _cliSort.endsWith('asc') ? ' ↑' : ' ↓'
+  document.getElementById('cli-sort').innerHTML = CL_SORTS.map(([k, l]) => `<button class="${base === k ? 'on' : ''}" onclick="clSort('${k}')">${l}${base === k ? dir : ''}</button>`).join('')
+  const all = cliSortClients(clients)
+  const rev = all.reduce((s, x) => s + (+x.s.revenue || 0), 0)
+  const fuDue = clients.filter(c => { const f = getFuStatus(c.followUpDate); return f && f.diff <= 7 }).length
+  const sub = document.getElementById('cli-sub')
+  if (sub) sub.innerHTML = clients.length ? `<b>${clients.length}</b> client${clients.length !== 1 ? 's' : ''}${privacyMode() ? '' : ` · <b>${fmt(rev)}</b> lifetime revenue`}${fuDue ? ` · <b class="sv-amber">${fuDue} follow-up${fuDue !== 1 ? 's' : ''} due</b>` : ''}` : 'Your clients and contacts'
+  document.getElementById('cli-results').innerHTML = sorted.length ? `<div class="cl-grid">${sorted.map(({ c, s: st }) => {
+    const fu = getFuStatus(c.followUpDate)
+    const initials = c.name.split(' ').map(w => w[0] || '').slice(0, 2).join('').toUpperCase()
+    const pc = (Array.isArray(c.contacts) ? c.contacts : []).find(x => x.primary) || (c.contacts || [])[0]
+    return `<button class="cl-card" onclick="openClientDetail('${esc(c.name).replace(/'/g, "\\'")}')">
+      <span class="cl-av">${initials}</span>
+      <span class="cl-main">
+        <span class="cl-name">${esc(c.name)}</span>
+        <span class="cl-sub">${esc(c.company && c.company !== c.name ? c.company : (pc && pc.name ? pc.name + (pc.role ? ' · ' + pc.role : '') : ''))}</span>
+        <span class="cl-tags">${c.clientType ? `<span class="cli-type-badge cli-type-${cliTypeSlug(c.clientType)}">${esc(c.clientType)}</span>` : ''}${fu ? `<span class="fu-badge ${fu.cls}">Follow up ${fu.cls === 'fu-ok' ? fu.label : fu.label.toLowerCase()}</span>` : ''}</span>
+      </span>
+      <span class="cl-meta"><span class="num cl-rev">${privacyMode() ? '—' : fmt(st.revenue)}</span><span>${st.jobs} job${st.jobs !== 1 ? 's' : ''}${st.lastJob ? ' · ' + fmtDate(st.lastJob).replace(/, \d{4}$/, m => st.lastJob.slice(0, 4) === today().slice(0, 4) ? '' : m) : ''}</span></span>
+    </button>`
+  }).join('')}</div>` : (q ? emptyState('users', `No clients match “${esc(q)}”.`) : emptyState('users', 'No clients yet.', { label: '+ Add client', fn: 'openNewClientForm()' }))
+}
+
+function renderWishSummary() {
+  const el = document.getElementById('wish-summary'); if (!el) return
+  const active = wishApplyFilters(wishList().filter(w => (w.status || 'active') === 'active'))
+  const sub = document.getElementById('wish-sub')
+  const tot = active.reduce((s, w) => s + wishVal(w), 0)
+  if (sub) sub.innerHTML = active.length ? `<b>${active.length}</b> item${active.length !== 1 ? 's' : ''} · <b>${fmt(tot)}</b> to buy everything` : "Gear and services you're eyeing"
+  if (!active.length) { el.innerHTML = ''; return }
+  const by = k => { const l = active.filter(w => (w.priority || 'nice-to-have') === k); return { n: l.length, v: l.reduce((s, w) => s + wishVal(w), 0) } }
+  el.innerHTML = `<div class="card pv-hero wl-hero">
+    <div class="dv-head"><span class="dv-lbl">Wishlist value</span></div>
+    <div class="num dv-big">${fmt(tot)}</div>
+    <div class="pv-split">${['must-have', 'nice-to-have', 'someday'].map(k => { const b = by(k); return `<div><div class="dv-lbl">${WISH_PRI[k].lbl}</div><div class="num dv-mid">${fmt(b.v)}</div><div class="dv-tiny">${b.n} item${b.n !== 1 ? 's' : ''}</div></div>` }).join('')}</div>
+  </div>`
+}
+function renderWishTable() {
+  _wishTableDesktop()
+  const el = document.getElementById('wish-table'); if (!el || !matchMedia('(max-width:899px)').matches) return
+  const list = wishSort(wishApplyFilters(wishList().filter(w => (w.status || 'active') === 'active')))
+  if (!list.length) return
+  el.innerHTML = `<div class="pv-cards wl-cards">${list.map(w => `<div class="pv-card">
+    <div class="pv-card-t"><span class="pv-client">${esc(w.name || '—')}</span><span class="num pv-amt">${fmt(+w.price || 0)}</span></div>
+    <div class="pv-card-m">${[w.company, wishStoreCell(w) !== '—' ? wishStoreCell(w) : '', w.dateAdded ? 'added ' + fmtDate(w.dateAdded) : ''].filter(Boolean).join(' · ')}${!w.priceComplete && +w.estTotal > 0 ? ` · est. ${fmt(+w.estTotal)}` : ''}</div>
+    <div class="wl-tags">${wishTypeBadge(w)}${wishPriBadge(w)}</div>
+    <div class="pv-card-f">${w.type === 'subscription' ? `<span class="pv-desc" style="flex:1">${esc(w.billing || '')}</span>` : wishCatCell(w).replace('class="isel"', 'class="isel" style="flex:1"')}<button class="btn btn-sm btn-s" onclick="openWishConv('${w.id}')">Bought</button>${kebab([
+      { label: 'Edit', icon: 'pencil', fn: `openWishModal('${w.id}')` },
+      { label: 'Mark as purchased', icon: 'cart', fn: `openWishConv('${w.id}')` },
+      { label: 'Mark as passed', icon: 'x', fn: `wishMarkPassed('${w.id}')` },
+      'sep',
+      { label: 'Delete', icon: 'trash', fn: `delWishItem('${w.id}')`, danger: true }])}</div>
+  </div>`).join('')}</div>`
+}
+let _wlW = innerWidth < 900
+window.addEventListener('resize', () => {
+  const w = innerWidth < 900; if (w === _wlW) return; _wlW = w
+  if (document.getElementById('panel-wishlist')?.classList.contains('on')) renderWishTable()
 })
 </script>
 <!-- SUBSCRIPTION PRICE CHANGE MODAL -->
