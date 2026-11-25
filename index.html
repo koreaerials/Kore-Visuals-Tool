@@ -1044,6 +1044,87 @@ html[data-theme] .pv-tbl tfoot td.num{color:var(--text)}
   html[data-theme] .pv-fbar .ms-wrap{flex:1 1 100%}
   html[data-theme] .pv-fbar .ms-btn{width:100%}
 }
+/* Purchases v4 */
+.pv-cat-d{--pc:var(--accent)}.pv-cat-c{--pc:var(--info)}.pv-cat-m{--pc:var(--purple)}
+.pv-ell{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.pv-of{color:var(--text-2);font-weight:500;font-size:12px}
+.pv-prog{display:flex;align-items:center;justify-content:flex-end;gap:6px;font-size:11.5px;color:var(--text-2);margin-top:4px;white-space:nowrap}
+.pv-prog>span{display:inline-block;width:52px;height:4px;border-radius:2px;background:var(--surface-3);overflow:hidden}
+.pv-prog>span>i{display:block;height:100%;background:var(--green)}
+.pv-next{font-size:11.5px;color:var(--text-2);margin-top:2px;white-space:nowrap}
+html[data-theme] .pv-catsel{color:var(--pc);border-color:color-mix(in srgb,var(--pc) 35%,transparent);background:color-mix(in srgb,var(--pc) 10%,var(--surface-2))}
+.pv-plans{padding:18px 20px!important;margin-bottom:14px}
+.pv-plan-list{display:flex;flex-direction:column}
+.pv-plan{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(120px,1fr) minmax(150px,1fr) auto;gap:14px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.pv-plan:first-child{border-top:0}
+.pv-plan-t{min-width:0;display:flex;flex-direction:column}
+.pv-plan-t b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pv-prog-w{justify-content:flex-start;margin:0}.pv-prog-w>span{width:80px}
+.pv-plan-n{font-size:13px;color:var(--text-2)}.pv-plan-n b{color:var(--text)}
+.pv-plan-n.pv-od{color:var(--red)}
+html[data-theme] .inst-sched{border-color:var(--line);background:var(--surface-2)}
+html[data-theme] .inst-chev{color:var(--text-2)}
+html[data-theme] #panel-purchases .inst-sub-row>td{background:transparent!important}
+.pv-sched{display:flex;flex-direction:column;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.pv-sched-r{display:flex;align-items:center;gap:10px}
+.pv-sched-n{width:22px;height:22px;border-radius:6px;background:var(--hover);color:var(--text-2);font-size:12px;display:flex;align-items:center;justify-content:center;flex:none}
+.pv-sched-m{flex:1;min-width:0;display:flex;flex-direction:column;font-size:12px;color:var(--text-2)}
+.pv-sched-m b{color:var(--text);font-size:13.5px;font-weight:600}
+.pv-sched-st{font-size:12px;color:var(--text-2)}
+.pv-s-overdue .pv-sched-st{color:var(--red)}
+@media(max-width:899px){
+  html[data-theme] #panel-purchases .tbl-wrap{border:0;background:none;overflow:visible}
+  .pv-plan{grid-template-columns:minmax(0,1fr) auto;gap:6px 10px}
+  .pv-plan-t{grid-column:1/-1}
+  .pv-plan .btn{grid-row:2/4;grid-column:2}
+  .pv-card-inst{margin-top:8px}
+  .pv-card-inst .pv-prog,.pv-card-inst .pv-next{justify-content:flex-start}
+  .pv-card-f .pv-catsel{flex:1}
+  #panel-purchases .pv-split>div:last-child{display:block}
+  #panel-purchases .pv-split>div:first-child{display:none}
+  .pv-sched-r .inst-pd{flex:none;width:136px!important}
+  .pv-sched-m{min-width:70px}
+}
+/* Subscriptions v4 */
+.sv-red{color:var(--red)!important}.sv-amber{color:var(--orange)}
+html[data-theme] .sv-pill{background:var(--hover);color:var(--text-2)}
+.sv-kinds{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.sv-kind{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line-2);background:var(--surface);color:var(--text-2);font:inherit;font-size:13px;font-weight:500;padding:7px 12px;border-radius:10px;cursor:pointer;min-height:36px}
+.sv-kind b{font-weight:600;color:var(--text);background:var(--hover);border-radius:6px;padding:0 6px;font-size:12px}
+.sv-kind:hover{color:var(--text)}
+.sv-kind.on{background:var(--accent-soft);border-color:rgba(255,162,76,.45);color:var(--accent-text)}
+.sv-up{display:flex;flex-direction:column}
+.sv-up-r{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.sv-up-r:first-child{border-top:0;padding-top:2px}
+.sv-up-t{flex:1;min-width:0;display:flex;flex-direction:column}
+.sv-up-t b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sv-up-t span{font-size:12px;color:var(--text-2)}
+.sv-up-r.od .sv-up-t span{color:var(--red)}
+.sv-up-a{font-weight:600}
+/* desktop tables, v4 look */
+html[data-theme] .subx-sec{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 14px 4px;margin-bottom:14px}
+html[data-theme] .subx-sec-hdr{font-family:var(--font-d);font-size:15px;font-weight:600;margin-bottom:10px}
+html[data-theme] .subx-sec .subx-tbl{background:transparent}
+html[data-theme] #sub-table.tbl-wrap{border:0;background:none;overflow:visible}
+html[data-theme] .subx-sec table{border:0}
+html[data-theme] .subx-total{color:var(--text)}
+html[data-theme] .subx-next{color:var(--orange)}
+.sv-sec{margin-bottom:16px;display:flex;flex-direction:column;gap:8px}
+.sv-sec-h{display:flex;align-items:center;gap:8px;font-family:var(--font-d);font-weight:600;font-size:15px;padding:0 2px}
+.sv-sec-h .dv-tiny{margin-left:auto;font-family:var(--font)}
+.sv-card.sv-off{opacity:.6}
+.sv-card.sv-od{border-left:3px solid var(--red)}
+.sv-tot{flex:1;text-align:left;border:1px solid var(--line-2);background:transparent;color:var(--text);font:inherit;font-size:13px;font-weight:500;border-radius:8px;padding:7px 10px;cursor:pointer}
+.sv-card .subx-drawer{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.sv-card .subx-tools .isel{flex:1 1 110px;min-width:0;width:auto!important}
+.sv-card .subx-tools .subx-lbl{flex-basis:100%;margin-left:0!important}
+.sv-card .subx-tools .btn{flex:none}
+@media(max-width:899px){
+  html[data-theme] #sub-filter [data-bt]{display:none}
+  html[data-theme] #sub-filter>label{margin-left:0!important}
+  .sv-kinds{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -14px 12px;padding:0 14px}
+  .sv-kind{flex:none}
+}
 .inst-pd{width:auto!important;min-width:0;padding:5px 8px!important;font-size:13px!important;border-radius:8px!important}
 html[data-theme] #dash-widgets .card{grid-column:auto}
 html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
@@ -1216,12 +1297,9 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
 
   <!-- PURCHASES -->
   <section class="panel" id="panel-purchases">
-    <div class="sec-hdr"><h2>Purchases</h2><p>Drone equipment, camera gear, and misc expenses</p></div>
-    <div class="card">
-      <div class="form-toggle-hdr">
-        <span class="form-ttl" id="pur-form-ttl">Add New Purchase</span>
-        <button class="btn btn-g" id="pur-toggle-btn" onclick="toggleForm('pur')">+ Add Purchase</button>
-      </div>
+    <div class="pv-hdr"><div><h2>Purchases</h2><p id="pur-sub">Drone gear, camera gear and other business costs</p></div><button class="btn btn-g" id="pur-toggle-btn" onclick="toggleForm('pur')">+ Add purchase</button></div>
+    <div class="pv-formcard">
+      <span class="form-ttl" id="pur-form-ttl" style="display:none">Add purchase</span>
       <div class="form-wrap" id="pur-form-wrap">
         <div class="form-inner">
           <input type="hidden" id="pur-edit-id">
@@ -1243,7 +1321,8 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
           </div>
         </div>
       </div>
-      <div class="fbar" id="pur-filter">
+    </div>
+      <div class="fbar pv-fbar" id="pur-filter">
         <span class="lbl">View:</span>
         <button class="fbtn on" data-r="all">All Time</button>
         <button class="fbtn" data-r="month">This Month</button>
@@ -1255,11 +1334,6 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
           <input type="date" id="pur-r-to">
           <button class="btn btn-p btn-sm" onclick="applyCustomPur()">Apply</button>
         </div>
-        <span class="lbl" style="margin-left:8px">Category:</span>
-        <button class="fbtn cat-on" data-cat="all">All</button>
-        <button class="fbtn" data-cat="Drone Equipment">Drone</button>
-        <button class="fbtn" data-cat="Camera Equipment">Camera</button>
-        <button class="fbtn" data-cat="Misc">Misc</button>
         <span class="lbl" style="margin-left:8px">Vendor:</span>
         <div class="ms-wrap" id="pur-vendor-ms">
           <button class="ms-btn" onclick="toggleMs('pur-vendor-ms')">All Vendors</button>
@@ -1272,9 +1346,8 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
           </div>
         </div>
       </div>
-      <div id="pur-summary" style="margin-bottom:14px"></div>
+      <div id="pur-summary"></div>
       <div class="tbl-wrap" id="pur-table"></div>
-    </div>
   </section>
 
   <!-- WISHLIST -->
@@ -1318,12 +1391,9 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
 
   <!-- SUBSCRIPTIONS -->
   <section class="panel" id="panel-subscriptions">
-    <div class="sec-hdr"><h2>Subscriptions</h2><p>Subscriptions, fees and credits. Recurring ones log a charge automatically when due.</p></div>
-    <div class="card">
-      <div class="form-toggle-hdr">
-        <span class="form-ttl" id="sub-form-ttl">Add Subscription</span>
-        <button class="btn btn-g" id="sub-toggle-btn" onclick="toggleForm('sub')">+ Add Subscription</button>
-      </div>
+    <div class="pv-hdr"><div><h2>Subscriptions</h2><p id="sub-sub">Subscriptions, fees and credits</p></div><button class="btn btn-g" id="sub-toggle-btn" onclick="toggleForm('sub')">+ Add subscription</button></div>
+    <div class="pv-formcard">
+      <span class="form-ttl" id="sub-form-ttl" style="display:none">Add subscription</span>
       <div class="form-wrap" id="sub-form-wrap">
         <div class="form-inner">
           <input type="hidden" id="sub-edit-id">
@@ -1354,7 +1424,8 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
           </div>
         </div>
       </div>
-      <div class="fbar" id="sub-filter">
+    </div>
+      <div class="fbar pv-fbar" id="sub-filter">
         <span class="lbl">Billing:</span>
         <button class="fbtn cat-on" data-bt="all">All</button>
         <button class="fbtn" data-bt="Monthly">Monthly</button>
@@ -1375,9 +1446,8 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
         </div>
         <label style="margin-left:auto;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-2);cursor:pointer"><input type="checkbox" id="sub-show-inactive" onchange="setSubShowInactive(this.checked)"> Show inactive</label>
       </div>
-      <div id="sub-summary" style="margin-bottom:14px"></div>
+      <div id="sub-summary"></div>
       <div class="tbl-wrap" id="sub-table"></div>
-    </div>
   </section>
 
   <!-- TAX SUMMARY (kept in DOM for JS fallback, content moved to export sub-tab) -->
@@ -3541,7 +3611,7 @@ function editPur(id) {
   document.getElementById('pur-price').value=e.isInstallment?(e.installmentTotal||e.price||''):(e.price||'')
   instLoadForm('pur', e)
   openForm('pur')
-  document.getElementById('pur-form-ttl').textContent='Edit Purchase'
+  document.getElementById('pur-form-ttl').textContent='Edit purchase'
 }
 
 function delPur(id) {
@@ -3549,7 +3619,8 @@ function delPur(id) {
   save(K.pur,load(K.pur).filter(e=>e.id!==id)); renderPurTable(); renderDash(); toast('Purchase deleted')
 }
 
-function renderPurSummary() {
+// Superseded by Purchases v4 (end of script). Unused, safe to delete.
+function _legacyRenderPurSummary() {
   const el=document.getElementById('pur-summary'); if(!el)return
   const {from,to}=range(FS.pur)
   const all=loadP(K.pur).filter(e=>purInPeriod(e,from,to))
@@ -3573,7 +3644,7 @@ function renderPurSummary() {
   initGridDrag(document.getElementById('pur-sub-grid'), 'dt_order_pur_sub')
 }
 
-function renderPurTable() {
+function _legacyRenderPurTable() {
   const el=document.getElementById('pur-table')
   const {from,to}=range(FS.pur)
   let list=loadP(K.pur).filter(e=>purInPeriod(e,from,to))
@@ -3687,7 +3758,7 @@ function editSub(id) {
   document.getElementById('sub-autorenew').value=e.autoRenew===false?'Manual':'Auto'
   const kEl=document.getElementById('sub-kind'); if(kEl) kEl.value=subKind(e)
   openForm('sub')
-  document.getElementById('sub-form-ttl').textContent='Edit Subscription'
+  document.getElementById('sub-form-ttl').textContent='Edit subscription'
 }
 
 function delSub(id) {
@@ -4219,13 +4290,13 @@ function cancelForm(type) {
     ['pur-edit-id','pur-date','pur-store','pur-price','pur-desc'].forEach(id=>document.getElementById(id).value='')
     document.getElementById('pur-cat').value='Drone Equipment'
     instLoadForm('pur', null)   // clear any installment plan left over from an edit
-    document.getElementById('pur-form-ttl').textContent='Add New Purchase'
+    document.getElementById('pur-form-ttl').textContent='Add purchase'
     document.getElementById('pur-form-ttl').style.display='none'
   } else if(type==='sub'){
     ['sub-edit-id','sub-name','sub-amount','sub-start','sub-end','sub-desc'].forEach(id=>document.getElementById(id).value='')
     document.getElementById('sub-billing').value='Monthly'
     document.getElementById('sub-status').value='Active'
-    document.getElementById('sub-form-ttl').textContent='Add Subscription'
+    document.getElementById('sub-form-ttl').textContent='Add subscription'
     document.getElementById('sub-form-ttl').style.display='none'
   }
 }
@@ -8367,7 +8438,8 @@ function subBurn(s, xs) {
 function subLogRefill(id) { _subExpanded.add(id); renderSubTable(); setTimeout(() => document.getElementById('subx-new-amt-' + id)?.focus(), 30) }
 function setSubShowInactive(on) { try { localStorage.setItem('dt_sub_show_inactive', on ? '1' : '') } catch (_) {} renderSubTable() }
 
-function renderSubSummary() {
+// Superseded by Subscriptions v4 (end of script). Unused, safe to delete.
+function _legacyRenderSubSummary() {
   const el = document.getElementById('sub-summary'); if (!el) return
   const subs = filterSubs(loadP(K.sub)), xs = loadP(K.subx)
   if (!subs.length) { el.innerHTML = ''; return }
@@ -8400,7 +8472,8 @@ function renderSubSummary() {
     ${up.length ? `<div class="subup-hdr">Coming up · next 30 days</div>${upHtml}` : ''}`
 }
 
-function renderSubTable() {
+// Desktop tables (v3 layout, v4 styling). renderSubTable (v4) wraps this.
+function _subTableDesktop() {
   const el = document.getElementById('sub-table'); if (!el) return
   const preSvc = load(K.sub).filter(s => FS.sub.bt === 'all' || s.billingType === FS.sub.bt)
   buildMs('sub-svc-ms', [...new Set(preSvc.map(s => s.name || '').filter(Boolean))].sort(), FS.sub.svcs)
@@ -8466,6 +8539,7 @@ function renderSubTable() {
   }
   let html = ''
   for (const K2 of SUB_KINDS) {
+    if (FS.sub.kind && K2.k !== FS.sub.kind) continue
     const list = allFiltered.filter(s => subKind(s) === K2.k)
     if (!list.length) continue
     const act = list.filter(s => s.status === 'Active').sort((a, b) => a.name.localeCompare(b.name))
@@ -8882,6 +8956,240 @@ function renderIncTable() {
     <tfoot><tr><td colspan="5">${list.length} payment${list.length !== 1 ? 's' : ''}${FS.inc.status ? ' · ' + FS.inc.status.toLowerCase() : ''}</td><td class="ta-r num">${fmt(rev)}</td><td class="ta-r num">${exp ? fmt(exp) : ''}</td><td class="ta-r num">${fmt(profit)}</td><td></td></tr></tfoot>
   </table><div class="pv-cards">${cards}</div>`
 }
+
+// ── PURCHASES v4 ──────────────────────────────────────────────
+// Spend hero + category breakdown (tap to filter) + active payment plans,
+// cleaner table on desktop, cards on phones. Replaces _legacyRenderPur*.
+const PV_CATS = [['Drone Equipment','Drone','drone','cat-d'],['Camera Equipment','Camera','box','cat-c'],['Misc','Misc','briefcase','cat-m']]
+const pvCat = e => e.cat || e.category || 'Misc'
+const pvStore = e => e.store || e.name || ''
+const pvDesc = e => e.desc || e.description || ''
+function setPurCat(c) {
+  FS.pur.cat = FS.pur.cat === c ? 'all' : c
+  renderPurTable()
+}
+function renderPurSummary() {}   // folded into renderPurTable (kept for old callers)
+
+function pvPlans() {
+  return loadP(K.pur).filter(p => purIsInstallment(p) && purNextPayment(p))
+    .sort((a, b) => String(purNextPayment(a).dueDate).localeCompare(String(purNextPayment(b).dueDate)))
+}
+function pvSchedule(p) {   // div-based schedule for phone cards
+  return `<div class="pv-sched">${instList(p).map((i, idx) => {
+    const st = instStatus(i)
+    return `<div class="pv-sched-r pv-s-${st}">
+      <span class="pv-sched-n">${i.seq || idx + 1}</span>
+      <span class="pv-sched-m"><b class="num">${fmt(i.amount)}</b><span>Due ${fmtDate(instDay(i.dueDate))}</span></span>
+      ${st === 'paid' ? `<input type="date" class="inst-pd" value="${instDay(i.paidDate)}" aria-label="Paid date" onchange="instSetPaidDate('${p.id}',${idx},this.value)">` : `<span class="pv-sched-st">${st === 'overdue' ? 'Overdue' : 'Scheduled'}</span>`}
+      <button class="btn btn-sm ${st === 'paid' ? 'btn-s' : 'btn-g'}" onclick="instTogglePaid('${p.id}',${idx})">${st === 'paid' ? 'Unmark' : 'Paid'}</button>
+    </div>`
+  }).join('')}</div>`
+}
+function pvInstCell(p) {
+  const { paid, total } = purProgress(p), next = purNextPayment(p)
+  const pct = total ? Math.round(paid / total * 100) : 0
+  return `<div class="num pv-amt">${fmt(purPaidToDate(p))} <span class="pv-of">/ ${fmt(p.installmentTotal)}</span></div>
+    <div class="pv-prog"><span><i style="width:${pct}%"></i></span>${paid} of ${total} paid</div>
+    <div class="pv-next">${next ? `Next ${instShortDate(next.dueDate)} · ${fmt(next.amount)}` : 'Paid off'}</div>`
+}
+
+function renderPurTable() {
+  const el = document.getElementById('pur-table'); if (!el) return
+  const { from, to } = range(FS.pur)
+  let list = loadP(K.pur).filter(e => purInPeriod(e, from, to))
+  const vendors = [...new Set(list.map(pvStore).filter(Boolean))].sort()
+  buildMs('pur-vendor-ms', vendors, FS.pur.vendors)
+  if (FS.pur.vendors.length) list = list.filter(e => FS.pur.vendors.includes(pvStore(e)))
+  list.sort((a, b) => b.date.localeCompare(a.date))
+
+  // Summary (before the category filter so the breakdown stays whole)
+  const sumEl = document.getElementById('pur-summary'), sub = document.getElementById('pur-sub')
+  const spent = list.reduce((s, e) => s + purExpense(e, from, to), 0)
+  const cats = PV_CATS.map(([k, lbl, ico, c]) => { const xs = list.filter(e => pvCat(e) === k); return { k, lbl, ico, c, n: xs.length, amt: xs.reduce((s, e) => s + purExpense(e, from, to), 0) } })
+  const biggest = list.filter(e => !purIsInstallment(e)).sort((a, b) => (+b.price || 0) - (+a.price || 0))[0]
+  const plans = pvPlans()
+  const owed = plans.reduce((s, p) => s + purOutstanding(p), 0)
+  const cur = FS.pur.cat !== 'all' ? FS.pur.cat : ''
+  if (sub) sub.innerHTML = list.length ? `<b>${list.length}</b> item${list.length !== 1 ? 's' : ''} · ${ivRangeLbl(FS.pur).toLowerCase()}${owed ? ` · <b>${fmt(owed)}</b> left on payment plans` : ''}` : 'Drone gear, camera gear and other business costs'
+  if (sumEl) sumEl.innerHTML = list.length || plans.length ? `<div class="pv-sum">
+    <div class="card pv-hero">
+      <div class="dv-head"><span class="dv-lbl">Spent · ${ivRangeLbl(FS.pur)}</span></div>
+      <div class="num dv-big">${fmt(spent)}</div>
+      <div class="pv-split">
+        <div><div class="dv-lbl">Items</div><div class="num dv-mid">${list.length}</div></div>
+        <div><div class="dv-lbl">Biggest buy</div><div class="num dv-mid">${biggest ? fmt(biggest.price) : '—'}</div>${biggest ? `<div class="dv-tiny pv-ell">${esc(pvDesc(biggest) || pvStore(biggest))}</div>` : ''}</div>
+        <div><div class="dv-lbl">Left on plans</div><div class="num dv-mid">${fmt(owed)}</div></div>
+      </div>
+    </div>
+    <div class="card pv-status">
+      <div class="dv-card-h"><h3>By category</h3>${cur ? `<button class="dv-link" onclick="setPurCat('${cur}')">Clear filter</button>` : '<span class="dv-tiny">Tap to filter</span>'}</div>
+      <div class="pv-bar">${cats.filter(b => b.amt > 0).map(b => `<span class="pv-seg pv-${b.c}" style="flex:${b.amt / (spent || 1)}"></span>`).join('')}</div>
+      <div class="pv-st-list">${cats.map(b => `
+        <button class="pv-st pv-${b.c}${cur === b.k ? ' on' : ''}${cur && cur !== b.k ? ' dim' : ''}" onclick="setPurCat('${b.k}')" aria-pressed="${cur === b.k}">
+          <span class="pv-dot"></span><span class="pv-st-l">${b.lbl}</span><span class="pv-st-n">${b.n}</span><span class="num pv-st-a">${fmt(b.amt)}</span>
+        </button>`).join('')}</div>
+    </div>
+  </div>${plans.length ? `<div class="card pv-plans">
+    <div class="dv-card-h"><h3>Payment plans</h3><span class="dv-tiny">${plans.length} active · ${fmt(owed)} left</span></div>
+    <div class="pv-plan-list">${plans.map(p => { const { paid, total } = purProgress(p), n = purNextPayment(p), od = instStatus(n) === 'overdue'; return `
+      <div class="pv-plan">
+        <div class="pv-plan-t"><b>${esc(pvDesc(p) || pvStore(p))}</b><span class="dv-tiny">${esc(pvStore(p))}</span></div>
+        <div class="pv-prog pv-prog-w"><span><i style="width:${total ? Math.round(paid / total * 100) : 0}%"></i></span>${paid} of ${total}</div>
+        <div class="pv-plan-n${od ? ' pv-od' : ''}">${od ? 'Overdue' : 'Next'} ${instShortDate(n.dueDate)} · <b class="num">${fmt(n.amount)}</b></div>
+        <button class="btn btn-sm btn-s" onclick="instTogglePaid('${p.id}',${instList(p).indexOf(n)})">Mark paid</button>
+      </div>` }).join('')}</div>
+  </div>` : ''}` : ''
+
+  if (cur) list = list.filter(e => pvCat(e) === cur)
+  if (!list.length) {
+    el.innerHTML = cur ? `<div class="pv-none">No ${cats.find(c => c.k === cur).lbl.toLowerCase()} purchases in this view. <button class="dv-link" onclick="setPurCat('${cur}')">Show all</button></div>`
+      : emptyState('cart', 'No purchases yet.', { label: '+ Add purchase', fn: 'openForm(\'pur\')' }); return
+  }
+  const total = list.reduce((s, e) => s + purExpense(e, from, to), 0)
+  const optC = (v, c) => `<option${v === c ? ' selected' : ''}>${v}</option>`
+  const catSel = (e, id) => `<select class="isel pv-catsel pv-${PV_CATS.find(x => x[0] === pvCat(e))?.[3] || 'cat-m'}"${id ? ` id="${id}"` : ` aria-label="Category" onchange="updatePurField('${e.id}','cat',this.value)"`}>${PV_CATS.map(x => optC(x[0], pvCat(e))).join('')}</select>`
+  const menu = (e, phone) => kebab([
+    { label: 'Edit', icon: 'pencil', fn: phone ? `editPur('${e.id}')` : `editPurRow('${e.id}')` },
+    ...(purIsInstallment(e) ? [{ label: _purExpanded.has(e.id) ? 'Hide schedule' : 'Payment schedule', icon: 'calendar', fn: `togglePurInst('${e.id}')` }] : []),
+    'sep',
+    { label: 'Delete', icon: 'trash', fn: `delPur('${e.id}')`, danger: true },
+  ])
+  const rows = list.map(e => {
+    const inst = purIsInstallment(e), open = inst && _purExpanded.has(e.id), desc = pvDesc(e), store = pvStore(e)
+    if (e.id === editing.pur) return `<tr class="editing-row">
+      <td><input type="date" class="isel" id="per-date" value="${e.date}" onkeydown="if(event.key==='Enter')savePurRow('${e.id}')"></td>
+      <td><input type="text" class="isel" id="per-desc" value="${esc(desc)}" placeholder="What you bought" onkeydown="if(event.key==='Enter')savePurRow('${e.id}')"><input type="text" class="isel" id="per-store" value="${esc(store)}" placeholder="Store" style="margin-top:6px" onkeydown="if(event.key==='Enter')savePurRow('${e.id}')"></td>
+      <td>${catSel(e, 'per-cat')}</td>
+      <td class="ta-r">${inst ? pvInstCell(e) : `<input type="number" class="isel" id="per-price" value="${e.price}" step="0.01" style="width:100px" onkeydown="if(event.key==='Enter')savePurRow('${e.id}')">`}</td>
+      <td style="white-space:nowrap"><button class="btn btn-sm btn-g" onclick="savePurRow('${e.id}')">Save</button> <button class="btn btn-sm btn-s" onclick="cancelRowEdit('pur')">Cancel</button></td>
+    </tr>`
+    return `<tr class="pv-row" data-rid="${e.id}">
+      <td class="pv-date">${inst ? `<button class="inst-chev${open ? ' open' : ''}" onclick="togglePurInst('${e.id}')" aria-expanded="${open}" title="${open ? 'Hide' : 'Show'} payment schedule">›</button>` : ''}${fmtDate(e.date)}</td>
+      <td><div class="pv-client">${esc(desc || store)}${inst ? ' <span class="bdg bdg-b">Plan</span>' : ''}</div>${desc && store ? `<div class="pv-desc">${esc(store)}</div>` : ''}</td>
+      <td>${catSel(e)}</td>
+      <td class="ta-r">${inst ? pvInstCell(e) : `<span class="num pv-amt">${fmt(e.price)}</span>`}</td>
+      <td class="ta-r">${menu(e)}</td>
+    </tr>${open ? purInstSubRow(e).replace('colspan="6"', 'colspan="5"') : ''}`
+  }).join('')
+  const cards = list.map(e => {
+    const inst = purIsInstallment(e), open = inst && _purExpanded.has(e.id), desc = pvDesc(e), store = pvStore(e)
+    return `<div class="pv-card">
+      <div class="pv-card-t"><span class="pv-client">${esc(desc || store)}</span>${inst ? '' : `<span class="num pv-amt">${fmt(e.price)}</span>`}</div>
+      <div class="pv-card-m">${desc && store ? esc(store) + ' · ' : ''}${fmtDate(e.date)}</div>
+      ${inst ? `<div class="pv-card-inst">${pvInstCell(e)}</div>` : ''}
+      <div class="pv-card-f">${catSel(e)}${inst ? `<button class="btn btn-sm btn-s" onclick="togglePurInst('${e.id}')">${open ? 'Hide' : 'Schedule'}</button>` : ''}${menu(e, true)}</div>
+      ${open ? pvSchedule(e) : ''}
+    </div>`
+  }).join('')
+  el.innerHTML = `<table class="pv-tbl">
+    <thead><tr><th>Date</th><th>Item</th><th>Category</th><th class="ta-r">Amount</th><th></th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr><td colspan="3">${list.length} item${list.length !== 1 ? 's' : ''}${cur ? ' · ' + cats.find(c => c.k === cur).lbl.toLowerCase() : ''}</td><td class="ta-r num">${fmt(total)}</td><td></td></tr></tfoot>
+  </table><div class="pv-cards">${cards}</div>`
+}
+
+// ── SUBSCRIPTIONS v4 ──────────────────────────────────────────
+// Burn hero + "Coming up" list + type chips (tap to filter). Desktop keeps the
+// v3 grouped tables (_subTableDesktop); phones get cards with the same actions.
+function setSubKind(k) { FS.sub.kind = FS.sub.kind === k ? '' : k; renderSubTable() }
+function svMenu(s) {
+  const credit = subKind(s) === 'credit', rec = subIsRecurring(s), isManual = s.autoRenew === false
+  return kebab([
+    { label: 'Edit', icon: 'pencil', fn: matchMedia('(max-width:899px)').matches ? `editSub('${s.id}')` : `editSubRow('${s.id}')` },
+    { label: credit ? 'Log refill' : 'Add / edit charges', icon: 'plus', fn: `subLogRefill('${s.id}')` },
+    ...(credit || !rec ? [] : [{ label: s.nextPriceDate ? 'Edit price change' : 'Change price', icon: 'trending-up', fn: `openSubPrice('${s.id}')` }]),
+    ...(isManual && rec && !credit && s.status === 'Active' ? [{ label: 'Mark renewed', icon: 'check-circle', fn: `confirmManualRenew('${s.id}')` }] : []),
+    { label: s.status === 'Active' ? 'Mark inactive' : 'Mark active', icon: 'refresh', fn: `updateSubField('${s.id}','status','${s.status === 'Active' ? 'Inactive' : 'Active'}')` },
+    { label: 'Duplicate', icon: 'copy', fn: `dupSub('${s.id}')` },
+    'sep',
+    { label: 'Delete', icon: 'trash', fn: `delSub('${s.id}')`, danger: true },
+  ])
+}
+const SV_PER = { Monthly: '/mo', Annual: '/yr', 'Every 2 Years': '/2 yrs', 'Every 3 Years': '/3 yrs', 'One-Time': ' once' }
+
+function renderSubSummary() {
+  const el = document.getElementById('sub-summary'); if (!el) return
+  const sub = document.getElementById('sub-sub')
+  const all = filterSubs(loadP(K.sub)), xs = loadP(K.subx)
+  if (!all.length) { el.innerHTML = ''; if (sub) sub.textContent = 'Subscriptions, fees and credits'; return }
+  const subs = FS.sub.kind ? all.filter(s => subKind(s) === FS.sub.kind) : all
+  const ids = new Set(subs.map(s => s.id)), yr = today().slice(0, 4)
+  const burn = subs.reduce((t, s) => t + subBurn(s, xs), 0)
+  const ytd = xs.filter(x => ids.has(x.subId) && x.date.startsWith(yr)).reduce((t, x) => t + (+x.amount || 0), 0)
+  const tot = subs.reduce((t, s) => t + subSpent(s, xs), 0)
+  const active = subs.filter(s => s.status === 'Active').length
+  const lim = toDate(today()); lim.setDate(lim.getDate() + 30); const limS = toStr(lim)
+  const up = subs.filter(s => s.status === 'Active' && subIsRecurring(s) && subKind(s) !== 'credit')
+    .map(s => ({ s, d: nextCharge(s), od: subOverdue(s) }))
+    .filter(u => u.od || u.d <= limS).sort((a, b) => (b.od - a.od) || a.d.localeCompare(b.d))
+  const odN = up.filter(u => u.od).length
+  if (sub) sub.innerHTML = `<b>${active}</b> active · <b>${fmt(burn)}</b> a month${odN ? ` · <b class="sv-red">${odN} overdue</b>` : ''}`
+  const days = d => Math.round((toDate(d) - toDate(today())) / 864e5)
+  const cur = FS.sub.kind || ''
+  el.innerHTML = `<div class="sv-kinds" role="group" aria-label="Filter by type">${SUB_KINDS.map(k => {
+      const l = all.filter(s => subKind(s) === k.k); if (!l.length) return ''
+      return `<button class="sv-kind${cur === k.k ? ' on' : ''}" onclick="setSubKind('${k.k}')" aria-pressed="${cur === k.k}">${icon(k.icon, 13)}<span>${k.label}</span><b>${l.filter(s => s.status === 'Active').length}</b></button>`
+    }).join('')}</div>
+  <div class="pv-sum">
+    <div class="card pv-hero">
+      <div class="dv-head"><span class="dv-lbl">Monthly burn${cur ? ' · ' + SUB_KINDS.find(k => k.k === cur).label.toLowerCase() : ''}</span><span class="dv-pill sv-pill">≈ ${fmt(burn * 12)} / yr</span></div>
+      <div class="num dv-big">${fmt(burn)}</div>
+      <div class="pv-split">
+        <div><div class="dv-lbl">Spent in ${yr}</div><div class="num dv-mid">${fmt(ytd)}</div></div>
+        <div><div class="dv-lbl">All time</div><div class="num dv-mid">${fmt(tot)}</div></div>
+        <div><div class="dv-lbl">Active</div><div class="num dv-mid">${active}</div></div>
+      </div>
+    </div>
+    <div class="card pv-status">
+      <div class="dv-card-h"><h3>Coming up</h3><span class="dv-tiny">Next 30 days</span></div>
+      ${up.length ? `<div class="sv-up">${up.slice(0, 6).map(({ s, d, od }) => {
+        const n = days(d), when = od ? `${-n}d overdue` : n === 0 ? 'Today' : n === 1 ? 'Tomorrow' : `In ${n} days`
+        const price = s.nextPriceDate && s.nextPriceDate <= d ? +s.nextPrice : +s.amount
+        return `<div class="sv-up-r${od ? ' od' : ''}"><div class="sv-up-t"><b>${esc(s.name)}</b><span>${fmtDate(d)} · ${when}${s.autoRenew === false ? ' · manual' : ''}</span></div>
+          <span class="num sv-up-a">${fmt(price)}</span>${s.autoRenew === false ? `<button class="btn btn-sm ${od ? 'btn-g' : 'btn-s'}" onclick="confirmManualRenew('${s.id}')">Renewed</button>` : ''}</div>`
+      }).join('')}${up.length > 6 ? `<div class="dv-more">+${up.length - 6} more</div>` : ''}</div>` : `<div class="dv-clear">${icon('check-circle', 20)}<div><b>Nothing due</b><span>No charges in the next 30 days.</span></div></div>`}
+    </div>
+  </div>`
+}
+
+function renderSubTable() {
+  _subTableDesktop()
+  const el = document.getElementById('sub-table'); if (!el) return
+  if (!matchMedia('(max-width:899px)').matches) return
+  // Phones: cards (same data and actions as the desktop tables)
+  const xs = loadP(K.subx)
+  const showInactive = (() => { try { return !!localStorage.getItem('dt_sub_show_inactive') } catch (_) { return false } })()
+  const list = loadP(K.sub).filter(s => (FS.sub.bt === 'all' || s.billingType === FS.sub.bt) && (!FS.sub.svcs.length || FS.sub.svcs.includes(s.name)))
+  if (!list.length) return
+  let html = ''
+  for (const K2 of SUB_KINDS) {
+    if (FS.sub.kind && K2.k !== FS.sub.kind) continue
+    const l = list.filter(s => subKind(s) === K2.k); if (!l.length) continue
+    const act = l.filter(s => s.status === 'Active').sort((a, b) => a.name.localeCompare(b.name))
+    const ina = l.filter(s => s.status !== 'Active')
+    const shown = showInactive ? [...act, ...ina] : act
+    html += `<div class="sv-sec"><div class="sv-sec-h">${icon(K2.icon, 14)}<span>${K2.label}</span><span class="dv-tiny">${act.length} active${ina.length ? ` · ${ina.length} inactive` : ''}</span></div>
+      ${shown.map(s => {
+        const credit = subKind(s) === 'credit', rec = subIsRecurring(s), ch = subCharges(s.id, xs), od = subOverdue(s), open = _subExpanded.has(s.id)
+        const nextTxt = s.status !== 'Active' ? 'Inactive' : credit ? (ch.length ? `Last refill ${fmtDate(ch[0].date)}` : 'No refills yet') : !rec ? `Paid ${fmtDate(s.startDate)}` : `${od ? 'Overdue since' : 'Next'} ${fmtDate(nextCharge(s))}`
+        const primary = s.status !== 'Active' ? '' : credit ? `<button class="btn btn-sm btn-g" onclick="subLogRefill('${s.id}')">${icon('plus', 12)} Log refill</button>`
+          : s.autoRenew === false && rec ? `<button class="btn btn-sm ${od ? 'btn-g' : 'btn-s'}" onclick="confirmManualRenew('${s.id}')">Renewed</button>` : ''
+        return `<div class="pv-card sv-card${s.status !== 'Active' ? ' sv-off' : ''}${od ? ' sv-od' : ''}">
+          <div class="pv-card-t"><span class="pv-client">${esc(s.name)}</span><span class="num pv-amt">${fmt(credit && ch.length ? ch[0].amount : s.amount)}<span class="pv-of">${credit ? '' : SV_PER[s.billingType] || ''}</span></span></div>
+          ${s.desc ? `<div class="pv-desc">${esc(s.desc)}</div>` : ''}
+          <div class="pv-card-m">${od ? '<span class="sv-red">' + nextTxt + '</span>' : nextTxt} · ${s.autoRenew === false ? 'manual' : 'auto'}${s.nextPriceDate ? ` · <span class="sv-amber">→ ${fmt(s.nextPrice)} from ${fmtDate(s.nextPriceDate)}</span>` : ''}</div>
+          <div class="pv-card-f"><button class="sv-tot" onclick="toggleSubCharges('${s.id}')">${fmt(subSpent(s, xs))} spent <span aria-hidden="true">${open ? '▴' : '▾'}</span></button>${primary}${svMenu(s)}</div>
+          ${open ? subChargesRow(s, xs).replace(/^<tr[^>]*><td[^>]*>/, '').replace(/<\/td><\/tr>$/, '') : ''}
+        </div>`
+      }).join('') || `<div class="subx-empty">All ${ina.length} inactive. Turn on “Show inactive” to see them.</div>`}</div>`
+  }
+  el.innerHTML = html
+}
+let _svW = innerWidth < 900
+window.addEventListener('resize', () => {
+  const w = innerWidth < 900; if (w === _svW) return; _svW = w
+  if (document.getElementById('panel-subscriptions')?.classList.contains('on')) renderSubTable()
+})
 </script>
 <!-- SUBSCRIPTION PRICE CHANGE MODAL -->
 <div class="smod-overlay" id="sub-price-overlay" onclick="if(event.target===this)closeSubPrice()">
