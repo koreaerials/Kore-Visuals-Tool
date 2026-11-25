@@ -1222,6 +1222,16 @@ html[data-theme] .soc-copy:hover{color:var(--accent-text);background:var(--accen
 /* ── INSTALLED APP (home screen) ── */
 @media(max-width:899px){html[data-theme] .hdr{padding-top:calc(10px + env(safe-area-inset-top))}}
 @media(display-mode:standalone) and (min-width:900px){html[data-theme] .hdr{padding-top:calc(20px + env(safe-area-inset-top))}}
+/* ── SIGN-IN GATE ── */
+html.kv-locked .main,html.kv-locked #botbar,html.kv-locked .hdr,html.kv-locked #privacy-banner{visibility:hidden}
+html.kv-locked #gs-signin-overlay{display:flex!important}
+html[data-theme] .gs-overlay{background:var(--bg);backdrop-filter:none;-webkit-backdrop-filter:none;z-index:5000}
+html[data-theme] .gs-card{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:none;padding:36px 30px;max-width:380px}
+html[data-theme] .gs-card h2{font-family:var(--font-d);font-weight:600;font-size:24px}
+html[data-theme] .gs-card p{color:var(--text-2)}
+.gs-logo{width:64px;height:64px;border-radius:16px;display:block;margin:0 auto 6px}
+.gs-gate-msg{color:var(--orange)!important;font-weight:500;margin-top:-4px}
+.gs-gate-msg:empty{display:none}
 .inst-pd{width:auto!important;min-width:0;padding:5px 8px!important;font-size:13px!important;border-radius:8px!important}
 html[data-theme] #dash-widgets .card{grid-column:auto}
 html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
@@ -4115,7 +4125,7 @@ function gsSignIn() {
     window.open = _origOpen  // restore immediately
     return _gsPopup
   }
-  _gsTokenClient.requestAccessToken({ prompt: 'consent' })
+  _gsTokenClient.requestAccessToken({ prompt: localStorage.getItem('dt_gs_token') ? '' : 'consent' })
   // Poll every 500ms — if the popup closes before auth completes, reset to idle
   _gsSignInTimer = setInterval(() => {
     if (_gsPopup && _gsPopup.closed && !gsGetToken()) {
@@ -4128,7 +4138,7 @@ function gsSilentAuth() {
   if (_gsTokenClient) _gsTokenClient.requestAccessToken({ prompt: '' })
 }
 function gsSignOut() {
-  if (!confirm('Signing out will clear all local data. You\'ll need to re-sync from Google Sheets or import a backup on next login. Continue?')) return
+  if (!confirm('Sign out? Your data stays in Google Sheets and loads again the next time you sign in.')) return
   if (_gsToken?.access_token) google.accounts.oauth2.revoke(_gsToken.access_token, () => {})
   _gsToken = null
   _gsSignedIn = false
@@ -4151,16 +4161,36 @@ function gsSignOut() {
   if (nameEl) nameEl.value = ''
   refreshLogoPreview('dark')
   refreshLogoPreview('light')
+  localStorage.removeItem('dt_gs_dirty')
   setSyncStatus('idle')
   renderDash(); renderIncTable(); renderPurTable(); renderSubTable(); renderTaxes(); renderDataSummary(); renderLinks()
+  showGsSignIn()
 }
 
 // ── Sign-in overlay ───────────────────────────────────────────
-function showGsSignIn() {
+// Signed-in only. The data cached in this browser stays hidden until Google
+// sign-in succeeds; the overlay has no "continue offline" path.
+function showGsSignIn(msg) {
+  document.documentElement.classList.add('kv-locked')
+  const m = document.getElementById('gs-gate-msg'); if (m) m.textContent = msg || ''
   document.getElementById('gs-signin-overlay').style.display = 'flex'
 }
 function hideGsSignIn() {
+  document.documentElement.classList.remove('kv-locked')
   document.getElementById('gs-signin-overlay').style.display = 'none'
+}
+// Edits made after the token expired mid-session: remembered so they are pushed
+// to Sheets right after the next sign-in instead of being overwritten by it.
+function gsDirty() { try { return JSON.parse(localStorage.getItem('dt_gs_dirty') || '[]') } catch { return [] } }
+function gsMarkDirty(key) { const d = gsDirty(); if (!d.includes(key)) { d.push(key); localStorage.setItem('dt_gs_dirty', JSON.stringify(d)) } }
+async function gsFlushDirty() {
+  const d = gsDirty().filter(k => SHEET_SCHEMA[k]); if (!d.length) return
+  d.forEach(k => _gsSyncQueue.add(k))
+  await gsFlushQueue()
+  if (!_gsSyncQueue.size) localStorage.removeItem('dt_gs_dirty')
+}
+function gsCheckSession() {
+  if (_gsSignedIn && !gsGetToken()) showGsSignIn('Your Google session expired. Sign in again to keep saving.')
 }
 function gsUseOffline() {
   hideGsSignIn()
@@ -4294,7 +4324,11 @@ async function gsLoadAll() {
 // ── Debounced write-back queue ────────────────────────────────
 function gsQueueSync(key) {
   if (privacyMode()) return
-  if (!SHEET_SCHEMA[key] || !gsGetToken()) return
+  if (!SHEET_SCHEMA[key]) return
+  if (!gsGetToken()) {
+    if (_gsSignedIn) { gsMarkDirty(key); showGsSignIn('Your Google session expired. Sign in again and your last change will be saved.') }
+    return
+  }
   _gsSyncQueue.add(key)
   clearTimeout(_gsSyncTimer)
   _gsSyncTimer = setTimeout(gsFlushQueue, 400)
@@ -4355,16 +4389,18 @@ function gsOnLibraryLoad() {
       localStorage.setItem('dt_gs_token', JSON.stringify(_gsToken))
       _gsSignedIn = true
       hideGsSignIn()
+      await gsFlushDirty()
       await gsLoadAll()
       gdLoadLogo()
     }
   })
   const stored = gsGetStoredToken()
   if (stored) { _gsToken = stored; _gsSignedIn = true; gsLoadAll(); gdLoadLogo() }
-  else { setSyncStatus('idle') }  // wait for user to click the indicator
+  else { setSyncStatus('idle'); showGsSignIn() }
 }
 function gsOnLibraryError() {
   setSyncStatus('offline')
+  if (!gsGetToken()) showGsSignIn('Can\'t reach Google right now. Check your connection, then reload.')
   console.warn('Google Identity Services failed to load — running in offline/local mode')
 }
 
@@ -4718,6 +4754,8 @@ function mobNavTo(t){
 // ── INIT ──────────────────────────────────────────────────────
 // Apply theme immediately (before DOMContentLoaded) to avoid flash
 ;(()=>{ const t=localStorage.getItem('dt_theme')||'dark'; document.documentElement.dataset.theme=t })()
+// Signed-in only: without a valid Google token nothing renders behind the sign-in screen
+;(()=>{ if (!gsGetStoredToken()) document.documentElement.classList.add('kv-locked') })()
 
 document.addEventListener('click', e=>{
   if(!e.target.closest('.ms-wrap')) document.querySelectorAll('.ms-panel.open').forEach(p=>p.classList.remove('open'))
@@ -4755,6 +4793,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   applyMode(mode)
   openTab(localStorage.getItem(MODE_TAB_KEY[mode]) || MODE_HOME[mode])
   setSyncStatus('idle')  // will be updated by gsOnLibraryLoad() once GIS script loads
+  setInterval(gsCheckSession, 60000)
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) gsCheckSession() })
 })
 
 // ── INVOICE GENERATOR ─────────────────────────────────────────
@@ -9180,9 +9220,10 @@ function renderSocReels() {
 <!-- GOOGLE SIGN-IN OVERLAY -->
 <div id="gs-signin-overlay" class="gs-overlay" style="display:none">
   <div class="gs-card">
-    <div style="font-size:40px;line-height:1;margin-bottom:4px">📊</div>
-    <h2>Connect to Google Sheets</h2>
-    <p>Sign in with Google to sync your income, purchases, and subscriptions to your spreadsheet. Your data is also cached locally so the app loads fast.</p>
+    <img src="icon-192.png" alt="" class="gs-logo" onerror="this.style.display='none'">
+    <h2>Sign in to Kore</h2>
+    <p>Your jobs, money and gear load from your Google Sheet once you sign in. Nothing is shown on this device until then.</p>
+    <p id="gs-gate-msg" class="gs-gate-msg"></p>
     <button class="gs-btn-google" onclick="gsSignIn()">
       <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -9192,7 +9233,6 @@ function renderSocReels() {
       </svg>
       Sign in with Google
     </button>
-    <button class="gs-btn-skip" onclick="gsUseOffline()">Continue without syncing</button>
   </div>
 </div>
 
