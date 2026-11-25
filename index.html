@@ -1205,6 +1205,16 @@ html[data-theme] #panel-wishlist .wish-link{color:var(--accent-text)}
 .inv-test-row small{display:block;font-size:12px;color:var(--text-2);margin-top:2px;line-height:1.4}
 .inv-test-row:has(input:checked){border-color:var(--orange);background:rgba(245,196,81,.07)}
 html[data-theme] .btn.inv-gen-test{background:var(--orange);color:#111;border-color:var(--orange)}
+/* ── GATE RUN ── */
+#game-overlay{z-index:2000}
+.game-box{position:relative;width:min(960px,94vw);height:min(600px,82vh);border-radius:18px;overflow:hidden;border:1px solid var(--line-2);background:#05070a;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+#game-cv{display:block;width:100%;height:100%;touch-action:none;cursor:crosshair}
+.game-x{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.45);color:#fff;font-size:15px;cursor:pointer}
+@media(max-width:899px){
+  #game-overlay{padding:0!important;align-items:stretch!important}
+  .game-box{width:100vw;height:100dvh;border-radius:0;border:0}
+  .game-box{padding-bottom:0}
+}
 /* ── APP REFRESH ── */
 #app-refresh{position:relative}
 #app-refresh.spin svg{animation:kvSpin .7s linear infinite}
@@ -4874,6 +4884,7 @@ const QA_ACTIONS = [
   {label:'Subscription',  sub:'Track a recurring cost',         ico:'repeat',    keys:'subscription recurring monthly saas',run:()=>{navTo('subscriptions');openForm('sub')} },
   {label:'Client',        sub:'Add a new client record',        ico:'users',     keys:'client customer contact company',    run:()=>{navTo('clients');     openNewClientForm()} },
   {label:'Service / Rate',sub:'Add a service to your rate card', ico:'receipt',  keys:'service rate pricing price quote',   run:()=>{navTo('jobs');        switchJobsSection('pricing'); openPrcForm()} },
+  {label:'Gate Run',      sub:'Fly a quick FPV gate run',        ico:'drone',     keys:'game play drone fpv fun gate run race', run:()=>openDroneGame() },
   {label:'Quick Link',    sub:'Save a link to the dashboard',   ico:'link',      keys:'link url bookmark shortcut',         run:()=>{navTo('dashboard');   openLinkForm()} },
 ]
 let _qaMatches = [], _qaSel = 0
@@ -9171,6 +9182,154 @@ function saveGearLog() {
   toast(`${g.name}: +${min} min · ${gearHrs(g.hours)} total`)
 }
 
+// ── GATE RUN (drone game) ─────────────────────────────────────
+// A tiny FPV gate race: steer with mouse / finger / arrow keys, fly through the
+// gates. Each gate tops up the battery; miss one or run the pack flat and it's over.
+// Open from Search or add ("Gate Run") or tap the K logo 5 times. Best score is
+// kept in this browser only.
+const DG = { raf: 0, on: false }
+function openDroneGame() {
+  const ov = document.getElementById('game-overlay'); if (!ov) return
+  ov.classList.add('open'); DG.on = true
+  dgSetup(); DG.state = 'title'; DG.last = performance.now()
+  cancelAnimationFrame(DG.raf); DG.raf = requestAnimationFrame(dgFrame)
+}
+function closeDroneGame() {
+  document.getElementById('game-overlay')?.classList.remove('open')
+  DG.on = false; cancelAnimationFrame(DG.raf)
+}
+function dgBest(v) {
+  try { if (v !== undefined) localStorage.setItem('dt_game_best', String(v)); return +(localStorage.getItem('dt_game_best') || 0) } catch { return DG.bestMem || 0 }
+}
+function dgSetup() {
+  const cv = document.getElementById('game-cv'); DG.cv = cv; DG.ctx = cv.getContext('2d')
+  const fit = () => { const r = cv.getBoundingClientRect(), d = Math.min(2, devicePixelRatio || 1); cv.width = r.width * d; cv.height = r.height * d; DG.W = r.width; DG.H = r.height; DG.ctx.setTransform(d, 0, 0, d, 0, 0) }
+  fit(); DG.fit = fit
+  if (DG.bound) return; DG.bound = true
+  window.addEventListener('resize', () => DG.on && DG.fit())
+  const aim = e => { const r = cv.getBoundingClientRect(); const p = e.touches ? e.touches[0] : e; DG.aim = { x: ((p.clientX - r.left) / r.width - .5) * 2.6, y: ((p.clientY - r.top) / r.height - .5) * 1.8 } }
+  cv.addEventListener('pointermove', aim)
+  cv.addEventListener('pointerdown', e => { aim(e); if (DG.state === 'paused') DG.state = 'fly'; else if (DG.state !== 'fly') dgStart() })
+  window.addEventListener('keydown', e => {
+    if (!DG.on) return
+    if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' ','a','d','w','s'].includes(e.key)) e.preventDefault()
+    if (e.key === 'Escape') return closeDroneGame()
+    if ((e.key === ' ' || e.key === 'Enter') && DG.state !== 'fly') return DG.state === 'paused' ? (DG.state = 'fly') : dgStart()
+    DG.keys[e.key] = true
+  })
+  window.addEventListener('keyup', e => { if (DG.keys) DG.keys[e.key] = false })
+  document.addEventListener('visibilitychange', () => { if (document.hidden && DG.state === 'fly') DG.state = 'paused' })
+  DG.keys = {}
+}
+function dgStart() {
+  Object.assign(DG, { state: 'fly', px: 0, py: 0, score: 0, batt: 100, t: 0, dist: 0, gates: [], aim: DG.aim || { x: 0, y: 0 }, flash: 0, msg: '' })
+  let x = 0, y = 0
+  for (let i = 0; i < 6; i++) { const g = dgGate(x, y, 14 + i * 9); x = g.x; y = g.y; DG.gates.push(g) }
+}
+function dgGate(px, py, z) {
+  const reach = .9
+  const x = Math.max(-1.3, Math.min(1.3, px + (Math.random() * 2 - 1) * reach))
+  const y = Math.max(-.75, Math.min(.75, py + (Math.random() * 2 - 1) * reach * .6))
+  const size = Math.max(.55, 1.05 - (DG.score || 0) * .015)
+  return { x, y, z, size, done: false }
+}
+function dgFrame(now) {
+  if (!DG.on) return
+  const dt = Math.min(.05, (now - DG.last) / 1000); DG.last = now
+  if (DG.state === 'fly') dgStep(dt)
+  dgDraw()
+  DG.raf = requestAnimationFrame(dgFrame)
+}
+function dgStep(dt) {
+  const k = DG.keys
+  const kx = (k.ArrowRight || k.d ? 1 : 0) - (k.ArrowLeft || k.a ? 1 : 0), ky = (k.ArrowDown || k.s ? 1 : 0) - (k.ArrowUp || k.w ? 1 : 0)
+  if (kx || ky) DG.aim = { x: Math.max(-1.4, Math.min(1.4, DG.aim.x + kx * dt * 2.6)), y: Math.max(-.9, Math.min(.9, DG.aim.y + ky * dt * 2)) }
+  DG.vx = (DG.aim.x - DG.px); DG.vy = (DG.aim.y - DG.py)
+  DG.px += DG.vx * Math.min(1, dt * 4.5); DG.py += DG.vy * Math.min(1, dt * 4.5)
+  DG.speed = Math.min(22, 9 + DG.score * .4)
+  DG.t += dt; DG.dist += DG.speed * dt
+  DG.batt -= dt * 4.2; DG.flash = Math.max(0, DG.flash - dt * 2.5)
+  for (const g of DG.gates) {
+    g.z -= DG.speed * dt
+    if (!g.done && g.z <= .4) {
+      g.done = true
+      const half = g.size / 2 * .92
+      if (Math.abs(g.x - DG.px) < half && Math.abs(g.y - DG.py) < half) { DG.score++; DG.batt = Math.min(100, DG.batt + 7); DG.flash = 1 }
+      else return dgOver('Clipped a gate')
+    }
+  }
+  DG.gates = DG.gates.filter(g => g.z > -.5)
+  while (DG.gates.length < 6) { const l = DG.gates[DG.gates.length - 1]; DG.gates.push(dgGate(l.x, l.y, l.z + 9)) }
+  if (DG.batt <= 0) { DG.batt = 0; dgOver('Battery dead') }
+}
+function dgOver(msg) {
+  DG.state = 'over'; DG.msg = msg
+  const b = dgBest(); if (DG.score > b) { dgBest(DG.score); DG.bestMem = DG.score; DG.newBest = true } else DG.newBest = false
+}
+function dgDraw() {
+  const { ctx, W, H } = DG; if (!ctx) return
+  const F = Math.min(W, H) * .85, cx = W / 2, cy = H / 2
+  const px = DG.px || 0, py = DG.py || 0
+  const roll = DG.state === 'fly' ? Math.max(-.45, Math.min(.45, (DG.vx || 0) * -.35)) : 0
+  ctx.save(); ctx.fillStyle = '#05070a'; ctx.fillRect(0, 0, W, H)
+  ctx.translate(cx, cy); ctx.rotate(roll); ctx.translate(-cx, -cy)
+  // sky + ground
+  const hy = cy - py * F * .12 - (DG.state === 'fly' ? (DG.vy || 0) * 30 : 0)
+  let g = ctx.createLinearGradient(0, hy - H, 0, hy); g.addColorStop(0, '#0b1220'); g.addColorStop(1, '#1d2a3a'); ctx.fillStyle = g; ctx.fillRect(-W, hy - H * 2, W * 3, H * 2)
+  g = ctx.createLinearGradient(0, hy, 0, hy + H); g.addColorStop(0, '#16120c'); g.addColorStop(1, '#0a0806'); ctx.fillStyle = g; ctx.fillRect(-W, hy, W * 3, H * 2)
+  // ground lines rushing past
+  ctx.strokeStyle = 'rgba(255,162,76,.18)'; ctx.lineWidth = 1
+  const off = (DG.dist || 0) % 2
+  for (let z = 2 - off; z < 60; z += 2) { const y = hy + (1.6 - py * .3) * F / z; if (y > H * 2) continue; ctx.globalAlpha = Math.min(1, 6 / z); ctx.beginPath(); ctx.moveTo(-W, y); ctx.lineTo(W * 2, y); ctx.stroke() }
+  ctx.globalAlpha = 1
+  for (let i = -6; i <= 6; i++) { ctx.beginPath(); ctx.moveTo(cx + (i * 1.2 - px) * F / 60, hy); ctx.lineTo(cx + (i * 1.2 - px) * F / 1.2, hy + 1.6 * F / 1.2); ctx.strokeStyle = 'rgba(255,162,76,.08)'; ctx.stroke() }
+  // gates, far to near
+  const gs = (DG.gates || []).filter(q => q.z > .4).sort((a, b) => b.z - a.z)
+  const next = gs[gs.length - 1]
+  for (const q of gs) {
+    const s = F / q.z, x = cx + (q.x - px) * s, y = cy + (q.y - py) * s, w = q.size * s
+    ctx.globalAlpha = Math.min(1, 14 / q.z)
+    ctx.lineWidth = Math.max(1.5, .09 * s); ctx.strokeStyle = q === next ? '#FFA24C' : 'rgba(255,162,76,.45)'
+    ctx.strokeRect(x - w / 2, y - w / 2, w, w)
+    // post down to the ground
+    ctx.lineWidth = Math.max(1, .04 * s); ctx.beginPath(); ctx.moveTo(x, y + w / 2); ctx.lineTo(x, cy + (1.6 - py) * s); ctx.stroke()
+  }
+  ctx.globalAlpha = 1; ctx.restore()
+  // pass flash
+  if (DG.flash) { ctx.fillStyle = `rgba(54,209,196,${DG.flash * .18})`; ctx.fillRect(0, 0, W, H) }
+  // OSD
+  ctx.font = '600 13px ui-monospace,Menlo,monospace'; ctx.fillStyle = '#e8edf2'; ctx.textBaseline = 'top'
+  if (DG.state === 'fly' || DG.state === 'over' || DG.state === 'paused') {
+    const v = (13.2 + (DG.batt / 100) * 3.6).toFixed(1)
+    ctx.fillStyle = DG.batt < 25 ? '#FF6B5E' : '#e8edf2'; ctx.fillText(`BAT ${v}V`, 16, 16)
+    ctx.fillStyle = '#e8edf2'; ctx.fillText(`GATES ${DG.score}`, 16, 34)
+    const tm = Math.floor(DG.t); ctx.fillText(`${String(Math.floor(tm / 60)).padStart(2, '0')}:${String(tm % 60).padStart(2, '0')}`, 16, 52)
+    ctx.textAlign = 'right'; ctx.fillText(`BEST ${Math.max(dgBest(), DG.bestMem || 0)}`, W - 56, 16); ctx.fillText(`${Math.round((DG.speed || 0) * 6)} KM/H`, W - 56, 34); ctx.textAlign = 'left'
+    // crosshair
+    ctx.strokeStyle = 'rgba(232,237,242,.75)'; ctx.lineWidth = 1.5; ctx.beginPath()
+    ctx.moveTo(cx - 14, cy); ctx.lineTo(cx - 5, cy); ctx.moveTo(cx + 5, cy); ctx.lineTo(cx + 14, cy); ctx.moveTo(cx, cy - 10); ctx.lineTo(cx, cy - 4); ctx.stroke()
+  }
+  const center = (big, small, tiny) => {
+    ctx.fillStyle = 'rgba(5,7,10,.55)'; ctx.fillRect(0, 0, W, H)
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+    ctx.fillStyle = '#FFA24C'; ctx.font = `700 ${Math.min(54, W / 9)}px "Space Grotesk",Inter,sans-serif`; ctx.fillText(big, cx, cy - 44)
+    ctx.fillStyle = '#e8edf2'; ctx.font = `500 ${Math.min(16, W / 25)}px Inter,sans-serif`; ctx.fillText(small, cx, cy + 6, W - 24)
+    ctx.fillStyle = 'rgba(232,237,242,.6)'; ctx.font = `500 ${Math.min(13, W / 30)}px Inter,sans-serif`; ctx.fillText(tiny, cx, cy + 36, W - 24)
+    ctx.textAlign = 'left'; ctx.textBaseline = 'top'
+  }
+  if (DG.state === 'title') center('GATE RUN', 'Fly through the gates. Each one tops up your battery.', 'Steer with mouse, finger or arrow keys · tap or Space to fly')
+  if (DG.state === 'paused') center('PAUSED', 'Tap or press Space to keep flying', '')
+  if (DG.state === 'over') center(DG.newBest ? 'NEW BEST!' : DG.msg.toUpperCase(), `${DG.score} gate${DG.score !== 1 ? 's' : ''}${DG.newBest ? '' : ` · best ${dgBest()}`}`, 'Tap or press Space to fly again')
+}
+// Easter egg: tap the K logo 5 times
+;(() => {
+  let n = 0, t = 0
+  document.getElementById('hdr-logo')?.addEventListener('click', () => {
+    const now = Date.now(); n = now - t < 600 ? n + 1 : 1; t = now
+    if (n >= 5) { n = 0; openDroneGame() }
+  })
+})()
+
 // ── APP REFRESH ───────────────────────────────────────────────
 // The installed app has no browser reload button. ↻ saves any pending change,
 // checks for a new service worker and reloads. Every 5 min and on return to the
@@ -9811,6 +9970,14 @@ function renderSocReels() {
       <button class="btn btn-p" onclick="saveGear()" style="flex:1">Save</button>
       <button class="btn btn-s" onclick="closeGearModal()">Cancel</button>
     </div>
+  </div>
+</div>
+
+<!-- GATE RUN (drone game) -->
+<div class="smod-overlay" id="game-overlay" onclick="if(event.target===this)closeDroneGame()">
+  <div class="game-box">
+    <canvas id="game-cv"></canvas>
+    <button class="game-x" onclick="closeDroneGame()" aria-label="Close game">&#x2715;</button>
   </div>
 </div>
 
