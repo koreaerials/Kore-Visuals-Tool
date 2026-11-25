@@ -4220,10 +4220,38 @@ async function gsReq(url, opts = {}) {
 }
 
 // ── Sheet read ────────────────────────────────────────────────
+// Google allows ~60 reads/min per user. On "too many requests" (429) wait and retry
+// instead of treating the answer as "tab missing" (which used to push local data up).
+async function gsReqRetry(url, opts) {
+  for (const wait of [0, 2000, 5000, 12000, 25000]) {
+    if (wait) await new Promise(r => setTimeout(r, wait))
+    const r = await gsReq(url, opts)
+    if (!r || (r.status !== 429 && r.status < 500)) return r
+  }
+  return gsReq(url, opts)
+}
+// Reads every tab in 2 requests (tab list + one batchGet). Throws on any failure so a
+// failed read can never be mistaken for an empty or missing tab.
+let _gsKnownTabs = null
+async function gsReadAll(tabs) {
+  const base = `https://sheets.googleapis.com/v4/spreadsheets/${GS_SPREADSHEET_ID}`
+  const meta = await gsReqRetry(`${base}?fields=sheets.properties.title`)
+  if (!meta?.ok) throw new Error('Could not read the sheet (' + (meta ? meta.status : 'not signed in') + ')')
+  _gsKnownTabs = new Set(((await meta.json()).sheets || []).map(x => x.properties.title))
+  const have = [...new Set(tabs)].filter(t => _gsKnownTabs.has(t))
+  const out = {}
+  if (have.length) {
+    const q = have.map(t => 'ranges=' + encodeURIComponent(`'${t.replace(/'/g, "''")}'!A1:Z`)).join('&')
+    const r = await gsReqRetry(`${base}/values:batchGet?${q}`)
+    if (!r?.ok) throw new Error('Could not read the sheet (' + (r ? r.status : 'not signed in') + ')')
+    ;((await r.json()).valueRanges || []).forEach((vr, i) => { out[have[i]] = vr.values || [] })
+  }
+  return out  // tabs that don't exist are absent
+}
 async function gsReadTab(tabName) {
   const range = encodeURIComponent(`${tabName}!A1:Z`)
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${GS_SPREADSHEET_ID}/values/${range}`
-  const resp = await gsReq(url)
+  const resp = await gsReqRetry(url)
   if (!resp?.ok) return null
   return (await resp.json()).values || []
 }
@@ -4233,18 +4261,18 @@ async function gsWriteTab(tabName, cols, rows) {
   if (!gsGetToken()) return false
   const base = `https://sheets.googleapis.com/v4/spreadsheets/${GS_SPREADSHEET_ID}`
   // Clear everything below row 1 — if this fails the tab doesn't exist yet
-  const clearResp = await gsReq(`${base}/values/${encodeURIComponent(tabName + '!A2:Z')}:clear`,
+  const clearResp = await gsReqRetry(`${base}/values/${encodeURIComponent(tabName + '!A2:Z')}:clear`,
     { method: 'POST', body: '{}' })
   if (!clearResp?.ok) {
     // Tab missing — create it before writing
-    await gsReq(`${base}:batchUpdate`, {
+    await gsReqRetry(`${base}:batchUpdate`, {
       method: 'POST',
       body: JSON.stringify({ requests: [{ addSheet: { properties: { title: tabName } } }] })
     })
   }
   // Write headers + data starting at A1
   const values = [cols, ...rows]
-  const resp = await gsReq(
+  const resp = await gsReqRetry(
     `${base}/values/${encodeURIComponent(tabName + '!A1')}?valueInputOption=RAW`,
     { method: 'PUT', body: JSON.stringify({ range: `${tabName}!A1`, majorDimension: 'ROWS', values }) }
   )
@@ -4276,9 +4304,10 @@ function gsSettingsRows() {
 async function gsLoadAll() {
   setSyncStatus('loading')
   try {
+    const all = await gsReadAll([...Object.values(SHEET_SCHEMA).map(x => x.tab), CLI_TAB])
     for (const [key, schema] of Object.entries(SHEET_SCHEMA)) {
-      let rows = await gsReadTab(schema.tab)
-      if (rows === null) {
+      let rows = all[schema.tab]
+      if (rows === undefined) {
         // Tab doesn't exist yet (e.g. new V2 tabs on an existing V1 sheet) — create it
         const base = `https://sheets.googleapis.com/v4/spreadsheets/${GS_SPREADSHEET_ID}`
         await gsReq(`${base}:batchUpdate`, {
@@ -4795,7 +4824,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const mode = appMode()
   applyMode(mode)
   openTab(localStorage.getItem(MODE_TAB_KEY[mode]) || MODE_HOME[mode])
-  setSyncStatus('idle')  // will be updated by gsOnLibraryLoad() once GIS script loads
+  if (!_gsSignedIn) setSyncStatus('idle')  // gsOnLibraryLoad() may already have run (script is deferred)
   setInterval(gsCheckSession, 60000)
   document.addEventListener('visibilitychange', () => { if (!document.hidden) gsCheckSession() })
 })
@@ -5986,7 +6015,8 @@ function getClientList() {
 
 async function gsEnsureClientsTab() {
   if (_cliTabEnsured || !gsGetToken()) return
-  const rows = await gsReadTab(CLI_TAB)
+  if (_gsKnownTabs && _gsKnownTabs.has(CLI_TAB)) { _cliTabEnsured = true; return }
+  const rows = _gsKnownTabs ? null : await gsReadTab(CLI_TAB)
   if (rows === null) {
     // Tab doesn't exist — create it then write the header row
     const base = `https://sheets.googleapis.com/v4/spreadsheets/${GS_SPREADSHEET_ID}`
