@@ -619,6 +619,7 @@ body.privacy-mode #privacy-banner{display:block}
 
 .ren-tag{display:inline-block;font-size:9.5px;padding:1px 6px;margin-right:6px;vertical-align:1px}
 /* ── SHOOT WEATHER + CONFETTI ── */ .wx{display:flex;align-items:center;gap:4px 6px;flex-wrap:wrap;margin-top:7px;padding:5px 8px;border-radius:8px;font-size:11px;line-height:1.35;background:rgba(0,0,0,0.04);color:var(--text)}.wx b{font-weight:700}.wx .wx-dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto;background:var(--text-2)}.wx-g .wx-dot{background:var(--green)}.wx-y .wx-dot{background:var(--orange)}.wx-r .wx-dot{background:var(--red)}.wx-g{background:rgba(52,199,89,0.11)}.wx-y{background:rgba(255,149,0,0.13)}.wx-r{background:rgba(255,59,48,0.13)}.wx-na{color:var(--text-2)}[data-theme=dark] .wx-na{background:rgba(255,255,255,0.05)}.wx-sub{flex-basis:100%;color:var(--text-2);padding-left:14px}.ren-item .wx{margin-top:5px;padding:3px 7px}#kv-confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:3000}
+/* ── SUBSCRIPTIONS v3 ── */ .subx-sec{margin-bottom:22px}.subx-sec-hdr{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;margin:0 0 8px;padding:0 2px}.subx-cnt{font-weight:500;font-size:12px;color:var(--text-2)}.subx-burn{margin-left:auto;font-size:12px;font-weight:600;color:var(--text-2);font-variant-numeric:tabular-nums}.subx-off td{opacity:.62}.subx-off td:last-child{opacity:1}.subx-dim{color:var(--text-2);font-size:11.5px}.subx-desc{font-size:11px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;padding-left:16px}.subx-next{font-size:10.5px;color:var(--orange);font-weight:600;margin-top:2px}.subx-total{border:0;background:none;padding:2px 4px;margin:-2px -4px;border-radius:6px;font:inherit;font-weight:600;color:var(--text);cursor:pointer;font-variant-numeric:tabular-nums}.subx-total:hover{background:rgba(127,127,127,.12)}.subx-empty{font-size:12px;color:var(--text-2);padding:10px 4px}.subx-drawer{display:flex;flex-direction:column;gap:10px;padding:4px 0 8px}.subx-hist{font-size:12px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}.subx-hist span{color:var(--text-2);font-size:11px}.subx-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.subx-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-2)}.subup-hdr{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-2);margin:0 0 6px 2px}.subup{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}.subup-chip{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--card-border);border-radius:10px;background:rgba(127,127,127,.05)}.subup-chip b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px}.subup-chip span{font-size:11px;color:var(--text-2)}.subup-chip.od{border-color:rgba(255,59,48,.45);background:rgba(255,59,48,.08)}.subup-chip.od span{color:var(--red)}.subup-amt{display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-weight:700;font-variant-numeric:tabular-nums;font-size:13px}.subup-amt .btn{font-size:10px;padding:2px 7px}#sub-table table{margin-bottom:0}.subx-tbl{table-layout:fixed;min-width:980px}.subx-tbl td{vertical-align:middle}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.7/dist/pizzip.js"></script>
 <script>
@@ -879,7 +880,7 @@ body.privacy-mode #privacy-banner{display:block}
 
   <!-- SUBSCRIPTIONS -->
   <section class="panel" id="panel-subscriptions">
-    <div class="sec-hdr"><h2>Subscriptions</h2><p>Recurring costs — active ones auto-log to expenses on open</p></div>
+    <div class="sec-hdr"><h2>Subscriptions</h2><p>Subscriptions, fees and credits. Recurring ones log a charge automatically when due.</p></div>
     <div class="card">
       <div class="form-toggle-hdr">
         <span class="form-ttl" id="sub-form-ttl">Add Subscription</span>
@@ -903,6 +904,9 @@ body.privacy-mode #privacy-banner{display:block}
             <div class="ff"><label>Deactivation Date</label><input type="date" id="sub-end"></div>
             <div class="ff"><label>Renewal Type</label>
               <select id="sub-autorenew"><option value="Auto">Auto Renew</option><option value="Manual">Manual Renew</option></select>
+            </div>
+            <div class="ff"><label>Type</label>
+              <select id="sub-kind"><option value="">Auto-detect</option><option value="sub">Subscription</option><option value="fee">Fee / Registration</option><option value="credit">Credits / Top-up</option><option value="once">One-time</option></select>
             </div>
             <div class="ff wide"><label>Description / Notes</label><input type="text" id="sub-desc" placeholder="Account, plan tier, notes..."></div>
           </div>
@@ -931,6 +935,7 @@ body.privacy-mode #privacy-banner{display:block}
             <div class="ms-items"></div>
           </div>
         </div>
+        <label style="margin-left:auto;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-2);cursor:pointer"><input type="checkbox" id="sub-show-inactive" onchange="setSubShowInactive(this.checked)"> Show inactive</label>
       </div>
       <div id="sub-summary" style="margin-bottom:14px"></div>
       <div class="tbl-wrap" id="sub-table"></div>
@@ -1420,22 +1425,30 @@ const SHEET_SCHEMA = {
   },
   [K.sub]: {
     tab:  'Subscriptions',
-    cols: ['id','name','amount','billingType','status','startDate','lastProcessed','totalSpent','description','calendarEventId','autoRenew','endDate'],
+    cols: ['id','name','amount','billingType','status','startDate','lastProcessed','totalSpent','description','calendarEventId','autoRenew','endDate','kind','priorSpent','nextPrice','nextPriceDate'],
     toRow: o => [
       o.id, o.name, o.amount, o.billingType, o.status, o.startDate,
       o.lastProcessed||'',
-      o.totalSpent||'',
+      (o.priorSpent!==undefined&&o.priorSpent!=='') ? subSpent(o, load(K.subx)).toFixed(2) : (o.totalSpent||''),   // computed for readability in the sheet
       o.desc||o.description||'',
       o.calendarEventId||'',
       o.autoRenew===false?'Manual':'Auto',
-      o.endDate||''
+      o.endDate||'',
+      o.kind||'',
+      (o.priorSpent===undefined||o.priorSpent==='')?'':o.priorSpent,
+      o.nextPrice===undefined?'':o.nextPrice,
+      o.nextPriceDate||''
     ],
     toObj: r => ({
       id: r[0], name: r[1], amount: r[2], billingType: r[3], status: r[4],
       startDate: r[5], lastProcessed: r[6]||null, totalSpent: r[7], desc: r[8],
       calendarEventId: r[9]||'',
       autoRenew: r[10]==='Manual'?false:true,
-      endDate: r[11]||null
+      endDate: r[11]||null,
+      kind: r[12]||'',
+      priorSpent: (r[13]===undefined||r[13]==='')?undefined:+r[13],
+      nextPrice: (r[14]===undefined||r[14]==='')?'':+r[14],
+      nextPriceDate: r[15]||''
     }),
   },
   [K.subx]: {
@@ -1606,7 +1619,7 @@ function loadP(k) {
     if (k === K.inc)  return {...e, amount:0, travel:0, travelExpenses:0, jobExpenses:0, travel_expenses:0, profit:0}
     if (k === K.pur)  return {...e, price:0, installmentTotal:0,
       installments: Array.isArray(e.installments) ? e.installments.map(i => ({...i, amount:0})) : e.installments}
-    if (k === K.sub)  return {...e, amount:0, totalSpent:0}
+    if (k === K.sub)  return {...e, amount:0, totalSpent:0, priorSpent:0, nextPrice:e.nextPrice===''?'':0}
     if (k === K.subx) return {...e, amount:0}
     return e
   })
@@ -1634,12 +1647,14 @@ function processSubs() {
     }
     while(cur<=now) {
       const ds=toStr(cur)
+      if(subApplyPriceChange(s,ds)) sc=true   // scheduled price change due by this cycle
       if(!subx.some(e=>e.subId===s.id&&e.date===ds)) {
         subx.push({id:uid(),subId:s.id,date:ds,name:s.name,amount:s.amount}); xc=true
       }
       if(!s.lastProcessed||ds>s.lastProcessed){s.lastProcessed=ds;sc=true}
       cur=advance(cur,s.billingType)
     }
+    if(subApplyPriceChange(s,today())) sc=true
   }
   if(sc) save(K.sub,subs)
   if(xc) save(K.subx,subx)
@@ -1737,7 +1752,7 @@ function renderDash() {
   const trav=inc.reduce((s,e)=>s+(+(e.travel||e.travelExpenses||e.travel_expenses||0)),0)
   const purAmt=pur.reduce((s,e)=>s+purExpense(e,from,to),0)
   const subAmt=FS.dash.r==='all'
-    ? loadP(K.sub).reduce((s,e)=>s+(e.totalSpent!==undefined?+e.totalSpent:(+e.amount||0)),0)
+    ? (()=>{ const xs=loadP(K.subx); return loadP(K.sub).reduce((s,e)=>s+subSpent(e,xs),0) })()
     : loadP(K.subx).filter(e=>inRange(e.date,from,to)).reduce((s,e)=>s+(+e.amount||0),0)
   const exp=purAmt+subAmt+trav
   const net=rev-exp
@@ -2069,48 +2084,26 @@ function delLink(id) {
 }
 
 // ── TAX SUMMARY ────────────────────────────────────────────────
-// Distributes each subscription's totalSpent across calendar years by
-// counting actual billing cycles, giving accurate per-year estimates
-// without relying on auto-generated subx entries.
+// Per-year subscription spend: logged charges by their own date, plus each
+// sub's priorSpent (history from before charges were logged) spread over the
+// billing cycles that came before its first logged charge.
 function subYearlySpending() {
-  const result = {}
+  const result = {}, xs = loadP(K.subx)
+  for (const x of xs) { const yr = (x.date || '').slice(0, 4); if (yr) result[yr] = (result[yr] || 0) + (+x.amount || 0) }
   for (const sub of loadP(K.sub)) {
-    const totalSpent = sub.totalSpent !== undefined ? +sub.totalSpent : +sub.amount || 0
-    if (!totalSpent || !sub.startDate) continue
-
-    if (sub.billingType === 'One-Time') {
-      const yr = sub.startDate.slice(0, 4)
-      result[yr] = (result[yr] || 0) + totalSpent
-      continue
+    const prior = +sub.priorSpent || 0
+    if (!prior || !sub.startDate) continue
+    if (sub.billingType === 'One-Time') { const yr = sub.startDate.slice(0, 4); result[yr] = (result[yr] || 0) + prior; continue }
+    const first = subCharges(sub.id, xs).map(x => x.date).sort()[0]
+    const amt = +sub.amount || 0
+    const yrs = []; let cur = toDate(sub.startDate), guard = 0
+    const stopAt = first || null, maxCycles = amt > 0 ? Math.max(1, Math.round(prior / amt)) : 1
+    while (guard++ < 600 && yrs.length < (first ? 600 : maxCycles)) {
+      const ds = toStr(cur); if (stopAt && ds >= stopAt) break
+      yrs.push(ds.slice(0, 4)); cur = advance(cur, sub.billingType)
     }
-
-    // Determine end date for billing cycle generation
-    let endDate
-    if (sub.status === 'Active') {
-      // Use lastProcessed if available, else today
-      endDate = sub.lastProcessed ? toDate(sub.lastProcessed) : toDate(today())
-    } else {
-      // Inactive: estimate end from cycle count (totalSpent / amount)
-      const amt = +sub.amount || 0
-      if (amt <= 0) continue
-      const cycles = Math.max(1, Math.round(totalSpent / amt))
-      let cur = toDate(sub.startDate)
-      for (let i = 1; i < cycles; i++) cur = advance(cur, sub.billingType)
-      endDate = cur
-    }
-
-    // Walk all billing dates and bucket by year
-    const yrs = []
-    let cur = toDate(sub.startDate)
-    let guard = 0
-    while (cur <= endDate && guard++ < 600) {
-      yrs.push(String(cur.getFullYear()))
-      cur = advance(cur, sub.billingType)
-    }
-    if (!yrs.length) continue
-
-    const perCycle = totalSpent / yrs.length
-    for (const yr of yrs) result[yr] = (result[yr] || 0) + perCycle
+    if (!yrs.length) yrs.push(sub.startDate.slice(0, 4))
+    for (const yr of yrs) result[yr] = (result[yr] || 0) + prior / yrs.length
   }
   return result
 }
@@ -2273,14 +2266,11 @@ function saveSubRow(id){
   const status=document.getElementById('ser-status')?.value
   const start=document.getElementById('ser-start')?.value
   const endDate=document.getElementById('ser-end')?.value||null
-  const tsRaw=document.getElementById('ser-spent')?.value
-  const totalSpent=tsRaw!==''&&!isNaN(parseFloat(tsRaw))?parseFloat(tsRaw):undefined
-  const desc=document.getElementById('ser-desc')?.value.trim()
+  const kind=document.getElementById('ser-kind')?.value||''
   if(!name||amount<=0||!start){toast('Fill in name, amount, and start date');return}
   const list=load(K.sub), i=list.findIndex(e=>e.id===id); if(i<0)return
   const autoRenew=document.getElementById('ser-autorenew')?.value!=='Manual'
-  list[i]={...list[i],name,amount,billingType:billing,status,startDate:start,endDate,desc,autoRenew}
-  if(totalSpent!==undefined) list[i].totalSpent=totalSpent
+  list[i]={...list[i],name,amount,billingType:billing,status,startDate:start,endDate,autoRenew,kind}
   save(K.sub,list)
   if(status==='Active') processSubs()
   editing.sub=null; renderSubTable(); renderDash(); toast('Subscription updated!')
@@ -3191,14 +3181,16 @@ async function saveSub() {
   const endDate=document.getElementById('sub-end').value||null
   const desc=document.getElementById('sub-desc').value.trim()
   const autoRenew=document.getElementById('sub-autorenew').value!=='Manual'
+  const kind=document.getElementById('sub-kind')?.value||''
   if(!name||amount<=0||!start){toast('Please fill in name, amount, and start date');return}
   const list=load(K.sub)
+  const prev=id?{...(list.find(e=>e.id===id)||{})}:null
   let entry
   if(id){
     const ex=list.find(e=>e.id===id)
-    entry={...ex,name,amount,billingType:billing,status,startDate:start,endDate,desc,autoRenew}
+    entry={...ex,name,amount,billingType:billing,status,startDate:start,endDate,desc,autoRenew,kind}
   } else {
-    entry={id:uid(),name,amount,billingType:billing,status,startDate:start,endDate,lastProcessed:null,totalSpent:0,desc,autoRenew}
+    entry={id:uid(),name,amount,billingType:billing,status,startDate:start,endDate,lastProcessed:null,totalSpent:0,priorSpent:0,nextPrice:'',nextPriceDate:'',desc,autoRenew,kind}
     if(privacyMode()) entry._priv = true
   }
   if(id){const i=list.findIndex(e=>e.id===id);if(i>=0)list[i]=entry}else list.push(entry)
@@ -3219,6 +3211,11 @@ async function saveSub() {
   // Auto-create a Google Calendar event for the next renewal date
   if (gsGetToken() && status === 'Active' && billing !== 'One-Time') {
     const renewDate = nextCharge(entry)
+    // Editing: keep the existing event unless the date or price changed (was creating a duplicate every save)
+    if (prev?.calendarEventId) {
+      if (nextCharge(prev) === renewDate && +prev.amount === +amount && prev.name === name) return
+      await gcDeleteEvent(prev.calendarEventId)
+    }
     const evLink = await gcCreateEvent(renewDate, `Renewal: ${name} - ${fmt(amount)}`)
     if (evLink) {
       const list2 = load(K.sub)
@@ -3238,6 +3235,8 @@ function editSub(id) {
   document.getElementById('sub-start').value=e.startDate
   document.getElementById('sub-end').value=e.endDate||''
   document.getElementById('sub-desc').value=e.desc||''
+  document.getElementById('sub-autorenew').value=e.autoRenew===false?'Manual':'Auto'
+  const kEl=document.getElementById('sub-kind'); if(kEl) kEl.value=subKind(e)
   openForm('sub')
   document.getElementById('sub-form-ttl').textContent='Edit Subscription'
 }
@@ -3252,7 +3251,7 @@ function delSub(id) {
 function dupSub(id) {
   const e=load(K.sub).find(e=>e.id===id); if(!e)return
   const list=load(K.sub)
-  const copy={...e, id:uid(), name:e.name+' (Copy)', lastProcessed:null}
+  const copy={...e, id:uid(), name:e.name+' (Copy)', lastProcessed:null, priorSpent:0, nextPrice:'', nextPriceDate:'', calendarEventId:''}
   list.push(copy); save(K.sub,list)
   processSubs(); renderSubTable(); renderDash()
   toast('Subscription duplicated')
@@ -3270,6 +3269,7 @@ function confirmManualRenew(id) {
   const renewed=confirm(`Mark "${s.name}" as renewed?\n\nYes = record a charge of ${fmt(s.amount)} and advance to next renewal date.\nCancel = skip (no charge recorded).`)
   if(!renewed) return
   const nextDate=nextCharge(s)
+  subApplyPriceChange(s,nextDate)
   const subx=load(K.subx)
   if(!subx.some(e=>e.subId===s.id&&e.date===nextDate)){
     subx.push({id:uid(),subId:s.id,date:nextDate,name:s.name,amount:s.amount})
@@ -3301,8 +3301,19 @@ function updatePurField(id, field, val) {
 }
 
 function delSubx(id) {
-  if(!confirm('Delete this auto-generated charge?'))return
-  save(K.subx,load(K.subx).filter(e=>e.id!==id)); renderDash(); toast('Charge deleted')
+  if(!confirm('Delete this charge?'))return
+  const all=load(K.subx), x=all.find(e=>e.id===id), rest=all.filter(e=>e.id!==id)
+  save(K.subx,rest)
+  // Manual renewals: deleting the latest charge undoes that renewal, so the
+  // "last renewed" date rolls back and the next renewal shows as due/overdue again
+  if(x){
+    const subs=load(K.sub), si=subs.findIndex(s=>s.id===x.subId)
+    if(si>=0 && subs[si].autoRenew===false && subs[si].lastProcessed && x.date>=subs[si].lastProcessed){
+      const prev=rest.filter(e=>e.subId===x.subId).map(e=>e.date).sort().pop()
+      subs[si].lastProcessed=prev||null; save(K.sub,subs)
+    }
+  }
+  renderDash(); renderSubTable(); toast('Charge deleted')
 }
 
 function filterSubs(list) {
@@ -3313,7 +3324,8 @@ function filterSubs(list) {
   return out
 }
 
-function renderSubSummary() {
+// Superseded by Subscriptions v3 (end of script). Unused, safe to delete.
+function _legacyRenderSubSummary() {
   const el=document.getElementById('sub-summary'); if(!el)return
   const subs=filterSubs(loadP(K.sub))
   if(!subs.length){el.innerHTML='';return}
@@ -3342,7 +3354,8 @@ function renderSubSummary() {
   initGridDrag(document.getElementById('sub-sub-grid'), 'dt_order_sub_sub')
 }
 
-function renderSubTable() {
+// Superseded by Subscriptions v3 (end of script). Unused, safe to delete.
+function _legacyRenderSubTable() {
   const el=document.getElementById('sub-table')
   const preSvc=load(K.sub).filter(s=>{
     if(FS.sub.bt!=='all'&&s.billingType!==FS.sub.bt) return false
@@ -3906,7 +3919,8 @@ function migrateLastProcessed_v2() {
 }
 
 // ── SUB TOTAL-SPENT MIGRATION ─────────────────────────────────
-function migrateSubTotalSpent() {
+// Retired: reset totals to hardcoded values on every load. Unused, safe to delete.
+function _legacyMigrateSubTotalSpent() {
   const rules=[
     {name:'Squarespace Domain',            status:'Inactive', startYM:'2022-09', totalSpent:20.00},
     {name:'Squarespace Website',           status:'Inactive', startYM:'2022-09', totalSpent:192.00},
@@ -4199,6 +4213,7 @@ async function gsLoadAll() {
     }
     await gsEnsureClientsTab()
     processInstallments()
+    migrateSubsV3(); processSubs()
     setSyncStatus('synced')
     renderDash(); renderIncTable(); renderPurTable(); renderSubTable(); renderTaxes(); renderDataSummary(); renderLinks()
     return true
@@ -4753,7 +4768,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   processSubs()
   processInstallments()
   localStorage.removeItem('dt_anthropic_key')   // legacy: key moved server-side
-  migrateSubTotalSpent()
+  if(!gsGetToken()) migrateSubsV3()   // signed in: runs after gsLoadAll on fresh sheet data
   setupFilter('dash-filter','dash',renderDash)
   setupFilter('inc-filter','inc',renderIncTable)
   setupFilter('pur-filter','pur',renderPurTable)
@@ -7717,7 +7732,317 @@ function kvConfetti() {
     if (age < LIFE) requestAnimationFrame(frame); else cv.remove()
   })
 }
+
+// ── SUBSCRIPTIONS v3: charge-based totals, scheduled price changes ──
+// Total spent is never typed: it is priorSpent (history from before the app
+// tracked charges) + the sum of that sub's logged charges in dt_subx. Each
+// charge stores its own amount, so a price change never rewrites history.
+// A future price change is stored as nextPrice/nextPriceDate and applied by
+// subApplyPriceChange() when a charge on or after that date is generated.
+const SUB_MONTHS = { Monthly: 1, Annual: 12, 'Every 2 Years': 24, 'Every 3 Years': 36 }
+let _subExpanded = new Set()
+
+function subIsRecurring(s) { return s.billingType !== 'One-Time' }
+function subCharges(id, xs) { return (xs || loadP(K.subx)).filter(x => x.subId === id).sort((a, b) => b.date.localeCompare(a.date)) }
+function subSpent(s, xs) { return (+s.priorSpent || 0) + subCharges(s.id, xs).reduce((t, x) => t + (+x.amount || 0), 0) }
+function subMonthly(s) { const m = SUB_MONTHS[s.billingType]; return m ? (+s.amount || 0) / m : 0 }
+function subOverdue(s) { return s.status === 'Active' && subIsRecurring(s) && s.autoRenew === false && nextCharge(s) < today() }
+// Applies a scheduled price change if it is due on `onDate`. Returns true when the sub changed.
+function subApplyPriceChange(s, onDate) {
+  if (!s.nextPriceDate || s.nextPrice === '' || s.nextPrice == null || onDate < s.nextPriceDate) return false
+  s.amount = +s.nextPrice; s.nextPrice = ''; s.nextPriceDate = ''
+  return true
+}
+
+// One-time per record (a sub without priorSpent has not been converted).
+// Active recurring: backfill the cycles the app already treats as billed
+// (start → lastProcessed) that have no logged charge, at the current price.
+// One-time/credits: the old total becomes one charge on the start date.
+// Everyone: priorSpent = whatever the old hand-entered total had beyond the
+// logged charges, so no recorded history is lost.
+function migrateSubsV3() {
+  const subs = load(K.sub), subx = load(K.subx)
+  let sc = false, xc = false
+  for (const s of subs) {
+    if (s._priv || (s.priorSpent !== undefined && s.priorSpent !== '')) continue
+    const old = +s.totalSpent || 0
+    if (s.status === 'Active' && subIsRecurring(s) && s.lastProcessed && s.startDate) {
+      const last = toDate(s.lastProcessed)
+      let cur = toDate(s.startDate), guard = 0
+      while (cur <= last && guard++ < 600) {
+        const ds = toStr(cur), nx = toStr(advance(cur, s.billingType))
+        if (!subx.some(x => x.subId === s.id && x.date >= ds && x.date < nx)) {
+          subx.push({ id: uid(), subId: s.id, date: ds, name: s.name, amount: s.amount }); xc = true
+        }
+        cur = advance(cur, s.billingType)
+      }
+    }
+    // One-time items and credits: the old total becomes a dated charge, so it shows in history and taxes
+    if (!subIsRecurring(s) && old > 0 && s.startDate && !subx.some(x => x.subId === s.id)) {
+      subx.push({ id: uid(), subId: s.id, date: s.startDate, name: s.name, amount: old }); xc = true
+    }
+    const logged = subx.filter(x => x.subId === s.id).reduce((t, x) => t + (+x.amount || 0), 0)
+    s.priorSpent = Math.round(Math.max(0, old - logged) * 100) / 100
+    sc = true
+  }
+  if (xc) save(K.subx, subx)
+  if (sc) save(K.sub, subs)
+}
+
+// ── Price change modal ──
+function openSubPrice(id) {
+  const s = load(K.sub).find(e => e.id === id); if (!s) return
+  document.getElementById('subp-id').value = id
+  document.getElementById('subp-ttl').textContent = `Change price · ${s.name}`
+  document.getElementById('subp-cur').textContent = `Current price ${fmt(s.amount)} ${s.billingType === 'One-Time' ? '' : '(' + s.billingType.toLowerCase() + ')'}`
+  document.getElementById('subp-amount').value = s.nextPrice !== '' && s.nextPrice != null ? s.nextPrice : ''
+  const def = s.nextPriceDate || (s.status === 'Active' && subIsRecurring(s) ? nextCharge(s) : today())
+  document.getElementById('subp-date').value = def
+  document.getElementById('subp-cancel-sched').style.display = s.nextPriceDate ? '' : 'none'
+  subPriceHint()
+  document.getElementById('sub-price-overlay').classList.add('open')
+  setTimeout(() => document.getElementById('subp-amount').focus(), 50)
+}
+function closeSubPrice() { document.getElementById('sub-price-overlay').classList.remove('open') }
+function subPriceHint() {
+  const d = document.getElementById('subp-date').value, el = document.getElementById('subp-hint')
+  el.textContent = !d ? '' : d <= today()
+    ? 'Takes effect now. Charges already logged keep their old price.'
+    : `Scheduled. Charges from ${fmtDate(d)} on use the new price; everything before stays as is.`
+}
+function saveSubPrice() {
+  const id = document.getElementById('subp-id').value
+  const amt = parseFloat(document.getElementById('subp-amount').value)
+  const d = document.getElementById('subp-date').value
+  if (!(amt > 0) || !d) { toast('Enter a new price and the date it starts'); return }
+  const list = load(K.sub), i = list.findIndex(e => e.id === id); if (i < 0) return
+  if (d <= today()) { list[i].amount = amt; list[i].nextPrice = ''; list[i].nextPriceDate = '' }
+  else { list[i].nextPrice = amt; list[i].nextPriceDate = d }
+  save(K.sub, list); closeSubPrice(); renderSubTable(); renderDash(); renderRenewals()
+  toast(d <= today() ? `${list[i].name} is now ${fmt(amt)}` : `${list[i].name}: ${fmt(amt)} from ${fmtDate(d)}`)
+}
+function cancelSubPriceChange() {
+  const id = document.getElementById('subp-id').value
+  const list = load(K.sub), i = list.findIndex(e => e.id === id); if (i < 0) return
+  list[i].nextPrice = ''; list[i].nextPriceDate = ''
+  save(K.sub, list); closeSubPrice(); renderSubTable(); toast('Scheduled price change removed')
+}
+
+// ── Charges drawer ──
+function toggleSubCharges(id) { _subExpanded.has(id) ? _subExpanded.delete(id) : _subExpanded.add(id); renderSubTable() }
+function subxSetAmount(id, val) {
+  const v = parseFloat(val); if (!(v >= 0)) { toast('Enter a valid amount'); renderSubTable(); return }
+  const list = load(K.subx), i = list.findIndex(e => e.id === id); if (i < 0) return
+  list[i].amount = v; save(K.subx, list); renderSubTable(); renderDash()
+}
+function subAddCharge(subId) {
+  const s = load(K.sub).find(e => e.id === subId); if (!s) return
+  const d = document.getElementById('subx-new-date-' + subId)?.value
+  const a = parseFloat(document.getElementById('subx-new-amt-' + subId)?.value)
+  if (!d || !(a > 0)) { toast('Enter a date and amount'); return }
+  const list = load(K.subx); list.push({ id: uid(), subId, date: d, name: s.name, amount: a })
+  save(K.subx, list)
+  // Manual renewals: logging a charge counts as the renewal, so the next renewal date moves forward
+  if (s.autoRenew === false && subIsRecurring(s) && (!s.lastProcessed || d > s.lastProcessed)) {
+    const subs = load(K.sub), i = subs.findIndex(e => e.id === subId); if (i >= 0) { subs[i].lastProcessed = d; save(K.sub, subs) }
+  }
+  renderSubTable(); renderDash(); toast('Charge added')
+}
+function subSetPrior(id, val) {
+  const v = parseFloat(val); const list = load(K.sub), i = list.findIndex(e => e.id === id); if (i < 0) return
+  list[i].priorSpent = v >= 0 ? v : 0; save(K.sub, list); renderSubTable(); renderDash()
+}
+function subChargesRow(s, xs) {
+  const ch = subCharges(s.id, xs)
+  // Price history: each distinct amount, oldest first, with the first date it was charged
+  const hist = []
+  ;[...ch].reverse().forEach(x => { if (!hist.length || +hist[hist.length - 1].a !== +x.amount) hist.push({ a: +x.amount, d: x.date }) })
+  const histLine = hist.length > 1 ? `<div class="subx-hist">${icon('trending-up', 12)} Price history: ${hist.map(h => `${fmt(h.a)} <span>from ${fmtDate(h.d)}</span>`).join(' → ')}</div>` : ''
+  const rows = ch.map(x => `<tr><td>${fmtDate(x.date)}</td>
+      <td><input type="number" class="isel" step="0.01" min="0" value="${x.amount}" style="width:90px" onchange="subxSetAmount('${x.id}',this.value)"></td>
+      <td style="text-align:right"><button class="btn btn-sm btn-s" title="Delete charge" onclick="delSubx('${x.id}')">${icon('trash', 12)}</button></td></tr>`).join('')
+  return `<tr class="inst-sub-row"><td colspan="9"><div class="subx-drawer">
+    ${histLine}
+    <div class="inst-sched"><table>
+      <thead><tr><th>Charged</th><th>Amount</th><th></th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="3" style="color:var(--text-2)">No charges logged yet.</td></tr>`}</tbody>
+    </table></div>
+    <div class="subx-tools">
+      <span class="subx-lbl">Add charge</span>
+      <input type="date" class="isel" id="subx-new-date-${s.id}" value="${today()}">
+      <input type="number" class="isel" id="subx-new-amt-${s.id}" step="0.01" min="0" value="${s.amount}" style="width:90px">
+      <button class="btn btn-sm btn-g" onclick="subAddCharge('${s.id}')">${icon('plus', 12)} Add</button>
+      <span class="subx-lbl" style="margin-left:auto" title="Money spent on this before the app started logging charges">Before tracking</span>
+      <input type="number" class="isel" step="0.01" min="0" value="${+s.priorSpent || 0}" style="width:90px" onchange="subSetPrior('${s.id}',this.value)">
+    </div>
+  </div></td></tr>`
+}
+
+// ── Types: not everything on this tab is a subscription ──
+const SUB_KINDS = [
+  { k: 'sub',    label: 'Subscriptions',        one: 'Subscription',  icon: 'repeat' },
+  { k: 'fee',    label: 'Fees & Registrations', one: 'Fee',           icon: 'document' },
+  { k: 'credit', label: 'Credits & Top-ups',    one: 'Credits',       icon: 'bag' },
+  { k: 'once',   label: 'One-time',             one: 'One-time',      icon: 'receipt' },
+]
+// Stored kind wins; otherwise guess from the name and billing type.
+function subKind(s) {
+  if (SUB_KINDS.some(x => x.k === s.kind)) return s.kind
+  const n = (s.name || '').toLowerCase()
+  if (/credit|top.?up|refill/.test(n)) return 'credit'
+  if (/faa|registration|llc statement|license renewal|permit/.test(n) && s.billingType !== 'One-Time') return 'fee'
+  if (s.billingType === 'One-Time') return 'once'
+  return 'sub'
+}
+// Credits have no fixed cycle: burn = average of the last 6 months of refills.
+function subBurn(s, xs) {
+  if (s.status !== 'Active') return 0
+  if (subKind(s) === 'credit') {
+    const d = toDate(today()); d.setMonth(d.getMonth() - 6)
+    const from = toStr(d)
+    return subCharges(s.id, xs).filter(x => x.date >= from).reduce((t, x) => t + (+x.amount || 0), 0) / 6
+  }
+  return subMonthly(s)
+}
+function subLogRefill(id) { _subExpanded.add(id); renderSubTable(); setTimeout(() => document.getElementById('subx-new-amt-' + id)?.focus(), 30) }
+function setSubShowInactive(on) { try { localStorage.setItem('dt_sub_show_inactive', on ? '1' : '') } catch (_) {} renderSubTable() }
+
+function renderSubSummary() {
+  const el = document.getElementById('sub-summary'); if (!el) return
+  const subs = filterSubs(loadP(K.sub)), xs = loadP(K.subx)
+  if (!subs.length) { el.innerHTML = ''; return }
+  const ids = new Set(subs.map(s => s.id)), yr = today().slice(0, 4)
+  const burn = subs.reduce((t, s) => t + subBurn(s, xs), 0)
+  const ytd = xs.filter(x => ids.has(x.subId) && x.date.startsWith(yr)).reduce((t, x) => t + (+x.amount || 0), 0)
+  const all = subs.reduce((t, s) => t + subSpent(s, xs), 0)
+  // Upcoming: next 30 days of recurring charges, plus overdue manual renewals
+  const lim = toDate(today()); lim.setDate(lim.getDate() + 30); const limS = toStr(lim)
+  const up = subs.filter(s => s.status === 'Active' && subIsRecurring(s))
+    .map(s => ({ s, d: nextCharge(s), od: subOverdue(s) }))
+    .filter(u => u.od || u.d <= limS).sort((a, b) => (b.od - a.od) || a.d.localeCompare(b.d))
+  const days = d => Math.round((toDate(d) - toDate(today())) / 864e5)
+  const upHtml = up.length ? `<div class="subup">${up.map(({ s, d, od }) => {
+      const n = days(d), when = od ? `${-n}d overdue` : n === 0 ? 'Today' : n === 1 ? 'Tomorrow' : `in ${n}d`
+      const price = s.nextPriceDate && s.nextPriceDate <= d ? +s.nextPrice : +s.amount
+      return `<div class="subup-chip${od ? ' od' : ''}"><div><b>${esc(s.name)}</b><span>${fmtDate(d)} · ${when}</span></div><div class="subup-amt">${fmt(price)}${od && s.autoRenew === false ? `<button class="btn btn-sm btn-g" onclick="confirmManualRenew('${s.id}')">Renewed</button>` : ''}</div></div>`
+    }).join('')}</div>` : ''
+  const kindTot = SUB_KINDS.map(K2 => {
+    const list = subs.filter(s => subKind(s) === K2.k)
+    return `<div class="sum-sub-card"><div class="lbl" style="display:flex;align-items:center;gap:4px">${icon(K2.icon, 11)} ${K2.label}</div><div class="val">${fmt(list.reduce((t, s) => t + subSpent(s, xs), 0))}</div><div style="font-size:11px;color:var(--text-2);margin-top:3px">${list.filter(s => s.status === 'Active').length} active · all time</div></div>`
+  }).join('')
+  el.innerHTML = `
+    <div class="sum-grid" style="margin-bottom:10px">
+      <div class="sum-card"><div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('repeat', 13)} Monthly burn</div><div class="val">${fmt(burn)}</div><div class="sub">≈ ${fmt(burn * 12)} / year at current prices</div></div>
+      <div class="sum-card"><div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('calendar', 13)} Spent in ${yr}</div><div class="val">${fmt(ytd)}</div><div class="sub">logged charges</div></div>
+      <div class="sum-card"><div class="lbl" style="display:flex;align-items:center;gap:5px">${icon('dollar', 13)} All time</div><div class="val">${fmt(all)}</div><div class="sub">${subs.length} item${subs.length !== 1 ? 's' : ''}</div></div>
+    </div>
+    <div class="sum-sub-grid" style="margin-bottom:${up.length ? 12 : 0}px">${kindTot}</div>
+    ${up.length ? `<div class="subup-hdr">Coming up · next 30 days</div>${upHtml}` : ''}`
+}
+
+function renderSubTable() {
+  const el = document.getElementById('sub-table'); if (!el) return
+  const preSvc = load(K.sub).filter(s => FS.sub.bt === 'all' || s.billingType === FS.sub.bt)
+  buildMs('sub-svc-ms', [...new Set(preSvc.map(s => s.name || '').filter(Boolean))].sort(), FS.sub.svcs)
+  const showInactive = (() => { try { return !!localStorage.getItem('dt_sub_show_inactive') } catch (_) { return false } })()
+  const tog = document.getElementById('sub-show-inactive'); if (tog) tog.checked = showInactive
+  const xs = loadP(K.subx)
+  const allFiltered = loadP(K.sub).filter(s => (FS.sub.bt === 'all' || s.billingType === FS.sub.bt) && (!FS.sub.svcs.length || FS.sub.svcs.includes(s.name)))
+  renderSubSummary()
+  if (!allFiltered.length) { el.innerHTML = emptyState('refresh', 'Nothing here yet.', { label: '+ Add', fn: "openForm('sub')" }); return }
+  const bBdg = { Monthly: 'bdg-b', Annual: 'bdg-g', 'Every 2 Years': 'bdg-o', 'Every 3 Years': 'bdg-v', 'One-Time': 'bdg-gr' }
+  const kindOpts = s => SUB_KINDS.map(x => `<option value="${x.k}"${subKind(s) === x.k ? ' selected' : ''}>${x.one}</option>`).join('')
+
+  function row(s) {
+    const kind = subKind(s), rec = subIsRecurring(s), credit = kind === 'credit', isManual = s.autoRenew === false
+    const open = _subExpanded.has(s.id), ch = subCharges(s.id, xs)
+    if (s.id === editing.sub) {
+      const optB = v => `<option${v === s.billingType ? ' selected' : ''}>${v}</option>`
+      return `<tr class="editing-row">
+        <td><input type="text" class="isel" id="ser-name" value="${esc(s.name)}" style="width:130px" onkeydown="if(event.key==='Enter')saveSubRow('${s.id}')"><select class="isel" id="ser-kind" style="margin-top:4px;width:130px">${kindOpts(s)}</select></td>
+        <td><input type="number" class="isel" id="ser-amount" value="${s.amount}" step="0.01" style="width:76px" title="Current price. Past charges keep their own amounts." onkeydown="if(event.key==='Enter')saveSubRow('${s.id}')"></td>
+        <td><select class="isel" id="ser-billing">${optB('Monthly')}${optB('Annual')}${optB('Every 2 Years')}${optB('Every 3 Years')}${optB('One-Time')}</select></td>
+        <td><select class="isel" id="ser-autorenew"><option value="Auto"${!isManual ? ' selected' : ''}>Auto</option><option value="Manual"${isManual ? ' selected' : ''}>Manual</option></select></td>
+        <td><input type="date" class="isel" id="ser-start" value="${s.startDate || ''}" style="width:130px"></td>
+        <td><div style="display:flex;flex-direction:column;gap:4px"><select class="isel" id="ser-status"><option${s.status === 'Active' ? ' selected' : ''}>Active</option><option${s.status === 'Inactive' ? ' selected' : ''}>Inactive</option></select><input type="date" class="isel" id="ser-end" value="${s.endDate || ''}" style="width:130px" title="Deactivation date"></div></td>
+        <td></td>
+        <td style="font-size:12px;color:var(--text-2)">${fmt(subSpent(s, xs))}<div style="font-size:10.5px">edit charges via ›</div></td>
+        <td style="white-space:nowrap"><button class="btn btn-sm btn-g" onclick="saveSubRow('${s.id}')">${icon('save', 13)} Save</button> <button class="btn btn-sm btn-s" onclick="cancelRowEdit('sub')">Cancel</button></td>
+      </tr>`
+    }
+    const od = subOverdue(s)
+    const next = s.status !== 'Active' ? '<span class="subx-dim">—</span>'
+      : credit ? (ch.length ? `<span class="subx-dim">Last refill ${fmtDate(ch[0].date)}</span>` : '<span class="subx-dim">No refills yet</span>')
+      : !rec ? '<span class="subx-dim">—</span>'
+      : od ? `<span class="bdg bdg-r">Overdue</span> <span class="subx-dim">${fmtDate(nextCharge(s))}</span>`
+      : fmtDate(nextCharge(s))
+    const pending = s.nextPriceDate ? `<div class="subx-next" title="Scheduled price change">→ ${fmt(s.nextPrice)} from ${fmtDate(s.nextPriceDate)}</div>` : ''
+    const amount = credit ? (ch.length ? `${fmt(ch[0].amount)}<div class="subx-next" style="color:var(--text-2)">last refill</div>` : fmt(s.amount)) : fmt(s.amount) + pending
+    const renewCell = credit
+      ? (s.status === 'Active' ? `<button class="btn btn-sm btn-g" style="font-size:10.5px;padding:2px 8px" onclick="subLogRefill('${s.id}')">${icon('plus', 11)} Log refill</button>` : '')
+      : !rec ? '<span class="subx-dim">—</span>'
+      : (isManual ? `<span class="bdg bdg-o" style="font-size:10px">Manual</span>` : `<span class="bdg bdg-gr" style="font-size:10px">Auto</span>`)
+        + (isManual && s.status === 'Active' && (od || nextCharge(s) <= toStr(new Date(Date.now() + 30 * 864e5))) ? `<button class="btn btn-sm btn-g" onclick="confirmManualRenew('${s.id}')" style="font-size:10px;padding:2px 7px">Renewed</button>` : '')
+    const statusSel = `<select class="isel" onchange="updateSubField('${s.id}','status',this.value)"><option${s.status === 'Active' ? ' selected' : ''}>Active</option><option${s.status === 'Inactive' ? ' selected' : ''}>Inactive</option></select>`
+    return `<tr data-rid="${s.id}"${s.status !== 'Active' ? ' class="subx-off"' : ''}>
+      <td style="max-width:190px"><div style="display:flex;align-items:center;gap:2px;min-width:0"><button class="inst-chev${open ? ' open' : ''}" title="Charges" onclick="toggleSubCharges('${s.id}')">›</button><strong style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(s.name)}">${esc(s.name)}</strong></div>${s.desc ? `<div class="subx-desc" title="${esc(s.desc)}">${esc(s.desc)}</div>` : ''}</td>
+      <td>${amount}</td>
+      <td style="white-space:nowrap">${credit ? '<span class="bdg bdg-gr">As needed</span>' : `<span class="bdg ${bBdg[s.billingType] || 'bdg-gr'}">${esc(s.billingType)}</span>`}</td>
+      <td><div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center">${renewCell}</div></td>
+      <td style="white-space:nowrap">${fmtDate(s.startDate)}</td>
+      <td>${statusSel}${s.status === 'Inactive' && s.endDate ? `<div class="subx-dim" style="margin-top:3px">${fmtDate(s.endDate)}</div>` : ''}</td>
+      <td style="font-size:12px">${next}</td>
+      <td style="white-space:nowrap"><button class="subx-total" onclick="toggleSubCharges('${s.id}')" title="${ch.length} charge${ch.length !== 1 ? 's' : ''}${+s.priorSpent ? ' + ' + fmt(s.priorSpent) + ' before tracking' : ''}">${fmt(subSpent(s, xs))}</button></td>
+      <td style="white-space:nowrap">${kebab([
+        { label: 'Edit', icon: 'pencil', fn: `editSubRow('${s.id}')` },
+        { label: credit ? 'Log refill' : 'Add / edit charges', icon: 'plus', fn: `subLogRefill('${s.id}')` },
+        ...(credit || !rec ? [] : [{ label: s.nextPriceDate ? 'Edit price change' : 'Change price', icon: 'trending-up', fn: `openSubPrice('${s.id}')` }]),
+        ...(isManual && rec && !credit && s.status === 'Active' ? [{ label: 'Mark renewed', icon: 'check-circle', fn: `confirmManualRenew('${s.id}')` }] : []),
+        { label: 'Duplicate', icon: 'copy', fn: `dupSub('${s.id}')` },
+        'sep',
+        { label: 'Delete', icon: 'trash', fn: `delSub('${s.id}')`, danger: true },
+      ])}</td>
+    </tr>${open ? subChargesRow(s, xs) : ''}`
+  }
+  let html = ''
+  for (const K2 of SUB_KINDS) {
+    const list = allFiltered.filter(s => subKind(s) === K2.k)
+    if (!list.length) continue
+    const act = list.filter(s => s.status === 'Active').sort((a, b) => a.name.localeCompare(b.name))
+    const ina = list.filter(s => s.status !== 'Active').sort((a, b) => (b.startDate || '').localeCompare(a.startDate || ''))
+    const shown = showInactive ? [...act, ...ina] : act
+    const burn = act.reduce((t, s) => t + subBurn(s, xs), 0)
+    const tot = shown.reduce((t, s) => t + subSpent(s, xs), 0)
+    html += `<div class="subx-sec">
+      <div class="subx-sec-hdr">${icon(K2.icon, 14)} <span>${K2.label}</span><span class="subx-cnt">${act.length} active${ina.length ? ` · ${ina.length} inactive` : ''}</span>${burn ? `<span class="subx-burn">${fmt(burn)}/mo</span>` : ''}</div>
+      ${shown.length ? `<table class="subx-tbl"><colgroup><col style="width:20%"><col style="width:12%"><col style="width:11%"><col style="width:13%"><col style="width:9%"><col style="width:9%"><col style="width:12%"><col style="width:9%"><col style="width:5%"></colgroup>
+        <thead><tr><th style="min-width:150px">Name</th><th>Price</th><th>Billing</th><th>${K2.k === 'credit' ? 'Refill' : 'Renewal'}</th><th>Start</th><th>Status</th><th>${K2.k === 'credit' ? 'Last refill' : 'Next charge'}</th><th>Total spent</th><th></th></tr></thead>
+        <tbody>${shown.map(row).join('')}</tbody>
+        <tfoot><tr><td colspan="7">${shown.length} shown</td><td>${fmt(tot)}</td><td></td></tr></tfoot>
+      </table>` : `<div class="subx-empty">All ${ina.length} inactive. Turn on “Show inactive” to see them.</div>`}
+    </div>`
+  }
+  el.innerHTML = html
+}
 </script>
+<!-- SUBSCRIPTION PRICE CHANGE MODAL -->
+<div class="smod-overlay" id="sub-price-overlay" onclick="if(event.target===this)closeSubPrice()">
+  <div class="smod" style="max-width:420px">
+    <div class="smod-hdr">
+      <span class="smod-ttl" id="subp-ttl">Change price</span>
+      <button class="smod-close" onclick="closeSubPrice()">&#x2715;</button>
+    </div>
+    <input type="hidden" id="subp-id">
+    <div style="font-size:13px;color:var(--text-2);margin:-4px 0 14px" id="subp-cur"></div>
+    <div class="smod-row"><div class="smod-lbl">New price ($)</div><input type="number" id="subp-amount" class="isel" min="0" step="0.01" style="width:100%;box-sizing:border-box" onkeydown="if(event.key==='Enter')saveSubPrice()"></div>
+    <div class="smod-row"><div class="smod-lbl">Starts on</div><input type="date" id="subp-date" class="isel" style="width:100%;box-sizing:border-box" oninput="subPriceHint()"><div id="subp-hint" style="font-size:12px;color:var(--text-2);margin-top:6px;line-height:1.45"></div></div>
+    <div class="smod-footer">
+      <button class="btn btn-p" onclick="saveSubPrice()" style="flex:1">Save</button>
+      <button class="btn btn-s" id="subp-cancel-sched" onclick="cancelSubPriceChange()">Remove scheduled</button>
+      <button class="btn btn-s" onclick="closeSubPrice()">Cancel</button>
+    </div>
+  </div>
+</div>
 <!-- SETTINGS MODAL -->
 <div class="smod-overlay" id="settings-overlay" onclick="if(event.target===this)closeSettings()">
   <div class="smod" style="max-height:92vh;overflow-y:auto">
