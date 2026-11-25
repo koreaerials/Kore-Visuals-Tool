@@ -879,6 +879,106 @@ html[data-theme] .dv-linklist .link-item .btn{padding:4px 7px}
   #dash-filter{display:flex}
   html[data-theme] #dash-filter .fbtn{flex:1;padding:8px 0}
 }
+/* ── JOBS v4 ── */
+html[data-theme] .jobs-subnav{background:var(--surface);border:1px solid var(--line);backdrop-filter:none;-webkit-backdrop-filter:none;border-radius:11px;padding:3px}
+html[data-theme] .jobs-subnav-btn{color:var(--text-2);border-radius:8px;font-family:var(--font)}
+html[data-theme] .jobs-subnav-btn.on{background:var(--surface-3);color:var(--text);box-shadow:none}
+html[data-theme] .jobs-subnav-btn:hover:not(.on){background:var(--hover);color:var(--text)}
+.jv-st-Lead{--st:var(--text-3)}.jv-st-Quoted{--st:var(--info)}.jv-st-Booked{--st:var(--purple)}.jv-st-Shooting{--st:var(--orange)}
+.jv-st-Editing{--st:var(--accent)}.jv-st-Delivered{--st:#5EC8E5}.jv-st-Invoiced{--st:var(--green)}.jv-st-Paid{--st:var(--green)}
+html[data-theme="light"] .jv-st-Delivered{--st:#1A8DB0}
+.jv-hdr{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.jv-hdr h2{margin:0;font-family:var(--font-d);font-size:28px;font-weight:600;letter-spacing:-.01em}
+.jv-hdr p{margin:4px 0 0;color:var(--text-2);font-size:13.5px}
+.jv-hdr p b{color:var(--text);font-weight:600}
+.jv-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.jv-seg{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px}
+.jv-seg button{border:0;background:none;color:var(--text-2);font:inherit;font-size:13px;font-weight:500;padding:6px 14px;border-radius:7px;cursor:pointer;min-height:30px}
+.jv-seg button.on{background:var(--surface-3);color:var(--text);font-weight:600}
+.jv-actions .kebab-wrap .kebab-btn{width:auto;height:auto;padding:8px 13px;border-radius:10px;font:inherit;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:7px;background:var(--surface-2);color:var(--text);border:1px solid var(--line-2)}
+.jv-bar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.jv-search{flex:1 1 260px;max-width:420px;position:relative;display:flex;align-items:center}
+.jv-search svg{position:absolute;left:11px;color:var(--text-3);pointer-events:none}
+html[data-theme] .jv-search input{width:100%;padding:9px 12px 9px 34px;border-radius:10px;font-size:13.5px}
+.jv-paid{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--text-2);cursor:pointer;user-select:none}
+html[data-theme] .jv-paid input{width:16px;height:16px;accent-color:var(--accent);padding:0;margin:0}
+/* Board */
+.jv-board{display:grid;gap:10px;overflow-x:auto;padding-bottom:10px;align-items:start;scrollbar-width:thin}
+.jv-col{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px;min-height:140px;transition:border-color .15s,background .15s}
+.jv-col.jv-over{border-color:var(--st);background:color-mix(in srgb,var(--st) 7%,var(--surface))}
+.jv-col-h{display:flex;align-items:center;gap:8px;padding:4px 4px 10px}
+.jv-dot{width:8px;height:8px;border-radius:50%;background:var(--st);flex:none}
+.jv-col-t{font-weight:600;font-size:13px}
+.jv-col-n{font-size:12px;color:var(--text-2);background:var(--hover);border-radius:6px;padding:1px 7px}
+.jv-col-sum{margin-left:auto;font-size:12px;color:var(--text-2)}
+.jv-cards{display:flex;flex-direction:column;gap:8px}
+.jv-card{position:relative;background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:11px 12px 10px;cursor:pointer;text-align:left;transition:border-color .15s}
+.jv-card:hover{border-color:var(--line-2)}
+.jv-card.jv-drag{opacity:.45}
+.jv-card::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:0 3px 3px 0;background:var(--st)}
+.jv-card-top{display:flex;gap:8px;align-items:flex-start}
+.jv-name{font-weight:600;font-size:13.5px;line-height:1.3;overflow-wrap:anywhere}
+.jv-card .jv-card-top{align-items:baseline}
+.jv-card .jv-amt{color:var(--text)}
+.jv-amt{font-family:var(--font-d);font-weight:600;font-size:13.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.jv-meta{font-size:12px;color:var(--text-2);margin-top:3px;line-height:1.45;overflow-wrap:anywhere}
+.jv-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.jv-tag{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:500;color:var(--text-2);background:var(--hover);border-radius:6px;padding:3px 7px}
+.jv-tag svg{flex:none}
+.jv-tag.jv-soon{color:var(--accent-text);background:var(--accent-soft)}
+.jv-tag.jv-late{color:var(--red);background:rgba(255,107,94,0.12)}
+.jv-card .wx{margin-top:8px;background:var(--hover)}
+.jv-card-f{display:flex;align-items:center;gap:6px;margin-top:10px}
+.jv-next{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line-2);background:transparent;color:var(--text);font:inherit;font-size:12.5px;font-weight:500;border-radius:8px;padding:6px 8px;cursor:pointer;min-height:32px;white-space:nowrap;min-width:0}
+.jv-next:hover{background:var(--surface-3)}
+.jv-next.jv-pay{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.jv-next.jv-pay:hover{background:#FFB46E}
+.jv-card .kebab-btn{width:32px;height:32px}
+@media(min-width:900px){
+  .jv-col.jv-min{padding:10px 0;display:flex;flex-direction:column;align-items:center}
+  .jv-col.jv-min .jv-col-h{flex-direction:column;padding:4px 0;gap:10px}
+  .jv-col.jv-min .jv-col-t{writing-mode:vertical-rl;color:var(--text-2);font-weight:500}
+  .jv-col.jv-min .jv-col-n{display:none}
+  .jv-col.jv-min .jv-cards{display:none}
+  .jv-col.jv-min.jv-over{min-height:240px}
+}
+.jv-empty{border:1px dashed var(--line-2);border-radius:10px;padding:16px 8px;text-align:center;font-size:12px;color:var(--text-3)}
+/* List */
+.jv-list{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.jv-row{display:grid;grid-template-columns:110px minmax(0,2fr) minmax(0,1.1fr) minmax(0,1.3fr) 96px 150px;gap:14px;align-items:center;padding:11px 14px;border-top:1px solid var(--line);cursor:pointer}
+.jv-row:first-child{border-top:0}
+.jv-row:hover{background:var(--hover)}
+.jv-row-h{cursor:default;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text-3);padding-top:10px;padding-bottom:10px}
+.jv-row-h:hover{background:none}
+.jv-chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--st);background:color-mix(in srgb,var(--st) 13%,transparent);border-radius:6px;padding:3px 8px;white-space:nowrap}
+.jv-chip::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--st)}
+.jv-cell-2{font-size:12px;color:var(--text-2);margin-top:2px}
+.jv-cell{font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jv-row .jv-amt{text-align:right}
+.jv-row-a{display:flex;gap:6px;justify-content:flex-end;align-items:center}
+.jv-row-a .jv-next{flex:0 1 auto;padding:6px 10px}
+.jv-paid-row{opacity:.62}
+.jv-m-loc{display:none}
+@media(max-width:1100px){.jv-row{grid-template-columns:100px minmax(0,2fr) minmax(0,1.2fr) 90px 140px}.jv-row .jv-loc{display:none}}
+@media(max-width:899px){
+  .jv-hdr{align-items:flex-start}
+  .jv-actions{width:100%}
+  .jv-seg{flex:1}.jv-seg button{flex:1}
+  .jv-actions .btn-g{flex:1;justify-content:center;white-space:nowrap}
+  .jv-search{max-width:none}
+  .jv-board{grid-template-columns:none!important;grid-auto-flow:column;grid-auto-columns:82%;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -14px;padding:0 14px 10px;scroll-padding:0 14px}
+  .jv-col{scroll-snap-align:start}
+  .jv-list{background:none;border:0;border-radius:0;display:flex;flex-direction:column;gap:8px}
+  .jv-row-h{display:none}
+  .jv-row{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"st amt" "job job" "when when" "act act";gap:6px 10px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+  .jv-row:first-child{border-top:1px solid var(--line)}
+  .jv-row .jv-c-st{grid-area:st}.jv-row .jv-amt{grid-area:amt}.jv-row .jv-c-job{grid-area:job}.jv-row .jv-c-when{grid-area:when;white-space:normal;color:var(--text-2);font-size:12.5px}
+  .jv-row .jv-loc{display:none}
+  .jv-m-loc{display:inline}
+  .jv-row .jv-row-a{grid-area:act;justify-content:stretch;margin-top:4px}
+  .jv-row .jv-row-a .jv-next{flex:1}
+}
+.inst-pd{width:auto!important;min-width:0;padding:5px 8px!important;font-size:13px!important;border-radius:8px!important}
 html[data-theme] #dash-widgets .card{grid-column:auto}
 html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
 @media(min-width:1101px){html[data-theme] #dash-widgets .dv-main{grid-column:auto}}
@@ -1420,21 +1520,29 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
 
     <!-- Pipeline section (shown by default) -->
     <div id="jobs-pipeline-section">
-      <div class="sec-hdr" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+      <div class="jv-hdr">
         <div>
           <h2>Jobs</h2>
-          <p>Manage your pipeline from lead to payment</p>
+          <p id="jv-sub">Lead to payment</p>
         </div>
-        <div id="jobs-hdr-btns" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <button class="btn btn-p" onclick="openInvoiceModal()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Generate Invoice</button>
-          <button class="btn btn-p" onclick="openAgrForm(null)"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Generate Agreement</button>
-          <button class="btn btn-s" onclick="openAgrUploadModal()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg> Upload Agreement</button>
-          <button class="btn btn-g" onclick="openJobForm()">+ New Job</button>
+        <div class="jv-actions">
+          <div class="jv-seg" role="group" aria-label="View">
+            <button id="jv-v-board" onclick="setJobsView('board')">Board</button>
+            <button id="jv-v-list" onclick="setJobsView('list')">List</button>
+          </div>
+          <div class="kebab-wrap"><button class="kebab-btn" aria-label="Documents" onclick="toggleKebab(event,this)"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Documents <span aria-hidden="true">▾</span></button><div class="kebab-menu">
+            <button class="kebab-item" onclick="closeKebabs();openInvoiceModal()"><span>Generate invoice</span></button>
+            <button class="kebab-item" onclick="closeKebabs();openAgrForm(null)"><span>Generate agreement</span></button>
+            <button class="kebab-item" onclick="closeKebabs();openAgrUploadModal()"><span>Upload agreement</span></button>
+          </div></div>
+          <button class="btn btn-g" onclick="openJobForm()">+ New job</button>
         </div>
       </div>
-      <div class="card">
-        <div class="kanban-board" id="jobs-board"></div>
+      <div class="jv-bar">
+        <label class="jv-search"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" id="jv-q" placeholder="Search jobs, clients, places" aria-label="Search jobs" oninput="_jvQ=this.value;renderJobsBoard()"></label>
+        <label class="jv-paid" id="jv-paid-wrap"><input type="checkbox" id="jv-paid" onchange="setJobsPaid(this.checked)"> Show paid jobs</label>
       </div>
+      <div id="jobs-board"></div>
     </div>
   </section>
 
@@ -3287,7 +3395,8 @@ async function jobCreateIncomeIfNeeded(job) {
   renderIncTable(); renderDash(); toast(`Income entry created for ${job.name}`)
 }
 
-function renderJobsBoard() {
+// Superseded by Jobs v4 (end of script). Unused, safe to delete.
+function _legacyRenderJobsBoard() {
   const el=document.getElementById('jobs-board'); if(!el)return
   const allJobs=load(K.jobs)
   const stages=JOB_STAGES.filter(s=>s!=='Paid'&&s!=='Written Off')
@@ -7626,10 +7735,20 @@ function instTogglePaid(purId, idx) {
     i.status = instDay(i.dueDate) < today() ? 'overdue' : 'scheduled'
     i.paidDate = ''; i.manualUnpaid = true
   } else {
-    i.status = 'paid'; i.paidDate = today(); delete i.manualUnpaid
+    // Default to the due date when it has already passed (autopay), else today. Editable after.
+    const due = instDay(i.dueDate)
+    i.status = 'paid'; i.paidDate = due && due < today() ? due : today(); delete i.manualUnpaid
   }
   p.price = purPaidToDate(p)
   save(K.pur, list); renderPurTable(); renderDash()
+}
+// Change the date a payment was actually made (Purchases > schedule > Paid column)
+function instSetPaidDate(purId, idx, val) {
+  if (!val) return
+  const list = load(K.pur), p = list.find(e => e.id === purId); if (!p) return
+  const i = instList(p)[idx]; if (!i || instStatus(i) !== 'paid') return
+  i.paidDate = val
+  save(K.pur, list); renderPurTable(); renderDash(); toast('Paid date updated')
 }
 function instShortDate(s) {
   const d = fmtDate(s)
@@ -7648,7 +7767,7 @@ function purInstSubRow(p) {
     const st = instStatus(i)
     return `<tr>
       <td>${i.seq || idx + 1}</td><td>${fmt(i.amount)}</td><td>${fmtDate(instDay(i.dueDate))}</td>
-      <td>${badge[st]}</td><td>${st === 'paid' ? fmtDate(instDay(i.paidDate)) : '—'}</td>
+      <td>${badge[st]}</td><td>${st === 'paid' ? `<input type="date" class="inst-pd" value="${instDay(i.paidDate)}" aria-label="Paid date" onchange="instSetPaidDate('${p.id}',${idx},this.value)">` : '—'}</td>
       <td style="text-align:right"><button class="btn btn-sm ${st === 'paid' ? 'btn-s' : 'btn-g'}" onclick="instTogglePaid('${p.id}',${idx})">${st === 'paid' ? 'Unmark' : 'Mark paid'}</button></td>
     </tr>`
   }).join('')
@@ -8445,6 +8564,134 @@ function renderDash() {
   renderChart()
   renderRenewals()
   renderLinks()
+}
+
+// ── JOBS v4 ───────────────────────────────────────────────────
+// Board (drag between stages, one-tap "next stage") and List views, search,
+// optional paid jobs. Replaces the expand-to-act kanban (_legacyRenderJobsBoard).
+const JV_NEXT = { Lead:'Quoted', Quoted:'Booked', Booked:'Shooting', Shooting:'Editing', Editing:'Delivered', Delivered:'Invoiced' }
+const JV_NEXT_LBL = { Lead:'Mark quoted', Quoted:'Book it', Booked:'Start shoot', Shooting:'To editing', Editing:'Delivered', Delivered:'Invoice' }
+ICONS.pin = ICONS.pin || '<path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>'
+let _jvQ = ''
+let _jvDrag = null
+function jvView() {
+  try { const v = localStorage.getItem('dt_jobs_view'); if (v === 'board' || v === 'list') return v } catch (_) {}
+  return innerWidth < 900 ? 'list' : 'board'
+}
+function setJobsView(v) { try { localStorage.setItem('dt_jobs_view', v) } catch (_) {} renderJobsBoard() }
+function jvShowPaid() { try { return localStorage.getItem('dt_jobs_paid') === '1' } catch (_) { return false } }
+function setJobsPaid(on) { try { localStorage.setItem('dt_jobs_paid', on ? '1' : '0') } catch (_) {} renderJobsBoard() }
+
+// "Today", "Tomorrow", "In 5 days", "Dec 3"; tone flags soon / past-due shoots
+function jvWhen(job) {
+  if (!job.filmingDate) return null
+  const d = Math.round((toDate(job.filmingDate) - toDate(today())) / 864e5)
+  const t = job.filmingTime ? ' · ' + fmtTime12(job.filmingTime) : ''
+  const lbl = d === 0 ? 'Today' : d === 1 ? 'Tomorrow' : d > 1 && d <= 6 ? `In ${d} days` : fmtDate(job.filmingDate).replace(/, \d{4}$/, m => job.filmingDate.slice(0, 4) === today().slice(0, 4) ? '' : m)
+  const early = ['Lead','Quoted','Booked','Shooting'].includes(job.stage)
+  return { lbl: lbl + t, tone: early && d < 0 ? 'late' : d >= 0 && d <= 7 && early ? 'soon' : '' }
+}
+function jvNextBtn(job) {
+  if (job.stage === 'Invoiced') return `<button class="jv-next jv-pay" onclick="event.stopPropagation();jobMarkPaid('${job.id}')">${icon('check-circle', 13)} Mark paid</button>`
+  const n = JV_NEXT[job.stage]; if (!n) return ''
+  return `<button class="jv-next" onclick="event.stopPropagation();jobSetStage('${job.id}','${n}')" title="Move to ${n}">${JV_NEXT_LBL[job.stage]} <span aria-hidden="true">→</span></button>`
+}
+function jvMenu(job) {
+  const moves = JOB_STAGES.filter(s => s !== job.stage && s !== 'Paid').map(s => ({ label: 'Move to ' + s, fn: `jobSetStage('${job.id}','${s}')` }))
+  return kebab([
+    { label: 'Edit job', icon: 'pencil', fn: `openJobForm('${job.id}')` },
+    ...(job.stage !== 'Paid' ? [{ label: 'Mark paid', icon: 'check-circle', fn: `jobMarkPaid('${job.id}')` }] : []),
+    ...(job.agrId ? [{ label: 'View agreement', icon: 'paperclip', fn: `viewJobAgreement('${job.agrId}')` }] : []),
+    'sep', ...moves, 'sep',
+    { label: 'Delete', icon: 'trash', danger: true, fn: `delJob('${job.id}')` }
+  ])
+}
+function jvTag(ico, txt, cls) { return `<span class="jv-tag${cls ? ' ' + cls : ''}">${icon(ico, 12)}${txt}</span>` }
+
+function renderJobsBoard() {
+  const el = document.getElementById('jobs-board'); if (!el) return
+  const view = jvView(), showPaid = jvShowPaid()
+  const all = load(K.jobs)
+  const q = _jvQ.trim().toLowerCase()
+  const match = j => !q || [j.name, j.clientName, j.location, j.notes].some(v => (v || '').toLowerCase().includes(q))
+  const stages = JOB_STAGES.filter(s => s !== 'Paid')
+  const active = all.filter(j => stages.includes(j.stage))
+
+  // Header summary + controls state
+  const pipe = active.reduce((s, j) => s + (+j.amount || 0), 0)
+  const next = active.filter(j => j.filmingDate && j.filmingDate >= today()).sort((a, b) => (a.filmingDate + (a.filmingTime || '')).localeCompare(b.filmingDate + (b.filmingTime || '')))[0]
+  const sub = document.getElementById('jv-sub')
+  if (sub) sub.innerHTML = active.length
+    ? `<b>${active.length}</b> active · <b>${fmt(pipe)}</b> in the pipeline${next ? ` · next shoot: <b>${esc(next.name)}</b>, ${jvWhen(next).lbl}` : ''}`
+    : 'No active jobs. Add one to start tracking.'
+  document.getElementById('jv-v-board')?.classList.toggle('on', view === 'board')
+  document.getElementById('jv-v-list')?.classList.toggle('on', view === 'list')
+  const pw = document.getElementById('jv-paid-wrap'); if (pw) pw.style.display = view === 'list' ? '' : 'none'
+  const pc = document.getElementById('jv-paid'); if (pc) pc.checked = showPaid
+  const qi = document.getElementById('jv-q'); if (qi && qi.value !== _jvQ) qi.value = _jvQ
+
+  if (view === 'board') {
+    el.className = 'jv-board'
+    // Empty stages shrink to a slim drop target so all 7 fit without scrolling
+    el.style.gridTemplateColumns = stages.map(st => active.some(j => j.stage === st && match(j)) ? 'minmax(176px,1fr)' : '46px').join(' ')
+    el.innerHTML = stages.map(stage => {
+      const jobs = active.filter(j => j.stage === stage && match(j))
+        .sort((a, b) => (a.filmingDate || '9999').localeCompare(b.filmingDate || '9999'))
+      const sum = jobs.reduce((s, j) => s + (+j.amount || 0), 0)
+      const cards = jobs.map(job => {
+        const w = jvWhen(job)
+        return `<div class="jv-card jv-st-${stage}" draggable="true" data-id="${job.id}" role="button" tabindex="0"
+          ondragstart="jvDragStart(event,'${job.id}')" ondragend="jvDragEnd(event)" onclick="openJobForm('${job.id}')" onkeydown="if(event.key==='Enter')openJobForm('${job.id}')">
+          <div class="jv-name">${esc(job.name)}</div>
+          ${job.clientName || job.amount ? `<div class="jv-card-top jv-meta"><span style="flex:1;min-width:0">${esc(job.clientName || '')}</span>${job.amount ? `<span class="jv-amt">${fmt(job.amount)}</span>` : ''}</div>` : ''}
+          ${w || job.location || job.agrId ? `<div class="jv-tags">${w ? jvTag('calendar', w.lbl, w.tone ? 'jv-' + w.tone : '') : ''}${job.location ? jvTag('pin', esc(job.location)) : ''}${job.agrId ? jvTag('paperclip', 'Agreement') : ''}</div>` : ''}
+          ${wxSlot(job)}
+          <div class="jv-card-f">${jvNextBtn(job)}${jvMenu(job)}</div>
+        </div>`
+      }).join('')
+      return `<section class="jv-col jv-st-${stage}${jobs.length ? '' : ' jv-min'}" data-stage="${stage}" ondragover="jvDragOver(event,this)" ondragleave="this.classList.remove('jv-over')" ondrop="jvDrop(event,this)">
+        <div class="jv-col-h"><span class="jv-dot"></span><span class="jv-col-t">${stage}</span><span class="jv-col-n">${jobs.length}</span>${sum ? `<span class="jv-col-sum num">${fmt(sum)}</span>` : ''}</div>
+        <div class="jv-cards">${cards || `<div class="jv-empty">${q ? 'No matches' : 'Drag a job here'}</div>`}</div>
+      </section>`
+    }).join('')
+  } else {
+    el.className = 'jv-list'; el.style.gridTemplateColumns = ''
+    const order = s => JOB_STAGES.indexOf(s)
+    const rows = all.filter(j => (stages.includes(j.stage) || (showPaid && j.stage === 'Paid')) && match(j))
+      .sort((a, b) => (a.stage === 'Paid') - (b.stage === 'Paid')
+        || (a.stage === 'Paid' ? (b.filmingDate || '').localeCompare(a.filmingDate || '') : 0)
+        || (a.filmingDate || '9999').localeCompare(b.filmingDate || '9999')
+        || order(b.stage) - order(a.stage))
+    el.innerHTML = rows.length ? `<div class="jv-row jv-row-h"><span>Stage</span><span>Job</span><span>Shoot</span><span class="jv-loc">Location</span><span style="text-align:right">Amount</span><span></span></div>` + rows.map(job => {
+      const w = jvWhen(job)
+      return `<div class="jv-row jv-st-${job.stage}${job.stage === 'Paid' ? ' jv-paid-row' : ''}" role="button" tabindex="0" onclick="openJobForm('${job.id}')" onkeydown="if(event.key==='Enter')openJobForm('${job.id}')">
+        <span class="jv-c-st"><span class="jv-chip">${job.stage}</span></span>
+        <span class="jv-c-job jv-cell"><span style="font-weight:600">${esc(job.name)}</span>${job.clientName ? `<div class="jv-cell-2">${esc(job.clientName)}</div>` : ''}</span>
+        <span class="jv-c-when jv-cell">${w ? `<span class="${w.tone === 'late' ? 'jv-tag jv-late' : w.tone === 'soon' ? 'jv-tag jv-soon' : ''}">${w.lbl}</span>` : '<span style="color:var(--text-3)">No date</span>'}${job.location ? `<span class="jv-m-loc"> · ${esc(job.location)}</span>` : ''}</span>
+        <span class="jv-loc jv-cell" style="color:var(--text-2)">${esc(job.location || '')}</span>
+        <span class="jv-amt">${job.amount ? fmt(job.amount) : ''}</span>
+        <span class="jv-row-a">${jvNextBtn(job)}${jvMenu(job)}</span>
+      </div>`
+    }).join('') : emptyState('briefcase', q ? 'No jobs match that search' : 'No active jobs', q ? null : { label: '+ New Job', fn: 'openJobForm()' })
+  }
+  wxHydrate(el)
+}
+
+function jvDragStart(ev, id) {
+  _jvDrag = id
+  try { ev.dataTransfer.setData('text/plain', id); ev.dataTransfer.effectAllowed = 'move' } catch (_) {}
+  ev.currentTarget.classList.add('jv-drag')
+}
+function jvDragEnd(ev) {
+  ev.currentTarget.classList.remove('jv-drag'); _jvDrag = null
+  document.querySelectorAll('.jv-col.jv-over').forEach(c => c.classList.remove('jv-over'))
+}
+function jvDragOver(ev, col) { if (!_jvDrag) return; ev.preventDefault(); col.classList.add('jv-over') }
+function jvDrop(ev, col) {
+  ev.preventDefault(); col.classList.remove('jv-over')
+  const id = _jvDrag || ev.dataTransfer.getData('text/plain'); _jvDrag = null
+  const job = load(K.jobs).find(j => j.id === id)
+  if (job && job.stage !== col.dataset.stage) jobSetStage(id, col.dataset.stage)
 }
 </script>
 <!-- SUBSCRIPTION PRICE CHANGE MODAL -->
