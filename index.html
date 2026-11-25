@@ -8723,7 +8723,7 @@ function gearFaaCell(g) {
 function gearHrs(h) { const m = Math.round((+h || 0) * 60); return m ? `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}m` : '0h' }
 function gearStatusBadge(g) {
   const s = g.status || 'Active'
-  return `<span class="bdg ${s === 'Active' ? 'bdg-g' : s === 'Lost' ? 'bdg-r' : 'bdg-gr'}">${esc(s)}</span>`
+  return `<span class="bdg ${s === 'Active' ? 'bdg-g' : s === 'Lost' ? 'bdg-r' : s === 'Parted out' ? 'bdg-o' : 'bdg-gr'}">${esc(s)}</span>`
 }
 function gearAttention(t) {
   const out = []
@@ -8762,8 +8762,10 @@ function renderGear() {
   const exp = drones.filter(g => gearFaaState(g).k === 'expired').length
   const soon = drones.filter(g => gearFaaState(g).k === 'soon').length
   const unset = drones.filter(g => gearFaaState(g).k === 'none').length
+  const allDr = all.filter(gearIsDrone)
+  const inBits = ['Retired', 'Parted out', 'Sold', 'Lost'].map(st => { const n = allDr.filter(g => g.status === st).length; return n ? `${n} ${st.toLowerCase()}` : '' }).filter(Boolean).join(', ')
   const sub = document.getElementById('gear-sub')
-  if (sub) sub.innerHTML = all.length ? `<b>${act.length}</b> active · <b>${gearHrs(hrs)}</b> flown` : 'Your drones, registrations and flight time'
+  if (sub) sub.innerHTML = all.length ? `<b>${act.length}</b> active${all.length - act.length ? ` · <b>${all.length - act.length}</b> inactive` : ''} · <b>${gearHrs(hrs)}</b> flown` : 'Your drones, registrations and flight time'
   // Filter bar
   const fb = document.getElementById('gear-filter')
   if (fb) fb.style.display = all.length ? '' : 'none'
@@ -8775,7 +8777,7 @@ function renderGear() {
     <div class="dv-head"><span class="dv-lbl">Total flight time</span>${exp ? `<span class="dv-pill dv-pill-r">${exp} FAA expired</span>` : soon ? `<span class="dv-pill">${soon} FAA due soon</span>` : drones.length && !unset ? '<span class="dv-pill dv-pill-g">FAA all current</span>' : ''}</div>
     <div class="num dv-big">${gearHrs(hrs)}</div>
     <div class="pv-split">
-      <div><div class="dv-lbl">Active drones</div><div class="num dv-mid">${drones.length}</div><div class="dv-tiny">${act.length - drones.length} other item${act.length - drones.length !== 1 ? 's' : ''}</div></div>
+      <div><div class="dv-lbl">Drones</div><div class="num dv-mid">${allDr.length}</div><div class="dv-tiny">${drones.length} active · ${allDr.length - drones.length} inactive${inBits ? ` (${inBits})` : ''}</div></div>
       <div><div class="dv-lbl">Flights logged</div><div class="num dv-mid">${flights}</div><div class="dv-tiny">${flights ? Math.round(hrs * 60 / flights * 10) / 10 + ' min avg' : 'no flights yet'}</div></div>
       <div><div class="dv-lbl">FAA</div><div class="num dv-mid">${exp + soon}</div><div class="dv-tiny">${exp} expired · ${soon} due · ${unset} not set</div></div>
     </div></div>`
@@ -9534,7 +9536,7 @@ function renderSocReels() {
         <div class="ff gear-drone-f"><label>Last flown</label>
           <input type="date" id="gear-last-flown"></div>
         <div class="ff"><label>Status</label>
-          <select id="gear-status"><option>Active</option><option>Retired</option><option>Sold</option><option>Lost</option></select></div>
+          <select id="gear-status"><option>Active</option><option>Retired</option><option>Parted out</option><option>Sold</option><option>Lost</option></select></div>
         <div class="ff wide"><label>Notes</label>
           <input id="gear-notes" placeholder="Props, VTX settings, repairs..."></div>
       </div>
