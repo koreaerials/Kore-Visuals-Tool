@@ -1149,6 +1149,7 @@ html[data-theme] .fu-ok{background:var(--hover);color:var(--text-2)}
 .cl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:10px}
 .cl-card{display:flex;align-items:center;gap:14px;text-align:left;font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer;transition:border-color .15s}
 .cl-card:hover{border-color:var(--line-2);background:var(--surface-2)}
+.cl-src{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;border:1px solid var(--line-2);color:var(--text-2)}
 .cl-av{width:42px;height:42px;border-radius:12px;background:var(--accent-soft);color:var(--accent-text);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:600;font-size:15px;flex:none}
 .cl-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .cl-name{font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1236,6 +1237,60 @@ html[data-theme] .btn.inv-gen-test{background:var(--orange);color:#111;border-co
 .il-row .btn{flex:none;justify-content:center;padding-left:18px;padding-right:18px}
 .il-hint{font-size:12px;color:var(--text-2);margin-top:8px}
 .il-status{font-size:12px;min-height:14px;margin-top:8px}
+/* ── INBOX ── */
+.mail-connect{max-width:520px;margin:30px auto;text-align:center;padding:30px 26px;display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--text-2)}
+.mail-connect h3{color:var(--text);margin:4px 0 0;font-size:18px}.mail-connect p{font-size:13.5px;line-height:1.55;margin:0 0 8px}
+.mail-wrap{display:grid;grid-template-columns:minmax(300px,380px) 1fr;gap:12px;height:calc(100vh - 230px);min-height:420px}
+.mail-list,.mail-read{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow-y:auto;min-width:0}
+.mail-row{display:flex;flex-direction:column;gap:3px;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;font:inherit;color:var(--text);padding:11px 14px;cursor:pointer}
+.mail-row:hover{background:var(--hover)}.mail-row.on{background:var(--accent-soft,rgba(255,162,76,.1))}
+.mail-row:last-child{border-bottom:0}
+.mail-r1{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.mail-from{font-size:13.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mail-from i{font-style:normal;color:var(--text-3);font-size:12px;font-weight:500}
+.mail-date{font-size:11.5px;color:var(--text-3);white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+.mail-subj{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.mail-snip{font-size:12px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mail-row.unread .mail-from,.mail-row.unread .mail-subj{font-weight:700}
+.mail-row.unread{box-shadow:inset 3px 0 0 var(--accent)}
+.mail-tag{display:inline-block;font-size:10px;font-weight:700;padding:1px 6px;border-radius:5px;margin-right:6px;vertical-align:1px}
+.mail-tag.client{background:rgba(54,209,196,.14);color:var(--green)}.mail-tag.lead{background:rgba(255,162,76,.15);color:var(--accent-text)}
+.mail-msg{padding:24px;text-align:center;color:var(--text-2);font-size:13px}
+.mail-more{display:block;margin:10px auto 14px}
+.mail-empty{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--text-3);font-size:13px}
+.mail-th-hdr{position:sticky;top:0;z-index:2;background:var(--surface);border-bottom:1px solid var(--line);padding:14px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mail-th-hdr h3{flex:1;min-width:180px;margin:0;font-size:16px;font-family:var(--font-d)}
+.mail-th-acts{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.mail-back{display:none;border:0;background:var(--hover);color:var(--text);border-radius:8px;width:32px;height:32px;font-size:16px;cursor:pointer}
+.mail-msgs{padding:6px 16px}
+.mail-m{border-bottom:1px solid var(--line);padding:12px 0}
+.mail-m-h{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.mail-av{width:30px;height:30px;border-radius:50%;background:var(--hover);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:none;color:var(--accent-text)}
+.mail-m-who{flex:1;min-width:0;display:flex;flex-direction:column;font-size:13px}.mail-m-who span{font-size:11.5px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mail-m.fold{cursor:pointer}.mail-m.fold .mail-m-b{display:none}.mail-m.fold .mail-m-h{margin-bottom:0}
+.mail-pre{white-space:pre-wrap;word-wrap:break-word;font:13.5px/1.55 var(--font);margin:0;color:var(--text)}
+.mail-frame{width:100%;border:0;border-radius:8px;min-height:60px;height:120px;display:block}
+.mail-files{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.mail-file{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line-2);background:var(--hover);color:var(--text);border-radius:8px;padding:6px 10px;font:inherit;font-size:12.5px;cursor:pointer;max-width:100%}
+.mail-file span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}.mail-file em{font-style:normal;color:var(--text-3);font-size:11px}
+.mail-reply,.mail-compose{padding:14px 16px 16px;display:flex;flex-direction:column;gap:8px}
+.mail-reply{border-top:1px solid var(--line);position:sticky;bottom:0;background:var(--surface)}
+.mail-reply textarea,.mail-compose textarea{font:inherit;font-size:13.5px;line-height:1.5;resize:vertical}
+.mail-reply-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mail-tpl{width:auto;font-size:12.5px;padding:5px 8px}
+.mail-reply-acts{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.mail-arch{font-size:12.5px;color:var(--text-2);display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.mail-arch input{width:auto;margin:0}
+#cli-emails .mail-row{border:1px solid var(--line);border-radius:10px;margin-bottom:6px}
+@media(max-width:899px){
+  .mail-wrap{grid-template-columns:minmax(0,1fr);height:auto;min-height:0}
+  .mail-wrap .mail-read{display:none}
+  .mail-wrap.reading .mail-list{display:none}
+  .mail-wrap.reading .mail-read{display:block;overflow:visible}
+  .mail-back{display:inline-flex;align-items:center;justify-content:center}
+  #mail-seg{overflow-x:auto;max-width:100%}
+  .mail-reply{position:static}
+}
 /* ── LEADS ── */
 .nav-cnt{margin-left:auto;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--accent);color:var(--accent-ink);font-size:10.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
 .nav-cnt:empty{display:none}
@@ -1517,6 +1572,7 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
       <div class="nav-grp" data-mode="business">Work</div>
       <button data-mode="business" class="tab" data-tab="jobs"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Jobs</button>
       <button data-mode="business" class="tab" data-tab="leads"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg> Leads<span class="nav-cnt" id="nav-leads-cnt"></span></button>
+      <button data-mode="business" class="tab" data-tab="inbox"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Inbox<span class="nav-cnt" id="nav-mail-cnt"></span></button>
       <button data-mode="business" class="tab" data-tab="pricing"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> Pricing &amp; Quotes</button>
       <button data-mode="business" class="tab" data-tab="clients"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Clients</button>
       <div class="nav-grp" data-mode="business">Money</div>
@@ -1552,6 +1608,7 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
   <div class="mob-grp" data-mode="business">Work</div>
   <button data-mode="business" class="tab" data-tab="jobs" onclick="mobNavTo('jobs')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Jobs</button>
   <button data-mode="business" class="tab" data-tab="leads" onclick="mobNavTo('leads')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg> Leads<span class="nav-cnt" id="nav-leads-cnt-m"></span></button>
+  <button data-mode="business" class="tab" data-tab="inbox" onclick="mobNavTo('inbox')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Inbox<span class="nav-cnt" id="nav-mail-cnt-m"></span></button>
   <button data-mode="business" class="tab" data-tab="pricing" onclick="mobNavTo('pricing')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> Pricing &amp; Quotes</button>
   <button data-mode="business" class="tab" data-tab="clients" onclick="mobNavTo('clients')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Clients</button>
   <div class="mob-grp" data-mode="business">Money</div>
@@ -1729,6 +1786,22 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
     <div class="fbar pv-fbar" id="gear-filter"></div>
     <div id="gear-summary"></div>
     <div class="tbl-wrap" id="gear-table"></div>
+  </section>
+
+  <!-- INBOX -->
+  <section class="panel" id="panel-inbox">
+    <div class="pv-hdr"><div><h2>Inbox</h2><p id="mail-sub">Your business email, right here</p></div>
+      <div class="gr-hdr-btns"><button class="btn btn-s" onclick="_mail.threads=null;mailLoad()">Refresh</button><button class="btn btn-g" onclick="mailCompose()">+ New email</button></div></div>
+    <div class="ld-bar">
+      <div class="ld-seg" id="mail-seg">
+        <button class="ld-seg-btn on" data-v="inbox" onclick="mailFolder('inbox')">Inbox</button>
+        <button class="ld-seg-btn" data-v="unread" onclick="mailFolder('unread')">Unread</button>
+        <button class="ld-seg-btn" data-v="people" onclick="mailFolder('people')">Clients &amp; leads</button>
+        <button class="ld-seg-btn" data-v="sent" onclick="mailFolder('sent')">Sent</button>
+      </div>
+      <label class="jv-search ld-search"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" id="mail-q" placeholder="Search mail" aria-label="Search mail" oninput="mailSearchInput(this.value)"></label>
+    </div>
+    <div id="mail-body"></div>
   </section>
 
   <!-- LEADS -->
@@ -2309,7 +2382,8 @@ const GS_SPREADSHEET_ID = '16Qq8ggagfDl1fnGe2bnVQvLLlhtQAyNphYoDxSofpiM'
 // requested too but optional, so declining it never locks you out.
 const GS_SCOPE_REQ      = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/calendar'
 const GS_SCOPE_GMAIL    = 'https://www.googleapis.com/auth/gmail.compose'
-const GS_SCOPE          = GS_SCOPE_REQ + ' ' + GS_SCOPE_GMAIL
+const GS_SCOPE_MAIL     = 'https://www.googleapis.com/auth/gmail.modify'   // Inbox tab (read, reply, archive); optional
+const GS_SCOPE          = GS_SCOPE_REQ + ' ' + GS_SCOPE_GMAIL + ' ' + GS_SCOPE_MAIL
 // Maps each localStorage data key → its Sheets tab name + column order
 // SHEET_SCHEMA — cols must exactly match the header row in each Google Sheet tab.
 // toRow: converts an in-memory app object → sheet row array (for writing)
@@ -5097,7 +5171,7 @@ function toggleTheme() {
 }
 
 // ── TAB SWITCHING ─────────────────────────────────────────────
-const tabRenders={leads:renderLeads,docs:renderDocs,gear:renderGear,wishlist:renderWishlist,'social-stats':renderSocialStats,'social-ideas':renderSocialIdeas,dashboard:renderDash,income:renderIncTable,purchases:renderPurTable,subscriptions:()=>{renderSubTable()},taxes:renderTaxes,export:()=>{renderDataSummary();switchExportSection('export-main')},clients:renderClientsTab,jobs:renderJobsBoard,pricing:()=>{renderPricingList();initQuoteBuilder()}}
+const tabRenders={inbox:renderInbox,leads:renderLeads,docs:renderDocs,gear:renderGear,wishlist:renderWishlist,'social-stats':renderSocialStats,'social-ideas':renderSocialIdeas,dashboard:renderDash,income:renderIncTable,purchases:renderPurTable,subscriptions:()=>{renderSubTable()},taxes:renderTaxes,export:()=>{renderDataSummary();switchExportSection('export-main')},clients:renderClientsTab,jobs:renderJobsBoard,pricing:()=>{renderPricingList();initQuoteBuilder()}}
 
 function openTab(t) {
   const tab=document.querySelector(`#nav [data-tab="${t}"]`); if(!tab)return
@@ -5921,6 +5995,318 @@ function removeInvLink() {
   closeInvLinkModal()
 }
 
+// ── INBOX (Gmail) ─────────────────────────────────────────────
+// A business-focused Gmail view. Needs the optional gmail.modify permission (GS_SCOPE_MAIL,
+// asked for on first use via _gsAfterAuth). Lists threads for a folder (Inbox / Unread /
+// Clients & leads / Sent) + Gmail-syntax search, opens a thread (marks read; HTML bodies render
+// in a sandboxed iframe with no scripts), downloads attachments, replies or composes as plain
+// text (templates available), archives, marks unread, and turns a sender into a lead.
+// Senders are matched to Clients (contact emails) and Leads (email) for chips and links.
+// Nothing is stored: Gmail is the source; only the "me" address is cached.
+const GM_API = 'https://gmail.googleapis.com/gmail/v1/users/me'
+const MAIL_FOLDERS = { inbox: { l: 'Inbox', q: 'in:inbox' }, unread: { l: 'Unread', q: 'in:inbox is:unread' }, people: { l: 'Clients & leads', q: '' }, sent: { l: 'Sent', q: 'in:sent' } }
+let _mail = { folder: 'inbox', q: '', threads: null, next: null, open: null, thread: null, busy: false, me: '', err: '', unread: null, badgeAt: 0, compose: null }
+
+function mailHasScope() {
+  try { const t = JSON.parse(localStorage.getItem('dt_gs_token') || 'null'); return !!t && (t.scope || '').split(' ').includes(GS_SCOPE_MAIL) } catch { return false }
+}
+function mailConnect() {
+  if (!_gsTokenClient) { toast('Google sign-in not loaded'); return }
+  _gsAfterAuth = resp => {
+    if (resp && (resp.scope || '').split(' ').includes(GS_SCOPE_MAIL)) { toast('Gmail connected'); _mail.threads = null; renderInbox() }
+    else toast('Gmail permission not given', 4000)
+  }
+  _gsTokenClient.requestAccessToken({ prompt: '' })
+}
+async function gm(path, opts = {}) {
+  const r = await gsReqRetry(GM_API + path, opts)
+  if (!r) throw new Error('Not signed in')
+  if (r.status === 403) {
+    let msg = ''; try { msg = (await r.json()).error?.message || '' } catch {}
+    if (/has not been used|is disabled|accessNotConfigured/i.test(msg)) { const e = new Error('GMAIL_API_OFF'); throw e }
+    throw new Error('Gmail said no (403). Try Connect Gmail again.')
+  }
+  if (r.status === 401) throw new Error('Signed out of Google')
+  if (!r.ok) throw new Error('Gmail error ' + r.status)
+  return r.status === 204 ? {} : r.json()
+}
+function mailB64d(s) { const b = atob(String(s || '').replace(/-/g, '+').replace(/_/g, '/')); const u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u }
+function mailTxt(s) { return new TextDecoder().decode(mailB64d(s)) }
+function mailHdr(m, n) { const h = (m.payload?.headers || []).find(x => x.name.toLowerCase() === n.toLowerCase()); return h ? h.value : '' }
+function mailAddr(v) { const m = /<([^>]+)>/.exec(v || ''); return (m ? m[1] : (v || '').split(',')[0]).trim().toLowerCase() }
+function mailName(v) { const m = /^\s*"?([^"<]+?)"?\s*</.exec(v || ''); return m ? m[1].trim() : mailAddr(v) }
+function mailWhen(ms) {
+  const d = new Date(+ms), n = new Date()
+  if (d.toDateString() === n.toDateString()) return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+  return d.toLocaleDateString([], d.getFullYear() === n.getFullYear() ? { month: 'short', day: 'numeric' } : { month: 'short', day: 'numeric', year: 'numeric' })
+}
+// email → { kind: 'client'|'lead', name, id }
+function mailPeople() {
+  const map = new Map()
+  for (const l of leadsAll()) if (l.email) map.set(l.email.trim().toLowerCase(), { kind: 'lead', name: l.name, id: l.id })
+  for (const c of _clients || []) for (const ct of c.contacts || []) if (ct.email) map.set(ct.email.trim().toLowerCase(), { kind: 'client', name: c.name, id: c.id })
+  return map
+}
+function mailWho(addr, people) { return (people || mailPeople()).get((addr || '').toLowerCase()) }
+async function mailMe() { if (!_mail.me) { try { _mail.me = ((await gm('/profile')).emailAddress || '').toLowerCase() } catch {} } return _mail.me }
+
+async function mailBadge(force) {
+  if (!mailHasScope() || !gsGetToken()) return
+  if (!force && Date.now() - _mail.badgeAt < 120000) return
+  _mail.badgeAt = Date.now()
+  try { const l = await gm('/labels/INBOX'); _mail.unread = l.threadsUnread || 0 } catch { return }
+  for (const id of ['nav-mail-cnt', 'nav-mail-cnt-m']) { const b = document.getElementById(id); if (b) b.textContent = _mail.unread || '' }
+}
+
+function mailQuery() {
+  const f = MAIL_FOLDERS[_mail.folder]
+  let q = f.q
+  if (_mail.folder === 'people') {
+    const emails = [...mailPeople().keys()].slice(0, 60)
+    q = emails.length ? `{${emails.map(e => 'from:' + e).join(' ')} ${emails.map(e => 'to:' + e).join(' ')}}` : 'from:__nobody__'
+  }
+  return [q, _mail.q].filter(Boolean).join(' ')
+}
+async function mailLoad(more) {
+  if (_mail.busy) return
+  _mail.busy = true; _mail.err = ''
+  if (!more) { _mail.threads = null; _mail.next = null }
+  renderInbox()
+  try {
+    if (_clients === null) await loadClientsFromSheets()
+    await mailMe()
+    const qs = new URLSearchParams({ maxResults: '25', q: mailQuery() })
+    if (more && _mail.next) qs.set('pageToken', _mail.next)
+    const list = await gm('/threads?' + qs)
+    const ids = (list.threads || []).map(t => t.id)
+    const out = new Array(ids.length)
+    let i = 0
+    await Promise.all(Array.from({ length: Math.min(6, ids.length) }, async () => {
+      while (i < ids.length) {
+        const k = i++
+        try { out[k] = await gm(`/threads/${ids[k]}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Subject`) } catch { out[k] = null }
+      }
+    }))
+    const rows = out.filter(Boolean).map(t => {
+      const ms = t.messages || [], last = ms[ms.length - 1] || {}, first = ms[0] || {}
+      const others = ms.map(m => mailHdr(m, 'From')).filter(f => mailAddr(f) !== _mail.me)
+      const from = _mail.folder === 'sent' ? mailHdr(last, 'To') : (others[others.length - 1] || mailHdr(last, 'From'))
+      return { id: t.id, from, subject: mailHdr(first, 'Subject') || '(no subject)', snippet: last.snippet || '', date: last.internalDate,
+        unread: ms.some(m => (m.labelIds || []).includes('UNREAD')), count: ms.length, inbox: ms.some(m => (m.labelIds || []).includes('INBOX')),
+        attach: ms.some(m => /multipart\/mixed/i.test(m.payload?.mimeType || '')) }
+    })
+    _mail.threads = more ? [...(_mail.threads || []), ...rows] : rows
+    _mail.next = list.nextPageToken || null
+  } catch (e) { _mail.err = e.message === 'GMAIL_API_OFF' ? 'GMAIL_API_OFF' : (e.message || String(e)); if (!more) _mail.threads = [] }
+  finally { _mail.busy = false; renderInbox(); mailBadge(true) }
+}
+
+function renderInbox() {
+  const el = document.getElementById('mail-body'); if (!el) return
+  const sub = document.getElementById('mail-sub')
+  document.querySelectorAll('#mail-seg .ld-seg-btn').forEach(b => b.classList.toggle('on', b.dataset.v === _mail.folder))
+  if (!gsGetToken()) { el.innerHTML = emptyState('lock', 'Sign in with Google to see your email.'); return }
+  if (!mailHasScope()) {
+    if (sub) sub.textContent = 'Your business email, right here'
+    el.innerHTML = `<div class="card mail-connect">${icon('mail', 28)}<h3>Connect Gmail</h3><p>Read, reply to and archive your business email without leaving the app. Google will ask for permission to read and manage your Gmail. Your app is in testing mode, so you may see an "unverified app" warning. That's expected for your own tool.</p><button class="btn btn-g" onclick="mailConnect()">Connect Gmail</button></div>`
+    return
+  }
+  if (_mail.threads === null && !_mail.busy && !_mail.err) { mailLoad(); return }
+  if (sub) sub.innerHTML = `${_mail.me ? esc(_mail.me) : 'Gmail'}${_mail.unread ? ` · <b>${_mail.unread}</b> unread` : ''}`
+  if (_mail.err === 'GMAIL_API_OFF') {
+    el.innerHTML = `<div class="card mail-connect">${icon('alert', 26)}<h3>Turn on the Gmail API</h3><p>Gmail access is approved, but the Gmail API is switched off in your Google Cloud project. Turn it on once, wait a minute, then tap Retry.</p><div style="display:flex;gap:8px;justify-content:center"><a class="btn btn-g" href="https://console.cloud.google.com/apis/library/gmail.googleapis.com?project=767039224660" target="_blank" rel="noopener">Enable Gmail API</a><button class="btn btn-s" onclick="mailLoad()">Retry</button></div></div>`
+    return
+  }
+  const people = mailPeople()
+  const list = _mail.threads === null || (_mail.busy && !_mail.threads?.length) ? `<div class="mail-msg">Loading…</div>`
+    : _mail.err ? `<div class="mail-msg">${esc(_mail.err)} <button class="dv-link" onclick="mailLoad()">Retry</button></div>`
+    : !_mail.threads.length ? `<div class="mail-msg">${_mail.folder === 'people' && !people.size ? 'Add emails to your clients\' contacts or leads to see their mail here.' : 'Nothing here.'}</div>`
+    : _mail.threads.map(t => {
+        const w = mailWho(mailAddr(t.from), people)
+        return `<button class="mail-row${t.unread ? ' unread' : ''}${_mail.open === t.id ? ' on' : ''}" onclick="mailOpen('${t.id}')">
+          <span class="mail-r1"><span class="mail-from">${esc(mailName(t.from))}${t.count > 1 ? ` <i>${t.count}</i>` : ''}</span><span class="mail-date">${t.attach ? icon('paperclip', 12) : ''}${mailWhen(t.date)}</span></span>
+          <span class="mail-subj">${w ? `<span class="mail-tag ${w.kind}">${w.kind === 'client' ? 'Client' : 'Lead'}</span>` : ''}${esc(t.subject)}</span>
+          <span class="mail-snip">${esc(t.snippet.replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&'))}</span>
+        </button>`
+      }).join('') + (_mail.next ? `<button class="dv-link mail-more" onclick="mailLoad(true)">${_mail.busy ? 'Loading…' : 'Load more'}</button>` : '')
+  el.innerHTML = `<div class="mail-wrap${_mail.open || _mail.compose ? ' reading' : ''}"><div class="mail-list">${list}</div><div class="mail-read" id="mail-read">${_mail.compose ? mailComposeHtml() : mailThreadHtml()}</div></div>`
+  if (_mail.thread && !_mail.compose) mailFillFrames()
+}
+
+function mailFolder(f) { _mail.folder = f; _mail.open = null; _mail.thread = null; _mail.compose = null; mailLoad() }
+let _mailQT = null
+function mailSearchInput(v) { clearTimeout(_mailQT); _mailQT = setTimeout(() => { _mail.q = v.trim(); _mail.open = null; _mail.thread = null; mailLoad() }, 450) }
+function mailSearch(q) { navTo('inbox'); _mail.folder = 'inbox'; _mail.q = q; const s = document.getElementById('mail-q'); if (s) s.value = q; _mail.open = null; _mail.thread = null; _mail.compose = null; mailLoad() }
+
+function mailParts(p, acc = { text: '', html: '', files: [] }) {
+  if (!p) return acc
+  const mt = (p.mimeType || '').toLowerCase()
+  if (p.filename && p.body?.attachmentId) acc.files.push({ name: p.filename, id: p.body.attachmentId, size: p.body.size || 0, mime: mt })
+  else if (mt === 'text/plain' && p.body?.data && !acc.text) acc.text = mailTxt(p.body.data)
+  else if (mt === 'text/html' && p.body?.data && !acc.html) acc.html = mailTxt(p.body.data)
+  for (const c of p.parts || []) mailParts(c, acc)
+  return acc
+}
+async function mailOpen(id) {
+  _mail.open = id; _mail.compose = null; _mail.thread = { id, loading: true }; renderInbox()
+  try {
+    const t = await gm(`/threads/${id}?format=full`)
+    _mail.thread = { id, msgs: (t.messages || []).map(m => ({ id: m.id, from: mailHdr(m, 'From'), to: mailHdr(m, 'To'), cc: mailHdr(m, 'Cc'), replyTo: mailHdr(m, 'Reply-To'), subject: mailHdr(m, 'Subject'), msgId: mailHdr(m, 'Message-ID') || mailHdr(m, 'Message-Id'), refs: mailHdr(m, 'References'), date: m.internalDate, labels: m.labelIds || [], ...mailParts(m.payload) })) }
+    if (_mail.thread.msgs.some(m => m.labels.includes('UNREAD'))) {
+      gm(`/threads/${id}/modify`, { method: 'POST', body: JSON.stringify({ removeLabelIds: ['UNREAD'] }) }).then(() => { const r = (_mail.threads || []).find(x => x.id === id); if (r) r.unread = false; mailBadge(true); renderInbox() }).catch(() => {})
+    }
+  } catch (e) { _mail.thread = { id, err: e.message || String(e) } }
+  if (_mail.open === id) renderInbox()
+}
+function mailBack() { _mail.open = null; _mail.thread = null; _mail.compose = null; renderInbox() }
+function mailThreadHtml() {
+  const T = _mail.thread
+  if (!T) return `<div class="mail-empty">${icon('mail', 28)}<span>Pick an email to read it</span></div>`
+  if (T.loading) return `<div class="mail-msg">Opening…</div>`
+  if (T.err) return `<div class="mail-msg">${esc(T.err)}</div>`
+  const ms = T.msgs, last = ms[ms.length - 1], people = mailPeople()
+  const otherAddr = mailAddr(ms.map(m => m.from).reverse().find(f => mailAddr(f) !== _mail.me) || last.to)
+  const w = mailWho(otherAddr, people)
+  const link = w ? (w.kind === 'client' ? `<button class="btn btn-s btn-sm" onclick="navTo('clients');openClientDetail(${esc(JSON.stringify(w.name))})">${icon('users', 13)} ${esc(w.name)}</button>` : `<button class="btn btn-s btn-sm" onclick="leadOpen('${w.id}')">${icon('users', 13)} Lead: ${esc(w.name)}</button>`)
+    : (otherAddr && otherAddr !== _mail.me ? `<button class="btn btn-s btn-sm" onclick="mailAddLead()">+ Add as lead</button>` : '')
+  return `<div class="mail-th-hdr">
+      <button class="mail-back" onclick="mailBack()" aria-label="Back">←</button>
+      <h3>${esc(ms[0].subject || '(no subject)')}</h3>
+      <div class="mail-th-acts">${link}
+        <button class="btn btn-s btn-sm" onclick="mailArchive()" title="Archive">${icon('box', 13)} Archive</button>
+        ${kebab([{ label: 'Mark unread', icon: 'eye-off', fn: 'mailMarkUnread()' }, { label: 'Open in Gmail', icon: 'link', fn: `window.open('https://mail.google.com/mail/#all/${T.id}','_blank','noopener')` }])}</div>
+    </div>
+    <div class="mail-msgs">${ms.map((m, i) => `<div class="mail-m${i < ms.length - 1 && ms.length > 2 ? ' fold' : ''}" onclick="this.classList.remove('fold')">
+      <div class="mail-m-h"><span class="mail-av">${esc((mailName(m.from)[0] || '?').toUpperCase())}</span><span class="mail-m-who"><b>${esc(mailName(m.from))}</b><span>${esc(mailAddr(m.from))}${m.to ? ' → ' + esc(m.to.split(',').map(mailName).join(', ')) : ''}</span></span><span class="mail-date">${mailWhen(m.date)}</span></div>
+      <div class="mail-m-b">${m.html ? `<iframe class="mail-frame" sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox" data-mid="${m.id}" title="Email"></iframe>` : `<pre class="mail-pre">${esc(m.text || '(no text)')}</pre>`}
+      ${m.files.length ? `<div class="mail-files">${m.files.map(f => `<button class="mail-file" onclick="mailFile('${m.id}','${f.id}',${esc(JSON.stringify(f.name))},'${esc(f.mime)}')">${icon('paperclip', 13)}<span>${esc(f.name)}</span><em>${f.size ? docsSize(f.size) : ''}</em></button>`).join('')}</div>` : ''}</div>
+    </div>`).join('')}</div>
+    <div class="mail-reply">
+      <div class="mail-reply-top"><span class="dv-lbl">Reply to ${esc(mailName(mailReplyTo().to) || '')}</span><select class="mail-tpl" onchange="mailUseTpl(this.value,'mail-reply-text');this.value=''"><option value="">Insert template…</option>${tplAll().map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join('')}</select></div>
+      <textarea id="mail-reply-text" rows="5" placeholder="Write a reply…"></textarea>
+      <div class="mail-reply-acts"><button class="btn btn-g" id="mail-send-btn" onclick="mailSendReply()">Send reply</button><label class="mail-arch"><input type="checkbox" id="mail-reply-arch"> Archive after sending</label></div>
+    </div>`
+}
+function mailFillFrames() {
+  for (const f of document.querySelectorAll('.mail-frame')) {
+    const m = _mail.thread?.msgs?.find(x => x.id === f.dataset.mid); if (!m) continue
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark'
+    f.srcdoc = `<!doctype html><html><head><meta charset="utf-8"><base target="_blank"><style>body{margin:0;padding:4px;font:14px/1.5 -apple-system,system-ui,sans-serif;color:#1c1c1e;background:#fff;word-wrap:break-word}img{max-width:100%;height:auto}table{max-width:100%}</style></head><body>${m.html}</body></html>`
+    f.style.background = '#fff'; f.style.colorScheme = dark ? 'light' : 'light'
+    f.onload = () => { try { const h = () => { f.style.height = Math.min(6000, f.contentDocument.documentElement.scrollHeight + 8) + 'px' }; h(); f.contentDocument.querySelectorAll('img').forEach(i => i.addEventListener('load', h)) } catch { f.style.height = '480px' } }
+  }
+}
+function mailReplyTo() {
+  const ms = _mail.thread?.msgs || [], last = ms[ms.length - 1] || {}
+  const lastOther = [...ms].reverse().find(m => mailAddr(m.from) !== _mail.me)
+  const to = lastOther ? (lastOther.replyTo || lastOther.from) : (last.to || '')
+  return { to, last, subject: /^re:/i.test(ms[0]?.subject || '') ? ms[0].subject : 'Re: ' + (ms[0]?.subject || '') }
+}
+function mailCurrentPerson() {
+  const t = _mail.compose ? mailAddr(document.getElementById('mail-c-to')?.value || '') : mailAddr(mailReplyTo().to)
+  const w = mailWho(t); if (!w) return { name: mailName(mailReplyTo().to || ''), email: t }
+  if (w.kind === 'lead') return leadFind(w.id) || { name: w.name }
+  const c = (_clients || []).find(x => x.id === w.id); return { name: (c?.contacts || []).find(x => (x.email || '').toLowerCase() === t)?.name || w.name, company: c?.name, email: t }
+}
+function mailUseTpl(id, target) {
+  const t = tplAll().find(x => x.id === id); if (!t) return
+  const p = mailCurrentPerson(), ta = document.getElementById(target)
+  ta.value = tplFill(t.body, p); ta.focus()
+  if (target === 'mail-c-text') { const s = document.getElementById('mail-c-subj'); if (s && !s.value) s.value = tplFill(t.subject, p) }
+}
+function mailMime({ to, subject, body, inReplyTo, refs }) {
+  const lines = [`To: ${to}`, `Subject: =?UTF-8?B?${invB64Utf8(subject)}?=`, 'MIME-Version: 1.0', 'Content-Type: text/plain; charset="UTF-8"', 'Content-Transfer-Encoding: base64']
+  if (inReplyTo) lines.push(`In-Reply-To: ${inReplyTo}`, `References: ${[refs, inReplyTo].filter(Boolean).join(' ')}`)
+  const mime = lines.join('\r\n') + '\r\n\r\n' + invB64Utf8(body).replace(/.{76}/g, '$&\r\n')
+  return invB64Utf8(mime).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+async function mailSendReply() {
+  const body = document.getElementById('mail-reply-text').value.trim(); if (!body) { toast('Write something first'); return }
+  const { to, last, subject } = mailReplyTo(); if (!to) { toast('No one to reply to'); return }
+  const btn = document.getElementById('mail-send-btn'); btn.disabled = true; btn.textContent = 'Sending…'
+  try {
+    await gm('/messages/send', { method: 'POST', body: JSON.stringify({ raw: mailMime({ to, subject, body: body + '\n', inReplyTo: last.msgId, refs: last.refs }), threadId: _mail.thread.id }) })
+    mailLogLead(mailAddr(to), 'Email reply')
+    if (document.getElementById('mail-reply-arch')?.checked) { await mailArchive(true); toast('Sent and archived'); return }
+    toast('Reply sent'); mailOpen(_mail.thread.id)
+  } catch (e) { toast('Send failed: ' + (e.message || e), 5000); btn.disabled = false; btn.textContent = 'Send reply' }
+}
+function mailLogLead(addr, label) { const w = mailWho(addr); if (w?.kind === 'lead') ldLogTouch(w.id, 'email', label) }
+async function mailArchive(quiet) {
+  const id = _mail.thread?.id; if (!id) return
+  try {
+    await gm(`/threads/${id}/modify`, { method: 'POST', body: JSON.stringify({ removeLabelIds: ['INBOX'] }) })
+    if (_mail.folder !== 'sent') _mail.threads = (_mail.threads || []).filter(t => t.id !== id)
+    mailBack(); if (!quiet) toast('Archived'); mailBadge(true)
+  } catch (e) { toast('Archive failed: ' + (e.message || e), 5000) }
+}
+async function mailMarkUnread() {
+  const id = _mail.thread?.id; if (!id) return
+  try { await gm(`/threads/${id}/modify`, { method: 'POST', body: JSON.stringify({ addLabelIds: ['UNREAD'] }) }); const r = (_mail.threads || []).find(t => t.id === id); if (r) r.unread = true; mailBack(); mailBadge(true) }
+  catch (e) { toast('Failed: ' + (e.message || e)) }
+}
+async function mailFile(mid, aid, name, mime) {
+  try {
+    toast('Downloading…', 1500)
+    const d = await gm(`/messages/${mid}/attachments/${aid}`)
+    const blob = new Blob([mailB64d(d.data)], { type: mime || 'application/octet-stream' })
+    const u = URL.createObjectURL(blob), a = document.createElement('a'); a.href = u; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(u), 5000)
+  } catch (e) { toast('Download failed: ' + (e.message || e), 5000) }
+}
+function mailAddLead() {
+  const ms = _mail.thread?.msgs || []
+  const m = [...ms].reverse().find(x => mailAddr(x.from) !== _mail.me) || ms[0]; if (!m) return
+  leadOpen(null, 'New')
+  document.getElementById('ld-name').value = mailName(m.from) || ''
+  document.getElementById('ld-email').value = mailAddr(m.from)
+  document.getElementById('ld-notes').value = `Emailed ${fmtDate(toStr(new Date(+m.date)))}: ${ms[0].subject || ''}\n${(m.text || '').trim().slice(0, 400)}`
+  document.getElementById('ld-source').value = 'Website'
+}
+
+// ── Compose ──
+function mailCompose(to) { navTo('inbox'); _mail.compose = { to: to || '' }; _mail.open = null; _mail.thread = null; renderInbox(); setTimeout(() => document.getElementById(to ? 'mail-c-subj' : 'mail-c-to')?.focus(), 50) }
+function mailComposeHtml() {
+  const c = _mail.compose
+  return `<div class="mail-th-hdr"><button class="mail-back" onclick="mailBack()" aria-label="Back">←</button><h3>New email</h3></div>
+    <div class="mail-compose">
+      <input id="mail-c-to" placeholder="To" value="${esc(c.to)}" list="mail-c-list" autocomplete="off"><datalist id="mail-c-list">${[...mailPeople()].map(([e, w]) => `<option value="${esc(e)}">${esc(w.name)}</option>`).join('')}</datalist>
+      <input id="mail-c-subj" placeholder="Subject">
+      <div class="mail-reply-top"><span></span><select class="mail-tpl" onchange="mailUseTpl(this.value,'mail-c-text');this.value=''"><option value="">Insert template…</option>${tplAll().map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join('')}</select></div>
+      <textarea id="mail-c-text" rows="12" placeholder="Write your email…"></textarea>
+      <div class="mail-reply-acts"><button class="btn btn-g" id="mail-c-send" onclick="mailSendNew()">Send</button><button class="btn btn-s" onclick="mailBack()">Discard</button></div>
+    </div>`
+}
+async function mailSendNew() {
+  const to = document.getElementById('mail-c-to').value.trim(), subject = document.getElementById('mail-c-subj').value.trim(), body = document.getElementById('mail-c-text').value
+  if (!/@/.test(to)) { toast('Add an email address'); return }
+  if (!body.trim()) { toast('Write something first'); return }
+  const btn = document.getElementById('mail-c-send'); btn.disabled = true; btn.textContent = 'Sending…'
+  try {
+    await gm('/messages/send', { method: 'POST', body: JSON.stringify({ raw: mailMime({ to, subject: subject || '(no subject)', body }) }) })
+    mailLogLead(mailAddr(to), subject || 'Email')
+    _mail.compose = null; toast('Sent'); if (_mail.folder === 'sent') mailLoad(); else renderInbox()
+  } catch (e) { toast('Send failed: ' + (e.message || e), 5000); btn.disabled = false; btn.textContent = 'Send' }
+}
+
+// Client page: recent emails with this client's contacts
+async function cliRenderEmails(name) {
+  const box = document.getElementById('cli-emails'); if (!box) return
+  const c = (_clients || []).find(x => x.name === name)
+  const emails = (c?.contacts || []).map(x => (x.email || '').trim()).filter(Boolean)
+  if (!emails.length) { box.innerHTML = '<div class="ld-note" style="margin:0">Add a contact with an email to see your conversations here.</div>'; return }
+  if (!mailHasScope()) { box.innerHTML = `<div class="ld-note" style="margin:0">Connect Gmail in the Inbox tab to see emails with ${esc(name)} here. <button class="dv-link" onclick="navTo('inbox')">Go to Inbox</button></div>`; return }
+  box.innerHTML = '<div class="ld-note" style="margin:0">Loading emails…</div>'
+  try {
+    await mailMe()
+    const q = `{${emails.map(e => 'from:' + e + ' to:' + e).join(' ')}}`
+    const list = await gm('/threads?' + new URLSearchParams({ maxResults: '6', q }))
+    const ts = await Promise.all((list.threads || []).map(t => gm(`/threads/${t.id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From`).catch(() => null)))
+    const rows = ts.filter(Boolean).map(t => { const ms = t.messages || [], last = ms[ms.length - 1] || {}; return `<button class="mail-row" onclick="navTo('inbox');_mail.compose=null;mailOpen('${t.id}')"><span class="mail-r1"><span class="mail-from">${esc(mailHdr(ms[0] || {}, 'Subject') || '(no subject)')}${ms.length > 1 ? ` <i>${ms.length}</i>` : ''}</span><span class="mail-date">${mailWhen(last.internalDate)}</span></span><span class="mail-snip">${esc((last.snippet || '').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&'))}</span></button>` })
+    box.innerHTML = (rows.length ? rows.join('') : '<div class="ld-note" style="margin:0">No emails with this client yet.</div>') +
+      `<div style="display:flex;gap:8px;margin-top:10px"><button class="btn btn-s btn-sm" onclick="mailCompose('${esc(emails[0])}')">${icon('mail', 13)} New email</button>${rows.length ? `<button class="dv-link" onclick="mailSearch('{${emails.map(e => 'from:' + e + ' to:' + e).join(' ')}}')">See all in Inbox →</button>` : ''}</div>`
+  } catch (e) { box.innerHTML = `<div class="ld-note" style="margin:0">${e.message === 'GMAIL_API_OFF' ? 'Gmail API is off. Open the Inbox tab to turn it on.' : "Couldn't load emails."}</div>` }
+}
+
 // ── LEADS ─────────────────────────────────────────────────────
 // Pre-job pipeline: people who reached out (New) or that Andriy wants to pitch (Target / "To pitch"),
 // through Contacted → Quoted → Won (opens the job form prefilled) or Lost. Each lead carries a
@@ -5933,7 +6319,7 @@ function removeInvLink() {
 const LD_STATUS = ['Target', 'New', 'Contacted', 'Quoted', 'Won', 'Lost']
 const LD_LABEL = { Target: 'To pitch', New: 'New', Contacted: 'Contacted', Quoted: 'Quoted', Won: 'Won', Lost: 'Lost' }
 const LD_TONE = { Target: 'gr', New: 'b', Contacted: 'v', Quoted: 'o', Won: 'g', Lost: 'r' }
-const LD_SOURCES = ['Instagram', 'Google', 'Referral', 'Website', 'Videographer', 'Outreach', 'Repeat client', 'Other']
+const LD_SOURCES = ['Instagram', 'Google', 'Referral', 'Friend', 'Website', 'Videographer', 'Outreach', 'Repeat client', 'Other']
 const LD_CATS = ['Wedding', 'Real estate', 'Business / ads', 'Event', 'Videographer partner', 'Other']
 const LD_OPEN = ['New', 'Contacted', 'Quoted']
 const LD_PORTFOLIO = 'https://www.koreaerials.com'
@@ -6066,6 +6452,7 @@ function leadOpen(id, status) {
   ldOpts($('ld-status'), LD_STATUS, l?.status || status || 'New', LD_LABEL)
   const th = (l?.touches || []).slice().reverse()
   $('ld-hist').innerHTML = th.length ? `<div class="smod-row"><div class="smod-lbl">History</div><div class="ld-hist">${th.slice(0, 8).map(x => `<div><span>${fmtDate(x.d)}</span>${esc(x.n || ({ email: 'Email', dm: 'DM', note: 'Contact logged' })[x.t] || 'Contact')}</div>`).join('')}</div></div>` : ''
+  if (l?.email) $('ld-hist').innerHTML += `<div class="smod-row"><button class="dv-link" type="button" onclick="leadClose();mailSearch('{from:${esc(l.email)} to:${esc(l.email)}}')">${icon('mail', 13)} See emails with ${esc(l.name)} →</button></div>`
   $('ld-overlay').classList.add('open'); setTimeout(() => $('ld-name').focus(), 50)
 }
 function leadClose() { document.getElementById('ld-overlay').classList.remove('open') }
@@ -7297,6 +7684,7 @@ function renderClientDetail(name) {
       <div id="cli-save-status" style="font-size:12px;min-height:16px;margin-bottom:8px"></div>
       <button class="btn btn-g" onclick="saveClientDetail('${esc(name).replace(/'/g,"\\'")}')">Save Changes</button>
     </div>
+    <div class="card"><div class="smod-lbl" style="margin-bottom:10px">Emails</div><div id="cli-emails"></div></div>
     ${stats.entries.length ? `
     <div class="card">
       <div class="smod-lbl" style="margin-bottom:10px">Job History</div>
@@ -7310,6 +7698,7 @@ function renderClientDetail(name) {
   if (_cliCt.length && !_cliCt.some(x => x.primary)) _cliCt[0].primary = true
   _cliCtEdit = -1
   cliRenderContacts()
+  cliRenderEmails(name)
 }
 
 // ── Client contacts (state-driven cards) ──
@@ -9070,6 +9459,7 @@ function dashAttention() {
     act: 'Mark paid', fn: `dashMarkPaid('${e.id}')`, act2: 'Open', fn2: "navTo('income')" }))
   gearAttention(t).forEach(a => items.push(a))
   leadsAttention(t).forEach(a => items.push(a))
+  mailBadge()
   const gearSubs = new Set(load(K.gear).map(g => g.faaSubId).filter(Boolean))
   loadP(K.sub).filter(s => subOverdue(s) && !gearSubs.has(s.id)).forEach(s => items.push({
     lvl: 2, ico: 'alert', tone: 'red',
@@ -9718,7 +10108,7 @@ function renderClientList() {
     <div id="cli-results"></div>`
   const clients = getClientList()
   const q = (document.getElementById('cli-search') || { value: '' }).value.toLowerCase()
-  const filtered = q ? clients.filter(c => c.name.toLowerCase().includes(q) || (c.company || '').toLowerCase().includes(q)) : clients
+  const filtered = q ? clients.filter(c => c.name.toLowerCase().includes(q) || (c.company || '').toLowerCase().includes(q) || (c.source || '').toLowerCase().includes(q)) : clients
   const sorted = cliSortClients(filtered)
   const base = _cliSort.replace(/-(asc|desc)$/, ''), dir = _cliSort.endsWith('asc') ? ' ↑' : ' ↓'
   document.getElementById('cli-sort').innerHTML = CL_SORTS.map(([k, l]) => `<button class="${base === k ? 'on' : ''}" onclick="clSort('${k}')">${l}${base === k ? dir : ''}</button>`).join('')
@@ -9736,7 +10126,7 @@ function renderClientList() {
       <span class="cl-main">
         <span class="cl-name">${esc(c.name)}</span>
         <span class="cl-sub">${esc(pc && pc.name ? pc.name + (pc.role ? ' · ' + pc.role : '') : (c.company && c.company !== c.name ? c.company : ''))}</span>
-        <span class="cl-tags">${c.clientType ? `<span class="cli-type-badge cli-type-${cliTypeSlug(c.clientType)}">${esc(c.clientType)}</span>` : ''}${fu ? `<span class="fu-badge ${fu.cls}">Follow up ${fu.cls === 'fu-ok' ? fu.label : fu.label.toLowerCase()}</span>` : ''}</span>
+        <span class="cl-tags">${c.clientType ? `<span class="cli-type-badge cli-type-${cliTypeSlug(c.clientType)}">${esc(c.clientType)}</span>` : ''}${c.source ? `<span class="cl-src">${icon('users', 11)} ${esc(c.source)}</span>` : ''}${fu ? `<span class="fu-badge ${fu.cls}">Follow up ${fu.cls === 'fu-ok' ? fu.label : fu.label.toLowerCase()}</span>` : ''}</span>
       </span>
       <span class="cl-meta"><span class="num cl-rev">${privacyMode() ? '—' : fmt(st.revenue)}</span><span>${st.jobs} job${st.jobs !== 1 ? 's' : ''}${st.lastJob ? ' · ' + fmtDate(st.lastJob).replace(/, \d{4}$/, m => st.lastJob.slice(0, 4) === today().slice(0, 4) ? '' : m) : ''}</span></span>
     </button>`
