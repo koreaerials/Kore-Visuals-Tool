@@ -1243,6 +1243,7 @@ html[data-theme] .btn.inv-gen-test{background:var(--orange);color:#111;border-co
 .docs-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .docs-card:hover{border-color:var(--line-2)}
 #panel-docs .jv-bar{margin-bottom:16px}
+.docs-ren{width:100%;font:inherit;font-weight:600;color:var(--text);background:var(--bg);border:1px solid var(--accent);border-radius:6px;padding:2px 6px;outline:none}
 #panel-docs.docs-drop{outline:2px dashed var(--accent);outline-offset:-8px;border-radius:14px}
 @media(max-width:899px){ .docs-grid{grid-template-columns:minmax(0,1fr)} }
 /* ── ATTACHMENTS ── */
@@ -5824,9 +5825,9 @@ function docsRenderList() {
     <div class="docs-grid">${g.files.map(f => `<div class="il-card docs-card">
       <button class="docs-open" onclick="docsPreview('${f.id}')" title="Preview">
         <span class="il-ico docs-kind">${esc(docsKind(f))}</span>
-        <span class="il-main"><span class="att-lbl docs-name">${esc(f.name.replace(/\.[a-z0-9]{2,4}$/i, ''))}</span><span class="att-name">Updated ${fmtDate((f.modifiedTime || '').slice(0, 10))}${docsSize(f.size) ? ' · ' + docsSize(f.size) : ''}</span></span>
+        <span class="il-main"><span class="att-lbl docs-name" data-doc="${f.id}">${esc(f.name.replace(/\.[a-z0-9]{2,4}$/i, ''))}</span><span class="att-name">Updated ${fmtDate((f.modifiedTime || '').slice(0, 10))}${docsSize(f.size) ? ' · ' + docsSize(f.size) : ''}</span></span>
       </button>
-      ${kebab([{ label: 'Preview', icon: 'eye', fn: `docsPreview('${f.id}')` }, { label: 'Download', icon: 'download', fn: `docsDownload('${f.id}')` }, { label: 'Open in Drive', icon: 'link', fn: `docsOpenDrive('${f.id}')` }])}
+      ${kebab([{ label: 'Preview', icon: 'eye', fn: `docsPreview('${f.id}')` }, { label: 'Download', icon: 'download', fn: `docsDownload('${f.id}')` }, { label: 'Open in Drive', icon: 'link', fn: `docsOpenDrive('${f.id}')` }, 'sep', { label: 'Rename', icon: 'pencil', fn: `docsRename('${f.id}')` }, { label: 'Replace file', icon: 'upload', fn: `docsReplacePick('${f.id}')` }, { label: 'Delete', icon: 'trash', fn: `docsDelete('${f.id}')`, danger: true }])}
     </div>`).join('')}</div></div>`).join('')
 }
 function docsFind(id) { for (const g of _docs || []) for (const f of g.files) if (f.id === id) return f; return null }
@@ -5839,6 +5840,56 @@ async function docsDownload(id) {
 async function docsOpenFolder() {
   if (!_docsFolder && gsGetToken()) _docsFolder = await docsResolve()
   if (_docsFolder) window.open('https://drive.google.com/drive/folders/' + _docsFolder, '_blank', 'noopener'); else toast('Folder not found')
+}
+// Rename edits the name inline (extension kept); Delete moves the file to Drive's trash
+// (restorable there for 30 days); Replace uploads new content into the same Drive file.
+function docsExt(n) { const m = /\.[a-z0-9]{2,4}$/i.exec(n); return m ? m[0] : '' }
+function docsRename(id) {
+  const f = docsFind(id), el = document.querySelector(`.docs-name[data-doc="${id}"]`); if (!f || !el) return
+  const base = f.name.slice(0, f.name.length - docsExt(f.name).length)
+  const btn = el.closest('.docs-open'); btn.onclick = e => e.stopPropagation()
+  el.innerHTML = `<input class="docs-ren" value="${esc(base)}" aria-label="New name">`
+  const inp = el.firstChild; inp.focus(); inp.select()
+  let done = false
+  const finish = async ok => {
+    if (done) return; done = true
+    const v = inp.value.trim()
+    if (!ok || !v || v === base) { docsRenderList(); return }
+    const name = v + docsExt(f.name)
+    try {
+      const r = await gsReqRetry(`${GD_DRIVE_API}/files/${id}?fields=id,name`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) })
+      if (!r?.ok) throw new Error('Drive said ' + (r ? r.status : 'not signed in'))
+      f.name = name; toast('Renamed')
+    } catch (e) { toast('Rename failed: ' + (e.message || e), 5000) }
+    docsRenderList()
+  }
+  inp.onkeydown = e => { e.stopPropagation(); if (e.key === 'Enter') finish(true); else if (e.key === 'Escape') finish(false) }
+  inp.onclick = e => e.stopPropagation()
+  inp.onblur = () => finish(true)
+}
+async function docsDelete(id) {
+  const f = docsFind(id); if (!f) return
+  if (!confirm(`Delete "${f.name}"?\n\nIt moves to Google Drive's trash, where you can restore it for 30 days.`)) return
+  try {
+    const r = await gsReqRetry(`${GD_DRIVE_API}/files/${id}?fields=id`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ trashed: true }) })
+    if (!r?.ok) throw new Error('Drive said ' + (r ? r.status : 'not signed in'))
+    for (const g of _docs) g.files = g.files.filter(x => x.id !== id)
+    docsRenderList(); toast('Moved to Drive trash')
+  } catch (e) { toast('Delete failed: ' + (e.message || e), 5000) }
+}
+function docsReplacePick(id) {
+  const inp = document.createElement('input'); inp.type = 'file'
+  inp.onchange = () => inp.files[0] && docsReplace(id, inp.files[0]); inp.click()
+}
+async function docsReplace(id, file) {
+  const f = docsFind(id); if (!f) return
+  if (!confirm(`Replace the contents of "${f.name}" with "${file.name}"?\n\nDrive keeps the old version in the file's version history.`)) return
+  try {
+    toast('Uploading…', 3000)
+    const r = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${id}?uploadType=media&fields=id`, { method: 'PATCH', headers: { Authorization: 'Bearer ' + gsGetToken(), 'Content-Type': file.type || 'application/octet-stream' }, body: file })
+    if (!r.ok) throw new Error('Drive said ' + r.status)
+    toast('File replaced'); renderDocs(true)
+  } catch (e) { toast('Replace failed: ' + (e.message || e), 5000) }
 }
 function docsDrag(e, on) { if (![...(e.dataTransfer?.types || [])].includes('Files')) return; e.preventDefault(); document.getElementById('panel-docs').classList.toggle('docs-drop', !!on) }
 function docsDrop(e) { e.preventDefault(); document.getElementById('panel-docs').classList.remove('docs-drop'); if (e.dataTransfer?.files?.length) docsUpload({ files: e.dataTransfer.files }) }
@@ -5891,7 +5942,7 @@ async function previewDriveFile(fileId, title) {
     const f = await driveFileFetch(fileId)
     if (_invPrev?.url) URL.revokeObjectURL(_invPrev.url)
     _invPrev = { ...f, url: URL.createObjectURL(f.blob) }
-    document.getElementById('inv-prev-ttl').textContent = (title ? title + ' · ' : '') + f.name.replace(/\.pdf$/i, '')
+    { const nm = f.name.replace(/\.[a-z0-9]{2,4}$/i, ''); document.getElementById('inv-prev-ttl').textContent = title && title !== nm ? title + ' · ' + nm : nm }
     document.getElementById('inv-prev-acts').style.visibility = ''
     if (/pdf/.test(f.mime)) { try { await invRenderPdf(f.blob, body) } catch { body.innerHTML = `<iframe src="${_invPrev.url}" title="Preview"></iframe>` } }
     else if (/^image\//.test(f.mime)) body.innerHTML = `<div class="inv-prev-pages"><img src="${_invPrev.url}" alt="" style="max-width:100%;border-radius:4px"></div>`
