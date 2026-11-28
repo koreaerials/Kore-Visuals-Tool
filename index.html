@@ -1210,6 +1210,21 @@ html[data-theme] #panel-wishlist .wish-link{color:var(--accent-text)}
 .inv-test-row small{display:block;font-size:12px;color:var(--text-2);margin-top:2px;line-height:1.4}
 .inv-test-row:has(input:checked){border-color:var(--orange);background:rgba(245,196,81,.07)}
 html[data-theme] .btn.inv-gen-test{background:var(--orange);color:#111;border-color:var(--orange)}
+/* ── INVOICE PREVIEW ── */
+#inv-prev-overlay{z-index:1600}
+.inv-prev-box{max-width:860px!important;width:min(860px,94vw);display:flex;flex-direction:column;height:min(92vh,1100px)}
+.inv-prev-body{flex:1;min-height:0;border-radius:12px;overflow:hidden;background:#525659;border:1px solid var(--line)}
+.inv-prev-body{overflow-y:auto!important}
+.inv-prev-pages{display:flex;flex-direction:column;align-items:center;gap:14px;padding:16px}
+.inv-prev-pages canvas{background:#fff;border-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.35);max-width:100%}
+.inv-prev-body iframe{width:100%;height:100%;border:0;display:block;background:#525659}
+.inv-prev-msg{height:100%;display:flex;align-items:center;justify-content:center;color:#e8edf2;font-size:14px;padding:20px;text-align:center}
+.inv-prev-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.inv-prev-acts .btn{justify-content:center}
+@media(max-width:899px){
+  html[data-theme] .inv-prev-box{width:100%;height:94dvh;max-height:none}
+  .inv-prev-acts .btn{flex:1}
+}
 /* ── GATE RUN ── */
 #game-overlay{z-index:2000}
 .game-box{position:relative;width:min(960px,94vw);height:min(600px,82vh);border-radius:18px;overflow:hidden;border:1px solid var(--line-2);background:#05070a;box-shadow:0 30px 80px rgba(0,0,0,.6)}
@@ -5692,6 +5707,77 @@ function removeInvLink() {
   closeInvLinkModal()
 }
 
+// ── INVOICE PREVIEW ───────────────────────────────────────────
+// Finds the invoice PDF in Drive by number (real ones before TEST copies) and shows
+// it in a viewer with Download / Open in a new tab / Open in Drive.
+async function invFetch(invNum) {
+  const tok = gsGetToken(); if (!tok) throw new Error('Sign in with Google to access Drive')
+  const q = encodeURIComponent(`name contains '${invNum.replace(/'/g, "\\'")}' and trashed=false`)
+  const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&spaces=drive&orderBy=modifiedTime desc&fields=files(id,name,mimeType,webViewLink)`, { headers: { Authorization: 'Bearer ' + tok } })
+  if (!res.ok) throw new Error('Drive search failed (' + res.status + ')')
+  const files = (await res.json()).files || []
+  const file = files.find(f => f.mimeType === 'application/pdf' && !/^TEST/i.test(f.name)) || files.find(f => f.mimeType === 'application/pdf') || files[0]
+  if (!file) throw new Error('No invoice found for ' + invNum)
+  const dl = await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`, { headers: { Authorization: 'Bearer ' + tok } })
+  if (!dl.ok) throw new Error('Could not open the invoice (' + dl.status + ')')
+  return { blob: await dl.blob(), name: file.name, id: file.id, link: file.webViewLink || `https://drive.google.com/file/d/${file.id}/view` }
+}
+let _invPrev = null
+async function previewInvoice(invNum) {
+  if (!invNum) return
+  const ov = document.getElementById('inv-prev-overlay'), body = document.getElementById('inv-prev-body')
+  document.getElementById('inv-prev-ttl').textContent = 'Invoice ' + invNum
+  document.getElementById('inv-prev-acts').style.visibility = 'hidden'
+  body.innerHTML = '<div class="inv-prev-msg">Opening invoice from Drive…</div>'
+  ov.classList.add('open')
+  try {
+    const f = await invFetch(invNum)
+    if (_invPrev?.url) URL.revokeObjectURL(_invPrev.url)
+    const pdf = f.blob.type === 'application/pdf' ? f.blob : new Blob([f.blob], { type: 'application/pdf' })
+    _invPrev = { ...f, url: URL.createObjectURL(pdf) }
+    document.getElementById('inv-prev-ttl').textContent = f.name.replace(/\.pdf$/i, '')
+    document.getElementById('inv-prev-acts').style.visibility = ''
+    try { await invRenderPdf(pdf, body) }
+    catch (err) { console.warn('PDF.js:', err); body.innerHTML = `<iframe src="${_invPrev.url}#view=FitH" title="Invoice preview"></iframe>` }
+  } catch (e) { body.innerHTML = `<div class="inv-prev-msg">${esc(e.message || String(e))}</div>` }
+}
+// Draw every page with PDF.js (loaded the first time), so the preview looks the same
+// in Chrome, the installed app and on iPhone (where a PDF in a frame shows one page)
+let _pdfjs = null
+function invLoadPdfJs() {
+  if (_pdfjs) return _pdfjs
+  _pdfjs = new Promise((ok, no) => {
+    const sc = document.createElement('script')
+    sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'
+    sc.onload = () => { window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; ok(window.pdfjsLib) }
+    sc.onerror = () => { _pdfjs = null; no(new Error('PDF viewer failed to load')) }
+    document.head.appendChild(sc)
+  })
+  return _pdfjs
+}
+async function invRenderPdf(blob, body) {
+  const lib = await invLoadPdfJs()
+  const doc = await lib.getDocument({ data: new Uint8Array(await blob.arrayBuffer()) }).promise
+  body.innerHTML = '<div class="inv-prev-pages"></div>'
+  const wrap = body.firstChild, w = Math.max(280, body.clientWidth - 32), dpr = Math.min(2, devicePixelRatio || 1)
+  for (let n = 1; n <= doc.numPages; n++) {
+    const page = await doc.getPage(n), base = page.getViewport({ scale: 1 }), vp = page.getViewport({ scale: (w / base.width) * dpr })
+    const cv = document.createElement('canvas'); cv.width = vp.width; cv.height = vp.height; cv.style.width = (vp.width / dpr) + 'px'
+    wrap.appendChild(cv)
+    await page.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise
+  }
+}
+function closeInvPreview() {
+  document.getElementById('inv-prev-overlay').classList.remove('open')
+  document.getElementById('inv-prev-body').innerHTML = ''
+  if (_invPrev?.url) { const u = _invPrev.url; setTimeout(() => URL.revokeObjectURL(u), 1000) }
+  _invPrev = null
+}
+function invPrevDownload() { if (!_invPrev) return; const a = document.createElement('a'); a.href = _invPrev.url; a.download = _invPrev.name; a.click() }
+function invPrevOpenTab() { if (_invPrev) window.open(_invPrev.url, '_blank') }
+function invPrevDrive() { if (_invPrev) window.open(_invPrev.link, '_blank', 'noopener') }
+function previewLinkedInvoice() { const e = load(K.inc).find(x => x.id === _invLinkId); if (e?.invoiceNum) previewInvoice(e.invoiceNum) }
+
 async function downloadLinkedInvoice() {
   if(!_invLinkId) return
   const e = load(K.inc).find(e=>e.id===_invLinkId); if(!e||!e.invoiceNum) return
@@ -6444,7 +6530,7 @@ function renderClientDetail(name) {
       <td style="white-space:nowrap">${esc(e.status||e.paymentStatus||'')}</td>
       <td style="text-align:right;white-space:nowrap">${privacyMode()?'—':fmt(e.amount)}</td>
       <td style="white-space:nowrap">
-        ${e.invoiceNum ? `<button class="btn btn-sm btn-s" title="Download invoice ${esc(e.invoiceNum)}" onclick="downloadInvFromDetail('${esc(e.invoiceNum)}',this)" style="color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)">${icon('receipt',12)} ${esc(e.invoiceNum)}</button>` : '—'}
+        ${e.invoiceNum ? `<button class="btn btn-sm btn-s" title="View invoice ${esc(e.invoiceNum)}" onclick="previewInvoice('${esc(e.invoiceNum)}')" style="color:var(--blue);background:rgba(0,122,255,0.12);border-color:rgba(0,122,255,0.28)">${icon('receipt',12)} ${esc(e.invoiceNum)}</button>` : '—'}
       </td>
     </tr>`
   ).join('')
@@ -9656,7 +9742,7 @@ function renderSocReels() {
     <div id="inv-link-current" style="display:none;align-items:center;gap:10px;background:var(--card-2,rgba(0,0,0,0.06));border-radius:8px;padding:10px 12px;margin-bottom:14px">
       <span style="font-size:12px;color:var(--text-2);flex-shrink:0">Linked invoice:</span>
       <span id="inv-link-current-num" style="font-size:14px;font-weight:700;color:var(--blue);flex:1"></span>
-      <button class="btn btn-sm" style="flex-shrink:0" onclick="downloadLinkedInvoice()"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:3px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download</button>
+      <button class="btn btn-sm" style="flex-shrink:0" onclick="previewLinkedInvoice()"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:3px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Preview</button>
     </div>
     <div class="smod-row" style="margin-bottom:4px">
       <div class="smod-lbl">Invoice Number</div>
@@ -9995,6 +10081,19 @@ function renderSocReels() {
     <div class="smod-footer">
       <button class="btn btn-p" onclick="saveGear()" style="flex:1">Save</button>
       <button class="btn btn-s" onclick="closeGearModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- INVOICE PREVIEW -->
+<div class="smod-overlay" id="inv-prev-overlay" onclick="if(event.target===this)closeInvPreview()">
+  <div class="smod inv-prev-box">
+    <div class="smod-hdr"><span class="smod-ttl" id="inv-prev-ttl">Invoice</span><button class="smod-close" onclick="closeInvPreview()">&#x2715;</button></div>
+    <div class="inv-prev-body" id="inv-prev-body"></div>
+    <div class="inv-prev-acts" id="inv-prev-acts">
+      <button class="btn btn-p" onclick="invPrevDownload()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download</button>
+      <button class="btn btn-s" onclick="invPrevOpenTab()">Open full size</button>
+      <button class="btn btn-s" onclick="invPrevDrive()">Open in Drive</button>
     </div>
   </div>
 </div>
