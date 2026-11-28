@@ -5889,7 +5889,9 @@ async function invClientEmail(name) {
   const n = (name || '').trim().toLowerCase(); if (!n) return ''
   const c = (_clients || []).find(c => (c.name || '').trim().toLowerCase() === n || (c.company || '').trim().toLowerCase() === n)
   const cs = (c?.contacts || []).filter(x => x && x.email)
-  return ((cs.find(x => x.primary) || cs[0])?.email || '').trim()
+  // Invoices go to whoever handles payments (role says payments/billing/accounts/finance), else the primary contact
+  const pay = cs.find(x => /pay|billing|bill|account|finance|bookkeep/i.test(x.role || ''))
+  return ((pay || cs.find(x => x.primary) || cs[0])?.email || '').trim()
 }
 async function invShowSend() {
   const box = document.getElementById('inv-send'); if (!box || !_invLast) return
