@@ -1282,6 +1282,16 @@ html[data-theme] .btn.inv-gen-test{background:var(--orange);color:#111;border-co
 .mail-arch{font-size:12.5px;color:var(--text-2);display:inline-flex;align-items:center;gap:6px;cursor:pointer}
 .mail-arch input{width:auto;margin:0}
 .mail-rw{position:relative}
+.mail-label-sel{width:auto;max-width:200px;font-size:13px;padding:7px 10px;border-radius:10px}
+.mail-label-sel.on{border-color:var(--accent);color:var(--accent-text);font-weight:600}
+.mail-chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px;font-family:var(--font);font-size:12px;font-weight:500}
+.mail-chips:empty{display:none}
+.mail-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 4px 2px 8px;border-radius:6px;background:var(--hover);border:1px solid var(--line-2);color:var(--text-2)}
+.mail-chip button{border:0;background:none;color:var(--text-3);cursor:pointer;font-size:14px;line-height:1;padding:0 3px}.mail-chip button:hover{color:var(--red)}
+.mail-move{width:auto;font-size:12px;padding:3px 8px;border-radius:6px}
+.mail-link-list{display:flex;flex-direction:column;gap:4px;max-height:50vh;overflow-y:auto;margin-top:10px}
+.mail-link-item{display:flex;flex-direction:column;align-items:flex-start;gap:2px;border:1px solid var(--line);background:none;color:var(--text);font:inherit;font-size:13.5px;text-align:left;padding:9px 12px;border-radius:10px;cursor:pointer}
+.mail-link-item:hover{border-color:var(--accent);background:var(--hover)}.mail-link-item span{font-size:12px;color:var(--text-2)}
 .mail-qa{position:absolute;right:10px;top:8px;display:none;gap:4px;background:var(--surface-2);border:1px solid var(--line-2);border-radius:8px;padding:2px}
 .mail-rw:hover .mail-qa{display:flex}
 .mail-qa button{border:0;background:none;color:var(--text-2);width:28px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer}
@@ -1809,6 +1819,7 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
         <button class="ld-seg-btn" data-v="people" onclick="mailFolder('people')">Clients &amp; leads</button>
         <button class="ld-seg-btn" data-v="sent" onclick="mailFolder('sent')">Sent</button>
       </div>
+      <select id="mail-label" class="mail-label-sel" onchange="mailFolder(this.value)" aria-label="Gmail folders"><option value="">Folders…</option></select>
       <label class="jv-search ld-search"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" id="mail-q" placeholder="Search mail" aria-label="Search mail" oninput="mailSearchInput(this.value)"></label>
     </div>
     <div id="mail-body"></div>
@@ -6070,7 +6081,21 @@ async function mailBadge(force) {
   for (const id of ['nav-mail-cnt', 'nav-mail-cnt-m']) { const b = document.getElementById(id); if (b) b.textContent = _mail.unread || '' }
 }
 
+// Gmail labels you created (shown as Folders). Nested labels come back as "Parent/Child".
+async function mailLabels(force) {
+  if (_mail.labels && !force) return _mail.labels
+  try { _mail.labels = ((await gm('/labels')).labels || []).filter(l => l.type === 'user').sort((a, b) => a.name.localeCompare(b.name)) } catch { _mail.labels = _mail.labels || [] }
+  mailLabelSelect(); return _mail.labels
+}
+function mailLabelSelect() {
+  const sel = document.getElementById('mail-label'); if (!sel) return
+  const cur = _mail.folder.startsWith('label:') ? _mail.folder : ''
+  sel.innerHTML = `<option value="">Folders…</option>` + (_mail.labels || []).map(l => `<option value="label:${esc(l.id)}"${'label:' + l.id === cur ? ' selected' : ''}>${esc(l.name.replace(/\//g, ' › '))}</option>`).join('')
+  sel.classList.toggle('on', !!cur)
+}
+function mailLabelName(id) { return ((_mail.labels || []).find(l => l.id === id) || {}).name || '' }
 function mailQuery() {
+  if (_mail.folder.startsWith('label:')) return _mail.q || ''
   const f = MAIL_FOLDERS[_mail.folder]
   let q = f.q
   if (_mail.folder === 'people') {
@@ -6087,7 +6112,9 @@ async function mailLoad(more) {
   try {
     if (_clients === null) await loadClientsFromSheets()
     await mailMe()
+    mailLabels()
     const qs = new URLSearchParams({ maxResults: '25', q: mailQuery() })
+    if (_mail.folder.startsWith('label:')) qs.set('labelIds', _mail.folder.slice(6))
     if (more && _mail.next) qs.set('pageToken', _mail.next)
     const list = await gm('/threads?' + qs)
     const ids = (list.threads || []).map(t => t.id)
@@ -6117,6 +6144,7 @@ function renderInbox() {
   const el = document.getElementById('mail-body'); if (!el) return
   const sub = document.getElementById('mail-sub')
   document.querySelectorAll('#mail-seg .ld-seg-btn').forEach(b => b.classList.toggle('on', b.dataset.v === _mail.folder))
+  mailLabelSelect()
   if (!gsGetToken()) { el.innerHTML = emptyState('lock', 'Sign in with Google to see your email.'); return }
   if (!mailHasScope()) {
     if (sub) sub.textContent = 'Your business email, right here'
@@ -6149,7 +6177,7 @@ function renderInbox() {
   if (_mail.thread && !_mail.compose) mailFillFrames()
 }
 
-function mailFolder(f) { _mail.folder = f; _mail.open = null; _mail.thread = null; _mail.compose = null; mailLoad() }
+function mailFolder(f) { _mail.folder = f || 'inbox'; _mail.open = null; _mail.thread = null; _mail.compose = null; mailLoad() }
 let _mailQT = null
 function mailSearchInput(v) { clearTimeout(_mailQT); _mailQT = setTimeout(() => { _mail.q = v.trim(); _mail.open = null; _mail.thread = null; mailLoad() }, 450) }
 function mailSearch(q) { navTo('inbox'); _mail.folder = 'inbox'; _mail.q = q; const s = document.getElementById('mail-q'); if (s) s.value = q; _mail.open = null; _mail.thread = null; _mail.compose = null; mailLoad() }
@@ -6184,10 +6212,13 @@ function mailThreadHtml() {
   const otherAddr = mailAddr(ms.map(m => m.from).reverse().find(f => mailAddr(f) !== _mail.me) || last.to)
   const w = mailWho(otherAddr, people)
   const link = w ? (w.kind === 'client' ? `<button class="btn btn-s btn-sm" onclick="navTo('clients');openClientDetail(${esc(JSON.stringify(w.name))})">${icon('users', 13)} ${esc(w.name)}</button>` : `<button class="btn btn-s btn-sm" onclick="leadOpen('${w.id}')">${icon('users', 13)} Lead: ${esc(w.name)}</button>`)
-    : (otherAddr && otherAddr !== _mail.me ? `<button class="btn btn-s btn-sm" onclick="mailAddLead()">+ Add as lead</button>` : '')
+    : (otherAddr && otherAddr !== _mail.me ? `<button class="btn btn-s btn-sm" onclick="mailLinkOpen()">${icon('link', 13)} Link to client</button><button class="btn btn-s btn-sm" onclick="mailAddLead()">+ Add as lead</button>` : '')
+  const tl = [...new Set(ms.flatMap(m => m.labels))].filter(id => mailLabelName(id))
+  const chips = `<div class="mail-chips">${tl.map(id => `<span class="mail-chip">${icon('folder', 11)} ${esc(mailLabelName(id).replace(/\//g, ' › '))}<button title="Remove from folder" onclick="mailUnlabel('${id}')">×</button></span>`).join('')}
+    ${(_mail.labels || []).length ? `<select class="mail-move" onchange="mailMove(this.value);this.value=''" aria-label="Move to folder"><option value="">Move to…</option>${_mail.labels.filter(l => !tl.includes(l.id)).map(l => `<option value="${esc(l.id)}">${esc(l.name.replace(/\//g, ' › '))}</option>`).join('')}</select>` : ''}</div>`
   return `<div class="mail-th-hdr">
       <button class="mail-back" onclick="mailBack()" aria-label="Back">←</button>
-      <h3>${esc(ms[0].subject || '(no subject)')}</h3>
+      <h3>${esc(ms[0].subject || '(no subject)')}${chips}</h3>
       <div class="mail-th-acts">${link}
         <button class="btn btn-s btn-sm" onclick="mailArchive()" title="Archive">${icon('box', 13)} Archive</button>
         <button class="btn btn-s btn-sm mail-del" onclick="mailTrash()" title="Delete (moves to Gmail Trash)">${icon('trash', 13)}<span> Delete</span></button>
@@ -6257,6 +6288,58 @@ async function mailArchive(quiet, tid) {
     if (!tid || _mail.open === id) mailBack(); else renderInbox()
     if (!quiet) toast('Archived'); mailBadge(true)
   } catch (e) { toast('Archive failed: ' + (e.message || e), 5000) }
+}
+// Move = add the folder's label and take it out of the Inbox (what Gmail's "Move to" does)
+async function mailMove(labelId) {
+  const id = _mail.thread?.id; if (!id || !labelId) return
+  const inLabel = _mail.folder.startsWith('label:')
+  try {
+    await gm(`/threads/${id}/modify`, { method: 'POST', body: JSON.stringify({ addLabelIds: [labelId], removeLabelIds: inLabel ? [] : ['INBOX'] }) })
+    toast('Moved to ' + mailLabelName(labelId).replace(/\//g, ' › '))
+    if (!inLabel) { _mail.threads = (_mail.threads || []).filter(t => t.id !== id); mailBack() } else mailOpen(id)
+    mailBadge(true)
+  } catch (e) { toast('Move failed: ' + (e.message || e), 5000) }
+}
+async function mailUnlabel(labelId) {
+  const id = _mail.thread?.id; if (!id) return
+  try { await gm(`/threads/${id}/modify`, { method: 'POST', body: JSON.stringify({ removeLabelIds: [labelId] }) }); toast('Removed from ' + mailLabelName(labelId)); mailOpen(id) }
+  catch (e) { toast('Failed: ' + (e.message || e), 5000) }
+}
+// Link the sender to an existing client: their address becomes a contact on that client, so
+// the client's page shows every email with them and the Inbox tags them as Client.
+function mailLinkOpen() {
+  const ms = _mail.thread?.msgs || []
+  const m = [...ms].reverse().find(x => mailAddr(x.from) !== _mail.me) || ms[0]; if (!m) return
+  _mail.linkFrom = { name: mailName(m.from), email: mailAddr(m.from) }
+  let ov = document.getElementById('mail-link-ov')
+  if (!ov) { ov = document.createElement('div'); ov.id = 'mail-link-ov'; ov.className = 'smod-overlay'; ov.onclick = e => { if (e.target === ov) ov.classList.remove('open') }; document.body.appendChild(ov) }
+  ov.innerHTML = `<div class="smod" style="max-width:440px"><div class="smod-hdr"><span class="smod-ttl">Link to a client</span><button class="smod-close" onclick="document.getElementById('mail-link-ov').classList.remove('open')">&#x2715;</button></div>
+    <div class="ld-note" style="margin:0 0 10px"><b>${esc(_mail.linkFrom.name)}</b> · ${esc(_mail.linkFrom.email)} will be saved as a contact on the client you pick.</div>
+    <input id="mail-link-q" placeholder="Search clients" oninput="mailLinkList()" autocomplete="off"><div id="mail-link-list" class="mail-link-list"></div></div>`
+  ov.classList.add('open'); mailLinkList(); setTimeout(() => document.getElementById('mail-link-q')?.focus(), 50)
+  if (_clients === null) loadClientsFromSheets().then(mailLinkList)
+}
+function mailLinkList() {
+  const box = document.getElementById('mail-link-list'); if (!box) return
+  const q = (document.getElementById('mail-link-q')?.value || '').toLowerCase()
+  const dom = (_mail.linkFrom?.email || '').split('@')[1] || ''
+  const xs = (_clients || []).filter(c => !q || c.name.toLowerCase().includes(q) || (c.company || '').toLowerCase().includes(q))
+    .sort((a, b) => { const s = c => (c.contacts || []).some(x => (x.email || '').toLowerCase().endsWith('@' + dom) && !/gmail|yahoo|icloud|outlook|hotmail/.test(dom)) ? 0 : 1; return s(a) - s(b) || a.name.localeCompare(b.name) })
+  box.innerHTML = _clients === null ? '<div class="ld-note">Loading clients…</div>' : xs.length ? xs.slice(0, 50).map(c => `<button class="mail-link-item" onclick="mailLinkTo(${esc(JSON.stringify(c.id || c.name))})"><b>${esc(c.name)}</b>${c.company && c.company !== c.name ? `<span>${esc(c.company)}</span>` : ''}</button>`).join('') : '<div class="ld-note">No clients match.</div>'
+}
+async function mailLinkTo(key) {
+  const c = (_clients || []).find(x => x.id === key || x.name === key); if (!c || !_mail.linkFrom) return
+  const f = _mail.linkFrom
+  c.contacts = Array.isArray(c.contacts) ? c.contacts : []
+  const ex = c.contacts.find(x => (x.email || '').toLowerCase() === f.email)
+  if (!ex) {
+    const same = c.contacts.find(x => x.name && x.name.toLowerCase() === f.name.toLowerCase() && !x.email)
+    if (same) same.email = f.email
+    else c.contacts.push({ name: f.name === f.email ? '' : f.name, role: '', phone: '', email: f.email, primary: !c.contacts.length })
+  }
+  document.getElementById('mail-link-ov')?.classList.remove('open')
+  try { await writeClientsToSheets(); toast(`Linked to ${c.name}`) } catch (e) { toast("Linked here, but couldn't save to Sheets yet: " + (e.message || e), 6000) }
+  renderInbox()
 }
 // Delete = Gmail Trash (Gmail empties it after 30 days); Undo restores it
 async function mailTrash(tid) {
@@ -6340,7 +6423,7 @@ async function cliRenderEmails(name) {
   try {
     await mailMe()
     const q = `{${emails.map(e => 'from:' + e + ' to:' + e).join(' ')}}`
-    const list = await gm('/threads?' + new URLSearchParams({ maxResults: '6', q }))
+    const list = await gm('/threads?' + new URLSearchParams({ maxResults: '15', q }))
     const ts = await Promise.all((list.threads || []).map(t => gm(`/threads/${t.id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From`).catch(() => null)))
     const rows = ts.filter(Boolean).map(t => { const ms = t.messages || [], last = ms[ms.length - 1] || {}; return `<button class="mail-row" onclick="navTo('inbox');_mail.compose=null;mailOpen('${t.id}')"><span class="mail-r1"><span class="mail-from">${esc(mailHdr(ms[0] || {}, 'Subject') || '(no subject)')}${ms.length > 1 ? ` <i>${ms.length}</i>` : ''}</span><span class="mail-date">${mailWhen(last.internalDate)}</span></span><span class="mail-snip">${esc((last.snippet || '').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&'))}</span></button>` })
     box.innerHTML = (rows.length ? rows.join('') : '<div class="ld-note" style="margin:0">No emails with this client yet.</div>') +
