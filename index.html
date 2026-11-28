@@ -1231,6 +1231,15 @@ html[data-theme] .btn.inv-gen-test{background:var(--orange);color:#111;border-co
 .il-row .btn{flex:none;justify-content:center;padding-left:18px;padding-right:18px}
 .il-hint{font-size:12px;color:var(--text-2);margin-top:8px}
 .il-status{font-size:12px;min-height:14px;margin-top:8px}
+/* ── GOOGLE BUSINESS ── */
+.gbp-card{margin-bottom:16px}
+.gbp-links{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:4px 0 12px}
+.gbp-btn{display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 8px;border:1px solid var(--line);border-radius:10px;color:var(--text);text-decoration:none;font-size:13px;font-weight:500;background:var(--hover);white-space:nowrap}
+.gbp-btn:hover{border-color:var(--accent);color:var(--accent)}
+.gbp-btn svg{flex:none;color:var(--accent)}
+.gbp-rev{display:flex;align-items:center;gap:12px;padding-top:12px;border-top:1px solid var(--line)}
+.gbp-rev-txt{flex:1;min-width:0}.gbp-rev-txt .dv-att-s{overflow:hidden;text-overflow:ellipsis}
+@media(max-width:899px){ .gbp-links{grid-template-columns:repeat(2,minmax(0,1fr))} .gbp-links .gbp-btn:last-child{grid-column:span 2} }
 /* ── DOCUMENTS ── */
 .docs-grp{margin-bottom:18px}
 .docs-grp-h{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-2);margin:4px 2px 10px}
@@ -2087,6 +2096,7 @@ const ICONS = {
   phone:       '<path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/>',
   mail:        '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>',
   search:      '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+  star:        '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
 }
 function icon(name, size=16) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;flex-shrink:0">${ICONS[name]||''}</svg>`
@@ -2309,9 +2319,9 @@ const SHEET_SCHEMA = {
   // Worker URL only — never a token or API key (this file is public).
   [K.socCfg]: {
     tab:  'Social Config',
-    cols: ['id','workerUrl','igUsername','lastSync'],
-    toRow: o => [ o.id||'cfg', o.workerUrl||'', o.igUsername||'', o.lastSync||'' ],
-    toObj: r => ({ id: r[0]||'cfg', workerUrl: r[1]||'', igUsername: r[2]||'', lastSync: r[3]||'' }),
+    cols: ['id','workerUrl','igUsername','lastSync','gbpReviewLink','gbpName'],
+    toRow: o => [ o.id||'cfg', o.workerUrl||'', o.igUsername||'', o.lastSync||'', o.gbpReviewLink||'', o.gbpName||'' ],
+    toObj: r => ({ id: r[0]||'cfg', workerUrl: r[1]||'', igUsername: r[2]||'', lastSync: r[3]||'', gbpReviewLink: r[4]||'', gbpName: r[5]||'' }),
   },
   [K.gear]: {
     tab:  'Gear',
@@ -5774,6 +5784,51 @@ function removeInvLink() {
   closeInvLinkModal()
 }
 
+// ── GOOGLE BUSINESS PROFILE CARD ─────────────────────────────
+// Dashboard shortcuts into the Business Profile manager (Google now manages profiles from
+// Search, so the links open google.com searches that show the owner panel when signed in),
+// plus the client review link with copy/share. Review link + profile name live in the
+// Social Config row (gbpReviewLink, gbpName) so they sync through Sheets.
+// Live analytics/reviews would need Business Profile API approval; not wired yet.
+function gbpCfg() { const c = socialCfg(); return { name: c.gbpName || 'Kore Aerials', review: c.gbpReviewLink || '' } }
+function gbpSearch(q) { return 'https://www.google.com/search?q=' + encodeURIComponent(q) }
+function gbpCardHtml() {
+  const c = gbpCfg()
+  const L = [
+    ['Manage profile', 'briefcase', gbpSearch('my business')],
+    ['Performance', 'bar-chart', 'https://business.google.com/performance'],
+    ['Reviews', 'star', 'https://business.google.com/reviews'],
+    ['Add update', 'pencil', 'https://business.google.com/posts'],
+    ['See it live', 'search', gbpSearch(c.name)],
+  ]
+  return `<section class="card gbp-card">
+    <div class="dv-card-h"><h3>Google Business Profile</h3><button class="dv-link" onclick="gbpEdit()">Settings</button></div>
+    <div class="gbp-links">${L.map(([t, ic, u]) => `<a class="gbp-btn" href="${esc(u)}" target="_blank" rel="noopener">${icon(ic, 15)}<span>${t}</span></a>`).join('')}</div>
+    <div class="gbp-rev">
+      <div class="gbp-rev-txt"><div class="dv-att-t">Review link for clients</div><div class="dv-att-s">${c.review ? esc(c.review.replace(/^https?:\/\//, '')) : 'Not set yet. In your profile tap "Ask for reviews", copy the link and paste it in Settings.'}</div></div>
+      ${c.review ? `<span class="dv-acts"><button class="dv-link dv-link-2" onclick="gbpShare()">Share</button><button class="dv-link" onclick="gbpCopy()">Copy</button></span>` : `<span class="dv-acts"><button class="dv-link" onclick="gbpEdit()">Add link</button></span>`}
+    </div>
+  </section>`
+}
+function gbpCopy() {
+  const u = gbpCfg().review; if (!u) return
+  (navigator.clipboard?.writeText(u) || Promise.reject()).then(() => toast('Review link copied'), () => { window.prompt('Copy your review link:', u) })
+}
+function gbpShare() {
+  const u = gbpCfg().review; if (!u) return
+  if (navigator.share) navigator.share({ title: 'Review Kore Aerials', text: 'Thanks for working with Kore Aerials! If you have a minute, a quick Google review would mean a lot:', url: u }).catch(() => {})
+  else gbpCopy()
+}
+function gbpEdit() {
+  const c = gbpCfg()
+  const link = window.prompt('Google review link (from your profile: "Ask for reviews" › copy link). Leave blank to clear.', c.review)
+  if (link === null) return
+  const v = link.trim()
+  if (v && !/^https?:\/\//i.test(v)) { toast('That doesn\'t look like a link'); return }
+  saveSocialCfg({ gbpReviewLink: v })
+  renderDash(); toast(v ? 'Review link saved' : 'Review link cleared')
+}
+
 // ── DOCUMENTS ─────────────────────────────────────────────────
 // Lists Files/Kore Aerials Tool/Business Documents in Drive (plus one level of
 // subfolders as groups). Nothing is stored in Sheets: Drive is the source. Files open
@@ -8692,6 +8747,8 @@ function renderDash() {
       <div id="renewals-list"></div>
     </div>
   </section>
+
+  ${gbpCardHtml()}
 
   <section class="card dv-links">
     <div class="dv-card-h"><h3>Quick links</h3><button class="btn btn-sm btn-s" id="link-add-btn" onclick="toggleLinkForm()">+ Add link</button></div>
