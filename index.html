@@ -7706,7 +7706,9 @@ let _cliCt = [], _cliCtEdit = -1
 function cliHeadLine(c) {
   const cs = Array.isArray(c.contacts) ? c.contacts : []
   const pc = cs.find(x => x.primary) || cs[0]
-  const who = pc && pc.name ? esc(pc.name) + (pc.role ? ' · ' + esc(pc.role) : '') : ''
+  // Skip the contact's name when it's the same as the client's (e.g. Ben Bradfield · Ben Bradfield)
+  const same = pc && (pc.name || '').trim().toLowerCase() === (c.name || '').trim().toLowerCase()
+  const who = pc && pc.name ? (same ? '' : esc(pc.name)) + (pc.role ? (same ? '' : ' · ') + esc(pc.role) : '') : ''
   const co = c.company && c.company !== c.name ? esc(c.company) : ''
   return [co, who].filter(Boolean).join(' · ')
 }
@@ -10125,7 +10127,7 @@ function renderClientList() {
       <span class="cl-av">${initials}</span>
       <span class="cl-main">
         <span class="cl-name">${esc(c.name)}</span>
-        <span class="cl-sub">${esc(pc && pc.name ? pc.name + (pc.role ? ' · ' + pc.role : '') : (c.company && c.company !== c.name ? c.company : ''))}</span>
+        <span class="cl-sub">${esc((() => { const co = c.company && c.company !== c.name ? c.company : ''; if (!pc || !pc.name) return co; if (pc.name.trim().toLowerCase() === c.name.trim().toLowerCase()) return co || pc.role || ''; return pc.name + (pc.role ? ' · ' + pc.role : '') })())}</span>
         <span class="cl-tags">${c.clientType ? `<span class="cli-type-badge cli-type-${cliTypeSlug(c.clientType)}">${esc(c.clientType)}</span>` : ''}${c.source ? `<span class="cl-src">${icon('users', 11)} ${esc(c.source)}</span>` : ''}${fu ? `<span class="fu-badge ${fu.cls}">Follow up ${fu.cls === 'fu-ok' ? fu.label : fu.label.toLowerCase()}</span>` : ''}</span>
       </span>
       <span class="cl-meta"><span class="num cl-rev">${privacyMode() ? '—' : fmt(st.revenue)}</span><span>${st.jobs} job${st.jobs !== 1 ? 's' : ''}${st.lastJob ? ' · ' + fmtDate(st.lastJob).replace(/, \d{4}$/, m => st.lastJob.slice(0, 4) === today().slice(0, 4) ? '' : m) : ''}</span></span>
