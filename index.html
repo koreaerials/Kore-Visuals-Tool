@@ -1281,6 +1281,10 @@ html[data-theme] .btn.inv-gen-test{background:var(--orange);color:#111;border-co
 .mail-reply-acts{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .mail-arch{font-size:12.5px;color:var(--text-2);display:inline-flex;align-items:center;gap:6px;cursor:pointer}
 .mail-arch input{width:auto;margin:0}
+button.mail-del:hover{color:var(--red);border-color:rgba(255,107,94,.4)}
+.mail-undo{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:3000;display:flex;align-items:center;gap:14px;background:var(--surface-2);border:1px solid var(--line-2);border-radius:12px;padding:10px 12px 10px 16px;font-size:13.5px;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+.mail-undo button{border:0;background:none;color:var(--accent-text);font:inherit;font-weight:700;cursor:pointer;padding:4px 6px}
+@media(max-width:899px){.mail-undo{bottom:96px}.mail-del span{display:none}}
 #cli-emails .mail-row{border:1px solid var(--line);border-radius:10px;margin-bottom:6px}
 @media(max-width:899px){
   .mail-wrap{grid-template-columns:minmax(0,1fr);height:auto;min-height:0}
@@ -6004,7 +6008,8 @@ function removeInvLink() {
 // Senders are matched to Clients (contact emails) and Leads (email) for chips and links.
 // Nothing is stored: Gmail is the source; only the "me" address is cached.
 const GM_API = 'https://gmail.googleapis.com/gmail/v1/users/me'
-const MAIL_FOLDERS = { inbox: { l: 'Inbox', q: 'in:inbox' }, unread: { l: 'Unread', q: 'in:inbox is:unread' }, people: { l: 'Clients & leads', q: '' }, sent: { l: 'Sent', q: 'in:sent' } }
+// Inbox/Unread follow Gmail's Primary tab (Promotions/Social/Updates left out, like Gmail's own count)
+const MAIL_FOLDERS = { inbox: { l: 'Inbox', q: 'in:inbox category:primary' }, unread: { l: 'Unread', q: 'in:inbox category:primary is:unread' }, people: { l: 'Clients & leads', q: '' }, sent: { l: 'Sent', q: 'in:sent' } }
 let _mail = { folder: 'inbox', q: '', threads: null, next: null, open: null, thread: null, busy: false, me: '', err: '', unread: null, badgeAt: 0, compose: null }
 
 function mailHasScope() {
@@ -6054,7 +6059,8 @@ async function mailBadge(force) {
   if (!mailHasScope() || !gsGetToken()) return
   if (!force && Date.now() - _mail.badgeAt < 120000) return
   _mail.badgeAt = Date.now()
-  try { const l = await gm('/labels/INBOX'); _mail.unread = l.threadsUnread || 0 } catch { return }
+  // Unread Primary threads, counted the way Gmail's sidebar does (up to 99+)
+  try { const l = await gm('/threads?' + new URLSearchParams({ maxResults: '100', q: 'in:inbox category:primary is:unread' })); const n = (l.threads || []).length; _mail.unread = n >= 100 ? '99+' : n } catch { return }
   for (const id of ['nav-mail-cnt', 'nav-mail-cnt-m']) { const b = document.getElementById(id); if (b) b.textContent = _mail.unread || '' }
 }
 
@@ -6174,6 +6180,7 @@ function mailThreadHtml() {
       <h3>${esc(ms[0].subject || '(no subject)')}</h3>
       <div class="mail-th-acts">${link}
         <button class="btn btn-s btn-sm" onclick="mailArchive()" title="Archive">${icon('box', 13)} Archive</button>
+        <button class="btn btn-s btn-sm mail-del" onclick="mailTrash()" title="Delete (moves to Gmail Trash)">${icon('trash', 13)}<span> Delete</span></button>
         ${kebab([{ label: 'Mark unread', icon: 'eye-off', fn: 'mailMarkUnread()' }, { label: 'Open in Gmail', icon: 'link', fn: `window.open('https://mail.google.com/mail/#all/${T.id}','_blank','noopener')` }])}</div>
     </div>
     <div class="mail-msgs">${ms.map((m, i) => `<div class="mail-m${i < ms.length - 1 && ms.length > 2 ? ' fold' : ''}" onclick="this.classList.remove('fold')">
@@ -6239,6 +6246,28 @@ async function mailArchive(quiet) {
     if (_mail.folder !== 'sent') _mail.threads = (_mail.threads || []).filter(t => t.id !== id)
     mailBack(); if (!quiet) toast('Archived'); mailBadge(true)
   } catch (e) { toast('Archive failed: ' + (e.message || e), 5000) }
+}
+// Delete = Gmail Trash (Gmail empties it after 30 days); Undo restores it
+async function mailTrash() {
+  const id = _mail.thread?.id; if (!id) return
+  try {
+    await gm(`/threads/${id}/trash`, { method: 'POST' })
+    const row = (_mail.threads || []).find(t => t.id === id), idx = (_mail.threads || []).indexOf(row)
+    _mail.threads = (_mail.threads || []).filter(t => t.id !== id)
+    mailBack(); mailBadge(true)
+    mailUndoToast('Moved to Trash', async () => {
+      await gm(`/threads/${id}/untrash`, { method: 'POST' })
+      if (row) { _mail.threads.splice(Math.max(0, idx), 0, row); renderInbox() }
+      mailBadge(true); toast('Restored')
+    })
+  } catch (e) { toast('Delete failed: ' + (e.message || e), 5000) }
+}
+function mailUndoToast(msg, undo) {
+  document.getElementById('mail-undo')?.remove()
+  const d = document.createElement('div'); d.id = 'mail-undo'; d.className = 'mail-undo'
+  d.innerHTML = `<span>${esc(msg)}</span><button>Undo</button>`
+  d.querySelector('button').onclick = async () => { d.remove(); try { await undo() } catch (e) { toast('Undo failed: ' + (e.message || e)) } }
+  document.body.appendChild(d); setTimeout(() => d.remove(), 6000)
 }
 async function mailMarkUnread() {
   const id = _mail.thread?.id; if (!id) return
