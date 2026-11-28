@@ -6120,7 +6120,7 @@ document.addEventListener('keydown', e => {
   if (k === 'j' || k === 'ArrowDown') { e.preventDefault(); go(1) }
   else if (k === 'k' || k === 'ArrowUp') { e.preventDefault(); go(-1) }
   else if (k === 'e' && _mail.open) { e.preventDefault(); const nx = ts[i + 1] || ts[i - 1]; mailArchive(false, _mail.open).then(() => nx && mailOpen(nx.id)) }
-  else if ((k === '#' || k === 'Delete' || k === 'Backspace') && _mail.open) { e.preventDefault(); const nx = ts[i + 1] || ts[i - 1]; mailTrash(_mail.open).then(() => nx && mailOpen(nx.id)) }
+  else if ((k === '#' || k === 'Delete') && _mail.open) { e.preventDefault(); const nx = ts[i + 1] || ts[i - 1]; mailTrash(_mail.open).then(() => nx && mailOpen(nx.id)) }
   else if (k === 'r' && _mail.open) { e.preventDefault(); document.getElementById('mail-reply-text')?.focus() }
   else if (k === 'c') { e.preventDefault(); mailCompose() }
   else if (k === '/') { e.preventDefault(); document.getElementById('mail-q')?.focus() }
@@ -6342,7 +6342,7 @@ async function mailSendReply() {
   try {
     await gm('/messages/send', { method: 'POST', body: JSON.stringify({ raw: mailMime({ to, subject, body: body + '\n', inReplyTo: last.msgId, refs: last.refs }), threadId: _mail.thread.id }) })
     mailLogLead(mailAddr(to), 'Email reply')
-    if (document.getElementById('mail-reply-arch')?.checked) { await mailArchive(true); toast('Sent and archived'); return }
+    if (document.getElementById('mail-reply-arch')?.checked) { await mailArchive(true); return }
     toast('Reply sent'); mailOpen(_mail.thread.id)
   } catch (e) { toast('Send failed: ' + (e.message || e), 5000); btn.disabled = false; btn.textContent = 'Send reply' }
 }
@@ -6351,9 +6351,16 @@ async function mailArchive(quiet, tid) {
   const id = tid || _mail.thread?.id; if (!id) return
   try {
     await gm(`/threads/${id}/modify`, { method: 'POST', body: JSON.stringify({ removeLabelIds: ['INBOX'] }) })
+    const row = (_mail.threads || []).find(t => t.id === id), idx = (_mail.threads || []).indexOf(row)
     if (_mail.folder !== 'sent') _mail.threads = (_mail.threads || []).filter(t => t.id !== id)
     if (!tid || _mail.open === id) mailBack(); else renderInbox()
-    if (!quiet) toast('Archived'); mailBadge(true)
+    mailBadge(true)
+    // Always offer Undo: an archived email only lives in All Mail / Sent, easy to lose track of
+    mailUndoToast(quiet ? 'Sent and archived' : 'Archived', async () => {
+      await gm(`/threads/${id}/modify`, { method: 'POST', body: JSON.stringify({ addLabelIds: ['INBOX'] }) })
+      if (row && _mail.folder !== 'sent' && !_mail.threads.includes(row)) { _mail.threads.splice(Math.max(0, idx), 0, row); renderInbox() }
+      mailBadge(true); toast('Back in Inbox')
+    })
   } catch (e) { toast('Archive failed: ' + (e.message || e), 5000) }
 }
 // Move = add the folder's label and take it out of the Inbox (what Gmail's "Move to" does)
