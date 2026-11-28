@@ -1236,6 +1236,76 @@ html[data-theme] .btn.inv-gen-test{background:var(--orange);color:#111;border-co
 .il-row .btn{flex:none;justify-content:center;padding-left:18px;padding-right:18px}
 .il-hint{font-size:12px;color:var(--text-2);margin-top:8px}
 .il-status{font-size:12px;min-height:14px;margin-top:8px}
+/* ── LEADS ── */
+.nav-cnt{margin-left:auto;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--accent);color:var(--accent-ink);font-size:10.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+.nav-cnt:empty{display:none}
+.ld-goal{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:14px}
+.ld-goal-t{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.ld-goal-n{font-size:22px;font-weight:700}.ld-goal-n span{font-size:14px;color:var(--text-2);font-weight:500}
+.ld-goal-bar{height:6px;border-radius:3px;background:var(--hover);margin:8px 0 8px;overflow:hidden}
+.ld-goal-bar i{display:block;height:100%;background:var(--accent);border-radius:3px;transition:width .3s}
+.ld-goal.hit .ld-goal-bar i{background:var(--green)}
+.ld-goal-s{font-size:12px;color:var(--text-2)}
+.ld-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.ld-seg{display:inline-flex;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px}
+.ld-seg-btn{border:0;background:none;font:inherit;font-size:13px;font-weight:500;color:var(--text-2);padding:6px 14px;border-radius:7px;cursor:pointer}
+.ld-seg-btn.on{background:var(--hover);color:var(--text);font-weight:600}
+.ld-search{flex:1;min-width:180px;max-width:360px}
+.ld-grp{margin-bottom:18px}
+.ld-grp .docs-grp-h em{font-style:normal;font-weight:500;text-transform:none;letter-spacing:0;color:var(--text-3);margin-left:4px}
+.ld-grid-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.ld-card{display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 12px 10px 14px}
+.ld-card.due{border-color:rgba(255,162,76,.45);box-shadow:inset 3px 0 0 var(--accent)}
+.ld-card.closed{opacity:.72}
+.ld-main{display:flex;flex-direction:column;gap:5px;border:0;background:none;font:inherit;color:inherit;text-align:left;padding:0;cursor:pointer;min-width:0}
+.ld-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.ld-name{font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ld-amt{font-weight:600;font-size:13px}
+.ld-co{font-size:12.5px;color:var(--text-2);margin-top:-3px}
+.ld-chips{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ld-chips .bdg{font-size:10.5px;padding:2px 7px}
+.ld-src{font-size:11.5px;color:var(--text-3)}
+.ld-meta{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;color:var(--text-2);flex-wrap:wrap}
+.ld-fu.due{color:var(--accent-text);font-weight:600}
+.ld-acts{display:flex;align-items:center;justify-content:flex-end;gap:6px;border-top:1px solid var(--line);padding-top:8px}
+.ld-closed-btn{margin:4px 2px 10px;display:inline-block}
+.ld-note{font-size:12px;color:var(--text-2);margin:0 2px 12px}
+.ld-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.ld-hist{display:flex;flex-direction:column;gap:4px;font-size:12.5px}
+.ld-hist span{color:var(--text-2);display:inline-block;min-width:96px}
+.ld-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.ld-stat{display:flex;flex-direction:column;gap:4px;padding:14px 16px}
+.ld-src-card{padding:6px 14px 10px;overflow-x:auto}
+.ld-src-tbl{width:100%;min-width:560px;border-collapse:collapse;font-size:13px}
+.ld-src-tbl th{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);padding:10px 12px;border-bottom:1px solid var(--line)}
+.ld-src-tbl td{padding:12px;border-bottom:1px solid var(--line)}
+.ld-src-tbl tr:last-child td{border-bottom:0}
+.ld-src-tbl td,.ld-src-tbl th{text-align:right}.ld-src-tbl td:first-child,.ld-src-tbl th:first-child{text-align:left}
+.ld-srcbar{height:3px;background:var(--hover);border-radius:2px;margin-top:5px;max-width:140px}.ld-srcbar i{display:block;height:100%;background:var(--accent);border-radius:2px}
+.tpl-wrap{display:grid;grid-template-columns:180px 1fr;gap:14px}
+.tpl-list{display:flex;flex-direction:column;gap:4px}
+.tpl-item{border:1px solid transparent;background:none;font:inherit;font-size:13px;color:var(--text-2);text-align:left;padding:8px 10px;border-radius:8px;cursor:pointer}
+.tpl-item:hover{background:var(--hover);color:var(--text)}
+.tpl-item.on{background:var(--hover);color:var(--text);border-color:var(--line-2);font-weight:600}
+.tpl-add{color:var(--accent-text)}
+.tpl-ed{display:flex;flex-direction:column;gap:8px;min-width:0}
+.tpl-ed textarea{min-height:240px;font:inherit;font-size:13px;line-height:1.5;resize:vertical}
+.tpl-name{font-weight:600}
+.tpl-to{font-size:12.5px;color:var(--text-2)}
+.tpl-acts{display:flex;gap:8px;flex-wrap:wrap}
+@media(max-width:899px){
+  .ld-grid-cards{grid-template-columns:minmax(0,1fr)}
+  .ld-stats{grid-template-columns:1fr 1fr}
+  .ld-src-tbl{min-width:0;font-size:12.5px} .ld-src-tbl th:nth-child(3),.ld-src-tbl td:nth-child(3),.ld-src-tbl th:nth-child(7),.ld-src-tbl td:nth-child(7){display:none} .ld-src-tbl th,.ld-src-tbl td{padding:10px 6px} .ld-src-card{padding:6px 8px 10px}
+  .ld-grid{grid-template-columns:1fr}
+  .tpl-wrap{grid-template-columns:1fr}
+  .tpl-list{flex-direction:row;overflow-x:auto;padding-bottom:4px}
+  .tpl-item{white-space:nowrap;flex:none}
+  .ld-search{max-width:none}
+  #panel-leads .gr-hdr-btns{width:100%;flex-wrap:nowrap}
+  #panel-leads .gr-hdr-btns .btn{flex:1;justify-content:center}
+}
+
 /* ── GOOGLE BUSINESS ── */
 .gbp-card{margin-bottom:16px}
 .gbp-links{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:4px 0 12px}
@@ -1446,6 +1516,7 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
       <button data-mode="business" class="tab on" data-tab="dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg> Dashboard</button>
       <div class="nav-grp" data-mode="business">Work</div>
       <button data-mode="business" class="tab" data-tab="jobs"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Jobs</button>
+      <button data-mode="business" class="tab" data-tab="leads"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg> Leads<span class="nav-cnt" id="nav-leads-cnt"></span></button>
       <button data-mode="business" class="tab" data-tab="pricing"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> Pricing &amp; Quotes</button>
       <button data-mode="business" class="tab" data-tab="clients"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Clients</button>
       <div class="nav-grp" data-mode="business">Money</div>
@@ -1480,6 +1551,7 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
   <button data-mode="business" class="tab on" data-tab="dashboard" onclick="mobNavTo('dashboard')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg> Dashboard</button>
   <div class="mob-grp" data-mode="business">Work</div>
   <button data-mode="business" class="tab" data-tab="jobs" onclick="mobNavTo('jobs')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Jobs</button>
+  <button data-mode="business" class="tab" data-tab="leads" onclick="mobNavTo('leads')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg> Leads<span class="nav-cnt" id="nav-leads-cnt-m"></span></button>
   <button data-mode="business" class="tab" data-tab="pricing" onclick="mobNavTo('pricing')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> Pricing &amp; Quotes</button>
   <button data-mode="business" class="tab" data-tab="clients" onclick="mobNavTo('clients')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Clients</button>
   <div class="mob-grp" data-mode="business">Money</div>
@@ -1657,6 +1729,22 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
     <div class="fbar pv-fbar" id="gear-filter"></div>
     <div id="gear-summary"></div>
     <div class="tbl-wrap" id="gear-table"></div>
+  </section>
+
+  <!-- LEADS -->
+  <section class="panel" id="panel-leads">
+    <div class="pv-hdr"><div><h2>Leads</h2><p id="ld-sub">People to win over, and who to follow up with</p></div>
+      <div class="gr-hdr-btns"><button class="btn btn-s" onclick="tplOpen()">Templates</button><button class="btn btn-g" onclick="leadOpen()">+ Add lead</button></div></div>
+    <div id="ld-goal"></div>
+    <div class="ld-bar">
+      <div class="ld-seg" id="ld-seg">
+        <button class="ld-seg-btn on" data-v="pipeline" onclick="leadView('pipeline')">Pipeline</button>
+        <button class="ld-seg-btn" data-v="targets" onclick="leadView('targets')">To pitch</button>
+        <button class="ld-seg-btn" data-v="sources" onclick="leadView('sources')">Sources</button>
+      </div>
+      <label class="jv-search ld-search"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" id="ld-q" placeholder="Search leads" aria-label="Search leads" oninput="renderLeads()"></label>
+    </div>
+    <div id="ld-body"></div>
   </section>
 
   <!-- DOCUMENTS -->
@@ -1977,6 +2065,38 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
   </section>
 
   <!-- JOB FORM MODAL -->
+  <div class="smod-overlay" id="ld-overlay" onclick="if(event.target===this)leadClose()">
+    <div class="smod" style="max-width:520px">
+      <div class="smod-hdr"><span class="smod-ttl" id="ld-ttl">New lead</span><button class="smod-close" onclick="leadClose()">&#x2715;</button></div>
+      <input type="hidden" id="ld-id">
+      <div class="ld-grid">
+        <div class="smod-row"><div class="smod-lbl">Name <span style="color:var(--red)">*</span></div><input id="ld-name" placeholder="Person's name"></div>
+        <div class="smod-row"><div class="smod-lbl">Company</div><input id="ld-company" placeholder="Business or brand"></div>
+        <div class="smod-row"><div class="smod-lbl">Email</div><input id="ld-email" type="email" placeholder="name@email.com"></div>
+        <div class="smod-row"><div class="smod-lbl">Phone</div><input id="ld-phone" type="tel" placeholder="(516) 555-0123"></div>
+        <div class="smod-row"><div class="smod-lbl">Instagram</div><input id="ld-ig" placeholder="@handle"></div>
+        <div class="smod-row"><div class="smod-lbl">Type of work</div><select id="ld-cat"></select></div>
+        <div class="smod-row"><div class="smod-lbl">Source</div><select id="ld-source"></select></div>
+        <div class="smod-row"><div class="smod-lbl">Status</div><select id="ld-status"></select></div>
+        <div class="smod-row"><div class="smod-lbl">Quote ($)</div><input id="ld-quote" type="number" min="0" step="1" placeholder="0"></div>
+        <div class="smod-row"><div class="smod-lbl">Next follow-up</div><input id="ld-next" type="date"></div>
+      </div>
+      <div class="smod-row"><div class="smod-lbl">Notes</div><textarea id="ld-notes" rows="3" placeholder="What they want, budget, dates..."></textarea></div>
+      <div id="ld-hist"></div>
+      <div class="smod-footer">
+        <button class="btn btn-g" onclick="leadSave()" style="flex:1">Save</button>
+        <button class="btn btn-s" onclick="leadClose()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="smod-overlay" id="tpl-overlay" onclick="if(event.target===this)tplClose()">
+    <div class="smod" style="max-width:640px">
+      <div class="smod-hdr"><span class="smod-ttl" id="tpl-ttl">Message templates</span><button class="smod-close" onclick="tplClose()">&#x2715;</button></div>
+      <div id="tpl-body"></div>
+    </div>
+  </div>
+
   <div class="smod-overlay" id="job-form-overlay" onclick="if(event.target===this)closeJobForm()">
     <div class="smod" style="max-width:500px">
       <div class="smod-hdr">
@@ -2171,7 +2291,7 @@ function toggleKebab(ev, btn) {
 }
 
 // ── STORAGE ──────────────────────────────────────────────────
-const K = { inc:'dt_income', pur:'dt_purchases', sub:'dt_subs', subx:'dt_subx', links:'dt_links', prc:'dt_pricing', jobs:'dt_jobs', agr:'dt_agr', wish:'dt_wishlist', gear:'dt_gear', socSnap:'dt_soc_snapshots', socReels:'dt_soc_reels', socCfg:'dt_soc_config' }
+const K = { leads:'dt_leads', tpl:'dt_templates', inc:'dt_income', pur:'dt_purchases', sub:'dt_subs', subx:'dt_subx', links:'dt_links', prc:'dt_pricing', jobs:'dt_jobs', agr:'dt_agr', wish:'dt_wishlist', gear:'dt_gear', socSnap:'dt_soc_snapshots', socReels:'dt_soc_reels', socCfg:'dt_soc_config' }
 const DEFAULT_LINKS = [
   {id:'l1', name:'Kore Aerials Website', url:'https://www.koreaerials.com'},
   {id:'l2', name:'FAA DroneZone', url:'https://faadronezone-operator.faa.gov/#/part107'}
@@ -2324,9 +2444,9 @@ const SHEET_SCHEMA = {
   // Worker URL only — never a token or API key (this file is public).
   [K.socCfg]: {
     tab:  'Social Config',
-    cols: ['id','workerUrl','igUsername','lastSync','gbpReviewLink','gbpName'],
-    toRow: o => [ o.id||'cfg', o.workerUrl||'', o.igUsername||'', o.lastSync||'', o.gbpReviewLink||'', o.gbpName||'' ],
-    toObj: r => ({ id: r[0]||'cfg', workerUrl: r[1]||'', igUsername: r[2]||'', lastSync: r[3]||'', gbpReviewLink: r[4]||'', gbpName: r[5]||'' }),
+    cols: ['id','workerUrl','igUsername','lastSync','gbpReviewLink','gbpName','pitchGoal'],
+    toRow: o => [ o.id||'cfg', o.workerUrl||'', o.igUsername||'', o.lastSync||'', o.gbpReviewLink||'', o.gbpName||'', o.pitchGoal||'' ],
+    toObj: r => ({ id: r[0]||'cfg', workerUrl: r[1]||'', igUsername: r[2]||'', lastSync: r[3]||'', gbpReviewLink: r[4]||'', gbpName: r[5]||'', pitchGoal: +r[6]||0 }),
   },
   [K.gear]: {
     tab:  'Gear',
@@ -2337,6 +2457,18 @@ const SHEET_SCHEMA = {
     toObj: r => ({ id: r[0], name: r[1]||'', type: r[2]||'FPV drone', model: r[3]||'', serial: r[4]||'', status: r[5]||'Active',
       faaReg: r[6]||'', faaExpires: r[7]||'', faaSubId: r[8]||'', remoteId: r[9]||'', hours: +r[10]||0, flights: +r[11]||0,
       lastFlown: r[12]||'', lastService: r[13]||'', notes: r[14]||'', addedAt: r[15]||'' }),
+  },
+  [K.leads]: {
+    tab:  'Leads',
+    cols: ['id','name','company','email','phone','instagram','source','category','status','quote','nextFollowUp','lastContact','createdAt','notes','touches','clientName','jobId','closedAt','lostReason'],
+    toRow: o => [o.id, o.name||'', o.company||'', o.email||'', o.phone||'', o.instagram||'', o.source||'', o.category||'', o.status||'New', o.quote||'', o.nextFollowUp||'', o.lastContact||'', o.createdAt||'', o.notes||'', JSON.stringify(o.touches||[]), o.clientName||'', o.jobId||'', o.closedAt||'', o.lostReason||''],
+    toObj: r => ({ id: r[0], name: r[1]||'', company: r[2]||'', email: r[3]||'', phone: r[4]||'', instagram: r[5]||'', source: r[6]||'', category: r[7]||'', status: r[8]||'New', quote: +r[9]||0, nextFollowUp: r[10]||'', lastContact: r[11]||'', createdAt: r[12]||'', notes: r[13]||'', touches: (() => { try { return JSON.parse(r[14]||'[]') } catch { return [] } })(), clientName: r[15]||'', jobId: r[16]||'', closedAt: r[17]||'', lostReason: r[18]||'' }),
+  },
+  [K.tpl]: {
+    tab:  'Templates',
+    cols: ['id','name','subject','body'],
+    toRow: o => [o.id, o.name||'', o.subject||'', o.body||''],
+    toObj: r => ({ id: r[0], name: r[1]||'', subject: r[2]||'', body: r[3]||'' }),
   },
   [K.wish]: {
     tab:  'Wishlist',
@@ -4965,7 +5097,7 @@ function toggleTheme() {
 }
 
 // ── TAB SWITCHING ─────────────────────────────────────────────
-const tabRenders={docs:renderDocs,gear:renderGear,wishlist:renderWishlist,'social-stats':renderSocialStats,'social-ideas':renderSocialIdeas,dashboard:renderDash,income:renderIncTable,purchases:renderPurTable,subscriptions:()=>{renderSubTable()},taxes:renderTaxes,export:()=>{renderDataSummary();switchExportSection('export-main')},clients:renderClientsTab,jobs:renderJobsBoard,pricing:()=>{renderPricingList();initQuoteBuilder()}}
+const tabRenders={leads:renderLeads,docs:renderDocs,gear:renderGear,wishlist:renderWishlist,'social-stats':renderSocialStats,'social-ideas':renderSocialIdeas,dashboard:renderDash,income:renderIncTable,purchases:renderPurTable,subscriptions:()=>{renderSubTable()},taxes:renderTaxes,export:()=>{renderDataSummary();switchExportSection('export-main')},clients:renderClientsTab,jobs:renderJobsBoard,pricing:()=>{renderPricingList();initQuoteBuilder()}}
 
 function openTab(t) {
   const tab=document.querySelector(`#nav [data-tab="${t}"]`); if(!tab)return
@@ -5787,6 +5919,299 @@ function removeInvLink() {
   save(K.inc, list); renderIncTable()
   toast('Invoice link removed')
   closeInvLinkModal()
+}
+
+// ── LEADS ─────────────────────────────────────────────────────
+// Pre-job pipeline: people who reached out (New) or that Andriy wants to pitch (Target / "To pitch"),
+// through Contacted → Quoted → Won (opens the job form prefilled) or Lost. Each lead carries a
+// next follow-up date; due ones show on the Dashboard's Needs attention list and the nav badge.
+// Every message sent from a template (or "Log contact") is a touch: it sets lastContact, moves
+// To pitch/New → Contacted, pushes the follow-up 3 days out, and counts toward the weekly
+// outreach goal (socCfg.pitchGoal). Sources view = leads, wins and paid revenue per source.
+// Storage: K.leads (Sheets tab "Leads", touches as JSON), K.tpl (tab "Templates"; built-in
+// defaults until the first edit).
+const LD_STATUS = ['Target', 'New', 'Contacted', 'Quoted', 'Won', 'Lost']
+const LD_LABEL = { Target: 'To pitch', New: 'New', Contacted: 'Contacted', Quoted: 'Quoted', Won: 'Won', Lost: 'Lost' }
+const LD_TONE = { Target: 'gr', New: 'b', Contacted: 'v', Quoted: 'o', Won: 'g', Lost: 'r' }
+const LD_SOURCES = ['Instagram', 'Google', 'Referral', 'Website', 'Videographer', 'Outreach', 'Repeat client', 'Other']
+const LD_CATS = ['Wedding', 'Real estate', 'Business / ads', 'Event', 'Videographer partner', 'Other']
+const LD_OPEN = ['New', 'Contacted', 'Quoted']
+const LD_PORTFOLIO = 'https://www.koreaerials.com'
+let _ldView = 'pipeline', _ldShowClosed = false
+
+function leadsAll() { return load(K.leads) }
+function leadFind(id) { return leadsAll().find(l => l.id === id) }
+function leadPut(lead) { const list = leadsAll(); const i = list.findIndex(x => x.id === lead.id); if (i >= 0) list[i] = lead; else list.push(lead); save(K.leads, list) }
+function ldAddDays(d, n) { const x = toDate(d); x.setDate(x.getDate() + n); return toStr(x) }
+function ldDaysAgo(d) { return d ? Math.round((toDate(today()) - toDate(d)) / 864e5) : null }
+function ldDue(l, t = today()) { return LD_OPEN.includes(l.status) && l.nextFollowUp && l.nextFollowUp <= t }
+function ldWeekStart(t = today()) { const d = toDate(t); const wd = (d.getDay() + 6) % 7; d.setDate(d.getDate() - wd); return toStr(d) }
+function ldWeekTouches() { const ws = ldWeekStart(); return leadsAll().reduce((n, l) => n + (l.touches || []).filter(x => x.d >= ws).length, 0) }
+function ldGoal() { return +socialCfg().pitchGoal || 5 }
+function ldWho(l) { return l.company && l.company !== l.name ? `${l.name} · ${l.company}` : l.name }
+function ldClientName(l) { return l.clientName || l.company || l.name }
+
+function leadsAttention(t) {
+  const due = leadsAll().filter(l => ldDue(l, t))
+  for (const id of ['nav-leads-cnt', 'nav-leads-cnt-m']) { const b = document.getElementById(id); if (b) b.textContent = due.length || '' }
+  return due.map(l => {
+    const late = ldDaysAgo(l.nextFollowUp)
+    return { lvl: late > 0 ? 2 : 1, ico: 'users', tone: 'amber', title: `Follow up: ${l.name}`,
+      sub: `${LD_LABEL[l.status]}${l.quote ? ' · ' + fmt(l.quote) : ''}${late > 0 ? ` · ${late} day${late !== 1 ? 's' : ''} late` : ' · due today'}`,
+      act: 'Message', fn: `navTo('leads');leadMsg('${l.id}')`, act2: 'Open', fn2: "navTo('leads')" }
+  })
+}
+
+function leadView(v) { _ldView = v; document.querySelectorAll('#ld-seg .ld-seg-btn').forEach(b => b.classList.toggle('on', b.dataset.v === v)); renderLeads() }
+
+function renderLeads() {
+  const all = leadsAll(), t = today()
+  const due = all.filter(l => ldDue(l, t))
+  const open = all.filter(l => LD_OPEN.includes(l.status))
+  for (const id of ['nav-leads-cnt', 'nav-leads-cnt-m']) { const b = document.getElementById(id); if (b) b.textContent = due.length || '' }
+  const body = document.getElementById('ld-body'); if (!body) return
+  const sub = document.getElementById('ld-sub')
+  if (sub) sub.innerHTML = `<b>${open.length}</b> open${due.length ? ` · <span style="color:var(--orange)">${due.length} follow-up${due.length !== 1 ? 's' : ''} due</span>` : ''} · ${all.filter(l => l.status === 'Target').length} to pitch`
+  const n = ldWeekTouches(), goal = ldGoal(), pct = Math.min(100, Math.round(n / goal * 100))
+  const g = document.getElementById('ld-goal')
+  if (g) g.innerHTML = `<div class="ld-goal${n >= goal ? ' hit' : ''}"><div class="ld-goal-t"><span class="dv-lbl">Outreach this week</span><span class="num ld-goal-n">${n}<span> / ${goal}</span></span></div>
+    <div class="ld-goal-bar"><i style="width:${pct}%"></i></div><div class="ld-goal-s">${n >= goal ? 'Goal hit. Nice.' : `${goal - n} more message${goal - n !== 1 ? 's' : ''} to hit your goal`} · <button class="dv-link" onclick="ldSetGoal()">Change goal</button></div></div>`
+  const q = (document.getElementById('ld-q')?.value || '').toLowerCase()
+  const match = l => !q || [l.name, l.company, l.email, l.instagram, l.notes, l.source, l.category].join(' ').toLowerCase().includes(q)
+  document.getElementById('ld-q')?.closest('.ld-search')?.style.setProperty('display', _ldView === 'sources' ? 'none' : '')
+  if (_ldView === 'sources') { body.innerHTML = ldSourcesHtml(all); return }
+  if (_ldView === 'targets') {
+    const ts = all.filter(l => l.status === 'Target' && match(l)).sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''))
+    body.innerHTML = `<div class="ld-note">Businesses and people you want to pitch. Send a template and it moves to your pipeline as Contacted.</div>` +
+      (ts.length ? `<div class="ld-grid-cards">${ts.map(ldCard).join('')}</div>` : emptyState('users', q ? 'No matches.' : 'No one on your pitch list yet.', q ? null : { label: '+ Add someone to pitch', fn: "leadOpen(null,'Target')" }))
+    return
+  }
+  const sorted = (xs) => xs.sort((a, b) => (a.nextFollowUp || '9999').localeCompare(b.nextFollowUp || '9999'))
+  const grp = (title, xs, hint) => xs.length ? `<div class="ld-grp"><div class="docs-grp-h">${title}<span>${xs.length}</span>${hint ? `<em>${hint}</em>` : ''}</div><div class="ld-grid-cards">${xs.map(ldCard).join('')}</div></div>` : ''
+  const dueM = sorted(due.filter(match))
+  const rest = st => sorted(open.filter(l => l.status === st && !ldDue(l, t) && match(l)))
+  const closed = all.filter(l => (l.status === 'Won' || l.status === 'Lost') && match(l)).sort((a, b) => (b.closedAt || '').localeCompare(a.closedAt || ''))
+  let html = grp('Follow up now', dueM, 'oldest first') + grp('New', rest('New')) + grp('Contacted', rest('Contacted')) + grp('Quoted', rest('Quoted'))
+  if (!html) html = emptyState('users', q ? 'No matches.' : 'No open leads. Add one when someone reaches out, or pitch someone from your list.', q ? null : { label: '+ Add lead', fn: 'leadOpen()' })
+  if (closed.length) html += `<button class="dv-link ld-closed-btn" onclick="_ldShowClosed=!_ldShowClosed;renderLeads()">${_ldShowClosed ? 'Hide' : 'Show'} closed (${closed.filter(l => l.status === 'Won').length} won · ${closed.filter(l => l.status === 'Lost').length} lost)</button>` + (_ldShowClosed ? `<div class="ld-grid-cards ld-closed">${closed.slice(0, 40).map(ldCard).join('')}</div>` : '')
+  body.innerHTML = html
+}
+
+function ldCard(l) {
+  const t = today(), due = ldDue(l, t), late = l.nextFollowUp ? ldDaysAgo(l.nextFollowUp) : null
+  const fu = !LD_OPEN.includes(l.status) ? '' : !l.nextFollowUp ? '<span class="ld-fu">No follow-up set</span>'
+    : due ? `<span class="ld-fu due">${late > 0 ? `Follow up · ${late}d late` : 'Follow up today'}</span>` : `<span class="ld-fu">Follow up ${fmtDate(l.nextFollowUp)}</span>`
+  const last = l.lastContact ? `Last contact ${ldDaysAgo(l.lastContact) === 0 ? 'today' : ldDaysAgo(l.lastContact) + 'd ago'}` : (l.status === 'Target' ? 'Not pitched yet' : 'No contact logged')
+  const closedLine = l.status === 'Won' ? `Won ${l.closedAt ? fmtDate(l.closedAt) : ''}` : l.status === 'Lost' ? `Lost${l.lostReason ? ': ' + esc(l.lostReason) : ''}` : ''
+  const acts = [{ label: 'Edit', icon: 'pencil', fn: `leadOpen('${l.id}')` }]
+  if (LD_OPEN.includes(l.status) || l.status === 'Target') {
+    acts.push({ label: 'Log contact (no message)', icon: 'check-circle', fn: `ldLogTouch('${l.id}','note','Logged')` })
+    if (l.status !== 'Quoted' && l.status !== 'Target') acts.push({ label: 'Mark quoted', icon: 'document', fn: `ldMarkQuoted('${l.id}')` })
+    acts.push('sep', { label: 'Won → create job', icon: 'briefcase', fn: `leadWin('${l.id}')` }, { label: 'Mark lost', icon: 'x', fn: `leadLost('${l.id}')` })
+  } else acts.push({ label: 'Reopen', icon: 'refresh', fn: `leadReopen('${l.id}')` })
+  acts.push('sep', { label: 'Delete', icon: 'trash', fn: `leadDel('${l.id}')`, danger: true })
+  return `<div class="ld-card${due ? ' due' : ''}${l.status === 'Won' || l.status === 'Lost' ? ' closed' : ''}">
+    <button class="ld-main" onclick="leadOpen('${l.id}')">
+      <span class="ld-top"><span class="ld-name">${esc(l.name)}</span>${l.quote ? `<span class="num ld-amt">${fmt(l.quote)}</span>` : ''}</span>
+      ${l.company && l.company !== l.name ? `<span class="ld-co">${esc(l.company)}</span>` : ''}
+      <span class="ld-chips"><span class="bdg bdg-${LD_TONE[l.status]}">${LD_LABEL[l.status]}</span>${l.category ? `<span class="bdg bdg-gr">${esc(l.category)}</span>` : ''}${l.source ? `<span class="ld-src">via ${esc(l.source)}</span>` : ''}</span>
+      <span class="ld-meta">${closedLine || fu}${closedLine ? '' : `<span>${last}</span>`}</span>
+    </button>
+    <div class="ld-acts">${l.status === 'Won' || l.status === 'Lost' ? '' : `<button class="btn btn-sm ${due || l.status === 'Target' ? 'btn-g' : 'btn-s'}" onclick="leadMsg('${l.id}')">${l.status === 'Target' ? 'Pitch' : 'Message'}</button>`}${kebab(acts)}</div>
+  </div>`
+}
+
+function ldSourcesHtml(all) {
+  const paid = loadP(K.inc).filter(e => e.status === 'Paid')
+  const rows = LD_SOURCES.map(src => {
+    const xs = all.filter(l => (l.source || 'Other') === src && l.status !== 'Target')
+    const won = xs.filter(l => l.status === 'Won'), lost = xs.filter(l => l.status === 'Lost')
+    const rev = won.reduce((sum, l) => { const c = ldClientName(l).toLowerCase(); return sum + paid.filter(e => (e.client || '').toLowerCase() === c && (!l.createdAt || (e.date || '') >= l.createdAt)).reduce((a, e) => a + (+e.amount || 0), 0) }, 0)
+    return { src, n: xs.length, won: won.length, lost: lost.length, open: xs.filter(l => LD_OPEN.includes(l.status)).length, rev }
+  }).filter(r => r.n)
+  const pitched = all.filter(l => (l.touches || []).length && l.source === 'Outreach')
+  if (!rows.length) return emptyState('bar-chart', 'Stats show up once you have leads with a source.', { label: '+ Add lead', fn: 'leadOpen()' })
+  rows.sort((a, b) => b.rev - a.rev || b.won - a.won || b.n - a.n)
+  const best = rows[0]
+  const tot = rows.reduce((a, r) => ({ n: a.n + r.n, won: a.won + r.won, lost: a.lost + r.lost, rev: a.rev + r.rev }), { n: 0, won: 0, lost: 0, rev: 0 })
+  const rate = r => r.won + r.lost ? Math.round(r.won / (r.won + r.lost) * 100) + '%' : '·'
+  return `<div class="ld-stats">
+    <div class="card ld-stat"><span class="dv-lbl">Leads</span><span class="num dv-num">${tot.n}</span><span class="dv-tiny">${tot.won} won · ${tot.lost} lost</span></div>
+    <div class="card ld-stat"><span class="dv-lbl">Win rate</span><span class="num dv-num">${rate(tot)}</span><span class="dv-tiny">of closed leads</span></div>
+    <div class="card ld-stat"><span class="dv-lbl">Revenue from leads</span><span class="num dv-num">${fmt(tot.rev)}</span><span class="dv-tiny">${best.rev ? 'Best source: ' + esc(best.src) : 'Paid income from won leads'}</span></div>
+    <div class="card ld-stat"><span class="dv-lbl">Outreach pitched</span><span class="num dv-num">${pitched.length}</span><span class="dv-tiny">${pitched.filter(l => l.status === 'Won').length} became clients</span></div>
+  </div>
+  <div class="card ld-src-card"><table class="ld-src-tbl"><thead><tr><th>Source</th><th>Leads</th><th>Open</th><th>Won</th><th>Win rate</th><th>Revenue</th><th>Avg job</th></tr></thead><tbody>
+    ${rows.map(r => `<tr><td><b>${esc(r.src)}</b><div class="ld-srcbar"><i style="width:${tot.rev ? Math.round(r.rev / tot.rev * 100) : 0}%"></i></div></td><td class="num">${r.n}</td><td class="num">${r.open}</td><td class="num">${r.won}</td><td class="num">${rate(r)}</td><td class="num"><b>${fmt(r.rev)}</b></td><td class="num">${r.won && r.rev ? fmt(r.rev / r.won) : '·'}</td></tr>`).join('')}
+  </tbody></table><div class="ld-note" style="margin:10px 2px 2px">Revenue counts paid income from clients you marked Won, matched by client name.</div></div>`
+}
+
+// ── Lead form ──
+function ldOpts(el, xs, val, labels) { el.innerHTML = xs.map(x => `<option value="${esc(x)}"${x === val ? ' selected' : ''}>${esc(labels ? labels[x] : x)}</option>`).join('') }
+function leadOpen(id, status) {
+  const l = id ? leadFind(id) : null
+  const $ = x => document.getElementById(x)
+  $('ld-id').value = l?.id || ''
+  $('ld-ttl').textContent = l ? 'Edit lead' : status === 'Target' ? 'Add someone to pitch' : 'New lead'
+  $('ld-name').value = l?.name || ''; $('ld-company').value = l?.company || ''; $('ld-email').value = l?.email || ''
+  $('ld-phone').value = l?.phone || ''; $('ld-ig').value = l?.instagram || ''
+  $('ld-quote').value = l?.quote || ''; $('ld-next').value = l?.nextFollowUp || (l ? '' : status === 'Target' ? '' : today())
+  $('ld-notes').value = l?.notes || ''
+  ldOpts($('ld-cat'), ['', ...LD_CATS], l?.category || '', { '': 'Choose…', ...Object.fromEntries(LD_CATS.map(c => [c, c])) })
+  ldOpts($('ld-source'), LD_SOURCES, l?.source || (status === 'Target' ? 'Outreach' : 'Instagram'))
+  ldOpts($('ld-status'), LD_STATUS, l?.status || status || 'New', LD_LABEL)
+  const th = (l?.touches || []).slice().reverse()
+  $('ld-hist').innerHTML = th.length ? `<div class="smod-row"><div class="smod-lbl">History</div><div class="ld-hist">${th.slice(0, 8).map(x => `<div><span>${fmtDate(x.d)}</span>${esc(x.n || ({ email: 'Email', dm: 'DM', note: 'Contact logged' })[x.t] || 'Contact')}</div>`).join('')}</div></div>` : ''
+  $('ld-overlay').classList.add('open'); setTimeout(() => $('ld-name').focus(), 50)
+}
+function leadClose() { document.getElementById('ld-overlay').classList.remove('open') }
+function leadSave() {
+  const $ = x => document.getElementById(x).value.trim()
+  const name = $('ld-name'); if (!name) { toast('Add a name'); return }
+  const id = $('ld-id'), old = id ? leadFind(id) : null
+  const status = $('ld-status')
+  const lead = { ...(old || { id: uid(), createdAt: today(), touches: [] }), name, company: $('ld-company'), email: $('ld-email'), phone: $('ld-phone'),
+    instagram: $('ld-ig').replace(/^@/, ''), category: $('ld-cat'), source: $('ld-source'), status, quote: +$('ld-quote') || 0, nextFollowUp: $('ld-next'), notes: $('ld-notes') }
+  if ((status === 'Won' || status === 'Lost') && old?.status !== status) lead.closedAt = today()
+  leadPut(lead); leadClose(); renderLeads(); toast(old ? 'Lead saved' : 'Lead added')
+  if (status === 'Won' && old?.status !== 'Won') ldOfferJob(lead)
+}
+function ldMarkQuoted(id) {
+  const l = leadFind(id); if (!l) return
+  const v = window.prompt(`Quote amount for ${l.name} ($):`, l.quote || '')
+  if (v === null) return
+  l.status = 'Quoted'; l.quote = +String(v).replace(/[^0-9.]/g, '') || l.quote || 0
+  l.nextFollowUp = ldAddDays(today(), 3)
+  leadPut(l); renderLeads(); toast(`Quoted · follow up ${fmtDate(l.nextFollowUp)}`)
+}
+function leadLost(id) {
+  const l = leadFind(id); if (!l) return
+  const why = window.prompt(`Mark ${l.name} as lost. Reason (optional): price, went quiet, booked someone else…`, '')
+  if (why === null) return
+  l.status = 'Lost'; l.lostReason = why.trim(); l.closedAt = today(); l.nextFollowUp = ''
+  leadPut(l); renderLeads(); toast('Marked lost')
+}
+function leadReopen(id) { const l = leadFind(id); if (!l) return; l.status = l.quote ? 'Quoted' : 'Contacted'; l.closedAt = ''; l.lostReason = ''; l.nextFollowUp = today(); leadPut(l); renderLeads(); toast('Reopened') }
+function leadDel(id) { const l = leadFind(id); if (!l || !confirm(`Delete ${l.name}?`)) return; save(K.leads, leadsAll().filter(x => x.id !== id)); renderLeads(); toast('Deleted') }
+function leadWin(id) {
+  const l = leadFind(id); if (!l) return
+  l.status = 'Won'; l.closedAt = today(); l.nextFollowUp = ''; l.clientName = ldClientName(l)
+  leadPut(l); renderLeads(); ldOfferJob(l)
+}
+async function ldOfferJob(l) {
+  navTo('jobs')
+  await openJobForm()
+  selectJobClient(ldClientName(l))
+  document.getElementById('job-stage').value = 'Booked'
+  if (l.quote) document.getElementById('job-amount').value = l.quote
+  if (l.notes) document.getElementById('job-notes').value = l.notes
+  document.getElementById('job-name').focus()
+  toast(`${l.name} won! Finish the job details`, 3500)
+}
+function ldSetGoal() {
+  const v = window.prompt('How many outreach messages per week? (pitches + follow-ups)', ldGoal())
+  if (v === null) return
+  const n = Math.max(1, Math.min(200, parseInt(v) || 0)); if (!n) return
+  saveSocialCfg({ pitchGoal: n }); renderLeads()
+}
+
+// Logs one touch: counts toward the weekly goal, moves To pitch/New → Contacted, and pushes the
+// next follow-up 3 days out (Quoted leads stay Quoted).
+function ldLogTouch(id, kind, label) {
+  const l = leadFind(id); if (!l) return
+  const t = today()
+  l.touches = [...(l.touches || []), { d: t, t: kind, n: label || '' }].slice(-40)
+  l.lastContact = t
+  if (l.status === 'Target' || l.status === 'New') l.status = 'Contacted'
+  l.nextFollowUp = ldAddDays(t, 3)
+  leadPut(l); renderLeads()
+  if (document.getElementById('panel-dashboard')?.classList.contains('on')) renderDash()
+  toast(`Logged · follow up ${fmtDate(l.nextFollowUp)}`)
+}
+
+// ── Templates ──
+const TPL_DEFAULTS = [
+  { id: 't-vid', name: 'Videographer partnership', subject: 'Drone + FPV add-on for your weddings',
+    body: "Hi {first},\n\nI'm Andriy from Kore Aerials, a drone and FPV studio on Long Island. I really like your work and wanted to see if you'd be open to teaming up.\n\nI can add cinematic drone and FPV shots to your weddings and events, so you can offer clients more without running a second camera in the air yourself. I'm FAA certified and insured, and I deliver raw or edited, whatever fits your workflow.\n\nSome of my work: {portfolio}\n\nOpen to a quick call this week?\n\nAndriy\nKore Aerials" },
+  { id: 't-re', name: 'Real estate agent intro', subject: 'Aerial + fly-through video for your listings',
+    body: "Hi {first},\n\nI'm Andriy with Kore Aerials. I shoot aerial photos and FPV fly-through videos for Long Island listings, the kind that make people stop scrolling.\n\nOne take, flying from the street through the front door and the whole house, plus aerials of the property and neighborhood. Fast turnaround so it's ready for your listing date.\n\nExamples: {portfolio}\n\nWant me to put together a quote for your next listing?\n\nAndriy\nKore Aerials" },
+  { id: 't-biz', name: 'Business FPV ad pitch', subject: 'FPV fly-through video for {company}',
+    body: "Hi {first},\n\nI'm Andriy from Kore Aerials. I make one-take FPV drone fly-throughs for local businesses: the camera flies through your space like a roller coaster and it does really well on Instagram and TikTok.\n\nI think {company} would look great in one. Here's my work: {portfolio}\n\nWould you be open to a quick chat about it?\n\nAndriy\nKore Aerials" },
+  { id: 't-fq', name: 'Follow-up after quote', subject: 'Following up on your quote',
+    body: "Hi {first},\n\nJust following up on the quote I sent{quote}. Happy to answer any questions or adjust it to fit what you need.\n\nIf you'd like to lock in your date, just reply here and I'll send the agreement over.\n\nThanks,\nAndriy\nKore Aerials" },
+  { id: 't-nudge', name: 'No-reply nudge', subject: 'Quick follow-up',
+    body: "Hi {first},\n\nWanted to bump this to the top of your inbox in case it got buried. Still happy to help with drone or FPV video whenever the timing's right.\n\n{portfolio}\n\nAndriy\nKore Aerials" },
+  { id: 't-rev', name: 'Thank you + review', subject: 'Thank you!',
+    body: "Hi {first},\n\nThanks again for working with Kore Aerials, it was a pleasure. If you have a minute, a quick Google review would mean a lot and really helps a small business like mine:\n\n{review}\n\nHope to work together again soon!\n\nAndriy\nKore Aerials" },
+]
+function tplAll() { const x = load(K.tpl); return x.length ? x : TPL_DEFAULTS.map(t => ({ ...t })) }
+function tplFill(text, l) {
+  const first = (l?.name || '').trim().split(/\s+/)[0] || 'there'
+  const rev = gbpCfg().review
+  return String(text || '').replace(/\{first\}/g, first).replace(/\{name\}/g, l?.name || '').replace(/\{company\}/g, l?.company || l?.name || 'your business')
+    .replace(/\{portfolio\}/g, LD_PORTFOLIO).replace(/\{review\}/g, rev || '[add your review link in Dashboard › Google Business Profile › Settings]')
+    .replace(/\{quote\}/g, l?.quote ? ` (${fmt(l.quote)})` : '')
+}
+let _tplLead = null, _tplSel = null
+function leadMsg(id) { tplOpen(id) }
+function tplOpen(leadId) {
+  _tplLead = leadId || null
+  const l = _tplLead ? leadFind(_tplLead) : null
+  const ts = tplAll()
+  if (l || !_tplSel || !ts.find(t => t.id === _tplSel)) {
+    _tplSel = !l ? ts[0]?.id : (l.status === 'Quoted' ? 't-fq' : l.status === 'Contacted' ? 't-nudge' : l.status === 'Won' ? 't-rev' : l.category === 'Videographer partner' ? 't-vid' : l.category === 'Real estate' ? 't-re' : l.category === 'Business / ads' ? 't-biz' : ts[0]?.id)
+    if (!ts.find(t => t.id === _tplSel)) _tplSel = ts[0]?.id
+  }
+  document.getElementById('tpl-ttl').textContent = l ? `Message ${l.name}` : 'Message templates'
+  tplRender(); document.getElementById('tpl-overlay').classList.add('open')
+}
+function tplClose() { document.getElementById('tpl-overlay').classList.remove('open'); _tplLead = null }
+function tplRender() {
+  const ts = tplAll(), t = ts.find(x => x.id === _tplSel) || ts[0], l = _tplLead ? leadFind(_tplLead) : null
+  const el = document.getElementById('tpl-body'); if (!el) return
+  const list = `<div class="tpl-list">${ts.map(x => `<button class="tpl-item${x.id === t?.id ? ' on' : ''}" onclick="_tplSel='${x.id}';tplRender()">${esc(x.name)}</button>`).join('')}<button class="tpl-item tpl-add" onclick="tplNew()">+ New template</button></div>`
+  if (!t) { el.innerHTML = list; return }
+  const subj = l ? tplFill(t.subject, l) : t.subject, body = l ? tplFill(t.body, l) : t.body
+  const ig = l?.instagram ? l.instagram.replace(/^@/, '') : ''
+  el.innerHTML = `<div class="tpl-wrap">${list}<div class="tpl-ed">
+    ${l ? `<div class="tpl-to">To: <b>${esc(l.email || (ig ? '@' + ig : l.phone || 'no contact info'))}</b></div>` : `<input id="tpl-name" class="tpl-name" value="${esc(t.name)}" aria-label="Template name">`}
+    <input id="tpl-subj" value="${esc(subj)}" placeholder="Subject" aria-label="Subject">
+    <textarea id="tpl-text" rows="12" aria-label="Message">${esc(body)}</textarea>
+    ${l ? '' : '<div class="ld-note">Fill-ins: {first} {name} {company} {portfolio} {review} {quote}</div>'}
+    <div class="tpl-acts">${l ? `
+      ${l.email ? `<button class="btn btn-g" onclick="tplSend('email')">Open in Gmail</button>` : ''}
+      <button class="btn ${l.email ? 'btn-s' : 'btn-g'}" onclick="tplSend('copy')">${ig ? 'Copy + open Instagram' : 'Copy message'}</button>
+      ${l.phone ? `<button class="btn btn-s" onclick="tplSend('sms')">Text</button>` : ''}`
+      : `<button class="btn btn-g" onclick="tplSave()">Save template</button><button class="btn btn-s" onclick="tplDelete()">Delete</button>${load(K.tpl).length ? '<button class="btn btn-s" onclick="tplReset()">Reset all to defaults</button>' : ''}`}</div>
+    ${l ? '<div class="ld-note">Sending logs a contact and sets the next follow-up for 3 days out. You can edit the text first.</div>' : ''}
+  </div></div>`
+}
+function tplNew() { const ts = tplAll(); const t = { id: uid(), name: 'New template', subject: '', body: 'Hi {first},\n\n\n\nAndriy\nKore Aerials' }; save(K.tpl, [...ts, t]); _tplSel = t.id; if (_tplLead) { _tplLead = null; document.getElementById('tpl-ttl').textContent = 'Message templates' } tplRender() }
+function tplSave() {
+  const ts = tplAll(), i = ts.findIndex(x => x.id === _tplSel); if (i < 0) return
+  ts[i] = { ...ts[i], name: document.getElementById('tpl-name').value.trim() || 'Untitled', subject: document.getElementById('tpl-subj').value, body: document.getElementById('tpl-text').value }
+  save(K.tpl, ts); tplRender(); toast('Template saved')
+}
+function tplDelete() { const ts = tplAll(); const t = ts.find(x => x.id === _tplSel); if (!t || !confirm(`Delete the "${t.name}" template?`)) return; save(K.tpl, ts.filter(x => x.id !== _tplSel)); _tplSel = null; tplOpen(null) }
+function tplReset() { if (!confirm('Replace all templates with the built-in defaults?')) return; save(K.tpl, TPL_DEFAULTS.map(t => ({ ...t }))); _tplSel = null; tplOpen(null) }
+async function tplSend(how) {
+  const l = _tplLead ? leadFind(_tplLead) : null; if (!l) return
+  const t = tplAll().find(x => x.id === _tplSel)
+  const subj = document.getElementById('tpl-subj').value, body = document.getElementById('tpl-text').value
+  if (how === 'email') {
+    const coarse = matchMedia('(pointer:coarse)').matches
+    const url = coarse ? `mailto:${encodeURIComponent(l.email)}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`
+      : `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(l.email)}&su=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`
+    window.open(url, '_blank', 'noopener')
+  } else if (how === 'sms') {
+    window.open(`sms:${l.phone.replace(/[^0-9+]/g, '')}&body=${encodeURIComponent(body)}`, '_self')
+  } else {
+    try { await navigator.clipboard.writeText(body) } catch { window.prompt('Copy your message:', body) }
+    const ig = (l.instagram || '').replace(/^@/, '')
+    if (ig) window.open(`https://ig.me/m/${encodeURIComponent(ig)}`, '_blank', 'noopener')
+  }
+  ldLogTouch(l.id, how === 'email' ? 'email' : 'dm', t?.name || 'Message')
+  tplClose()
 }
 
 // ── GOOGLE BUSINESS PROFILE CARD ─────────────────────────────
@@ -8626,6 +9051,7 @@ function dashAttention() {
     sub: `${fmt(e.amount)} · ${e.status.toLowerCase()}${e.date ? ' · ' + fmtDate(e.date) : ''}`,
     act: 'Mark paid', fn: `dashMarkPaid('${e.id}')`, act2: 'Open', fn2: "navTo('income')" }))
   gearAttention(t).forEach(a => items.push(a))
+  leadsAttention(t).forEach(a => items.push(a))
   const gearSubs = new Set(load(K.gear).map(g => g.faaSubId).filter(Boolean))
   loadP(K.sub).filter(s => subOverdue(s) && !gearSubs.has(s.id)).forEach(s => items.push({
     lvl: 2, ico: 'alert', tone: 'red',
