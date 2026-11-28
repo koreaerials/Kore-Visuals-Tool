@@ -1231,6 +1231,20 @@ html[data-theme] .btn.inv-gen-test{background:var(--orange);color:#111;border-co
 .il-row .btn{flex:none;justify-content:center;padding-left:18px;padding-right:18px}
 .il-hint{font-size:12px;color:var(--text-2);margin-top:8px}
 .il-status{font-size:12px;min-height:14px;margin-top:8px}
+/* ── DOCUMENTS ── */
+.docs-grp{margin-bottom:18px}
+.docs-grp-h{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-2);margin:4px 2px 10px}
+.docs-grp-h span{margin-left:2px;background:var(--hover);border-radius:6px;padding:1px 7px;letter-spacing:0}
+.docs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.docs-card{padding:10px 8px 10px 12px}
+.docs-open{display:flex;align-items:center;gap:12px;flex:1;min-width:0;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer;padding:0}
+.docs-open .il-main{display:flex;flex-direction:column}
+.docs-kind{font-size:10.5px;font-weight:700;letter-spacing:.04em}
+.docs-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.docs-card:hover{border-color:var(--line-2)}
+#panel-docs .jv-bar{margin-bottom:16px}
+#panel-docs.docs-drop{outline:2px dashed var(--accent);outline-offset:-8px;border-radius:14px}
+@media(max-width:899px){ .docs-grid{grid-template-columns:minmax(0,1fr)} }
 /* ── ATTACHMENTS ── */
 .att-list{display:flex;flex-direction:column;gap:8px}
 .att-card{gap:10px}
@@ -1424,6 +1438,7 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
       <button data-mode="business" class="tab" data-tab="purchases"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Purchases</button>
       <button data-mode="business" class="tab" data-tab="subscriptions"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg> Subscriptions</button>
       <button data-mode="business" class="tab" data-tab="export"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Taxes &amp; Export</button>
+      <button data-mode="business" class="tab" data-tab="docs"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg> Documents</button>
       <div class="nav-grp" data-mode="business">Gear</div>
       <button data-mode="business" class="tab" data-tab="gear"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><line x1="10.6" y1="10.6" x2="6.5" y2="6.5"/><line x1="13.4" y1="10.6" x2="17.5" y2="6.5"/><line x1="10.6" y1="13.4" x2="6.5" y2="17.5"/><line x1="13.4" y1="13.4" x2="17.5" y2="17.5"/><circle cx="5" cy="5" r="2.5"/><circle cx="19" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="19" r="2.5"/></svg> Gear</button>
       <button data-mode="business" class="tab" data-tab="wishlist"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.6 6.1.8-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.4l6.1-.8z"/></svg> Wishlist</button>
@@ -1456,6 +1471,7 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
   <button data-mode="business" class="tab" data-tab="purchases" onclick="mobNavTo('purchases')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Purchases</button>
   <button data-mode="business" class="tab" data-tab="subscriptions" onclick="mobNavTo('subscriptions')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg> Subscriptions</button>
   <button data-mode="business" class="tab" data-tab="export" onclick="mobNavTo('export')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Taxes &amp; Export</button>
+  <button data-mode="business" class="tab" data-tab="docs" onclick="mobNavTo('docs')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg> Documents</button>
   <div class="mob-grp" data-mode="business">Gear</div>
   <button data-mode="business" class="tab" data-tab="gear" onclick="mobNavTo('gear')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><line x1="10.6" y1="10.6" x2="6.5" y2="6.5"/><line x1="13.4" y1="10.6" x2="17.5" y2="6.5"/><line x1="10.6" y1="13.4" x2="6.5" y2="17.5"/><line x1="13.4" y1="13.4" x2="17.5" y2="17.5"/><circle cx="5" cy="5" r="2.5"/><circle cx="19" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="19" r="2.5"/></svg> Gear</button>
   <button data-mode="business" class="tab" data-tab="wishlist" onclick="mobNavTo('wishlist')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.6 6.1.8-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.4l6.1-.8z"/></svg> Wishlist</button>
@@ -1624,6 +1640,14 @@ html[data-theme] #dash-widgets .dv-main{grid-column:1/-1}
     <div class="fbar pv-fbar" id="gear-filter"></div>
     <div id="gear-summary"></div>
     <div class="tbl-wrap" id="gear-table"></div>
+  </section>
+
+  <!-- DOCUMENTS -->
+  <section class="panel" id="panel-docs" ondragover="docsDrag(event,1)" ondragleave="docsDrag(event,0)" ondrop="docsDrop(event)">
+    <div class="pv-hdr"><div><h2>Documents</h2><p id="docs-sub">Business documents from Google Drive</p></div>
+      <div class="gr-hdr-btns"><button class="btn btn-s" onclick="docsOpenFolder()">Open folder</button><label class="btn btn-g" style="cursor:pointer">+ Upload<input type="file" multiple style="display:none" onchange="docsUpload(this)"></label></div></div>
+    <div class="jv-bar"><label class="jv-search"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" id="docs-q" placeholder="Search documents" aria-label="Search documents" oninput="docsRenderList()"></label><button class="fbtn" onclick="renderDocs(true)">Refresh</button></div>
+    <div id="docs-list"></div>
   </section>
 
   <!-- WISHLIST -->
@@ -4923,7 +4947,7 @@ function toggleTheme() {
 }
 
 // ── TAB SWITCHING ─────────────────────────────────────────────
-const tabRenders={gear:renderGear,wishlist:renderWishlist,'social-stats':renderSocialStats,'social-ideas':renderSocialIdeas,dashboard:renderDash,income:renderIncTable,purchases:renderPurTable,subscriptions:()=>{renderSubTable()},taxes:renderTaxes,export:()=>{renderDataSummary();switchExportSection('export-main')},clients:renderClientsTab,jobs:renderJobsBoard,pricing:()=>{renderPricingList();initQuoteBuilder()}}
+const tabRenders={docs:renderDocs,gear:renderGear,wishlist:renderWishlist,'social-stats':renderSocialStats,'social-ideas':renderSocialIdeas,dashboard:renderDash,income:renderIncTable,purchases:renderPurTable,subscriptions:()=>{renderSubTable()},taxes:renderTaxes,export:()=>{renderDataSummary();switchExportSection('export-main')},clients:renderClientsTab,jobs:renderJobsBoard,pricing:()=>{renderPricingList();initQuoteBuilder()}}
 
 function openTab(t) {
   const tab=document.querySelector(`#nav [data-tab="${t}"]`); if(!tab)return
@@ -5745,6 +5769,89 @@ function removeInvLink() {
   save(K.inc, list); renderIncTable()
   toast('Invoice link removed')
   closeInvLinkModal()
+}
+
+// ── DOCUMENTS ─────────────────────────────────────────────────
+// Lists Files/Kore Aerials Tool/Business Docs in Drive (plus one level of
+// subfolders as groups). Nothing is stored in Sheets: Drive is the source. Files open
+// in the shared preview viewer; Upload puts new files straight into the folder.
+const DOCS_PATH = ['Files', 'Kore Aerials Tool', 'Business Docs']
+let _docs = null, _docsFolder = null, _docsBusy = false
+async function docsList(folderId) {
+  const q = encodeURIComponent(`'${folderId}' in parents and trashed=false`)
+  const r = await gsReqRetry(`${GD_DRIVE_API}/files?q=${q}&orderBy=folder,name&pageSize=200&fields=files(id,name,mimeType,modifiedTime,size,webViewLink)&spaces=drive`)
+  if (!r?.ok) throw new Error('Could not read the folder (' + (r ? r.status : 'not signed in') + ')')
+  return (await r.json()).files || []
+}
+async function renderDocs(force) {
+  const el = document.getElementById('docs-list'); if (!el) return
+  if (_docs && !force) return docsRenderList()
+  if (_docsBusy) return
+  if (!gsGetToken()) { el.innerHTML = emptyState('lock', 'Sign in with Google to see your documents.'); return }
+  _docsBusy = true
+  el.innerHTML = '<div class="inv-prev-msg" style="color:var(--text-2);height:auto;padding:40px">Loading documents from Drive…</div>'
+  try {
+    _docsFolder = await gdResolvePath(DOCS_PATH)
+    if (!_docsFolder) { el.innerHTML = emptyState('folder', 'Folder "Business Docs" not found in Files › Kore Aerials Tool.'); _docs = null; return }
+    const top = await docsList(_docsFolder)
+    const folders = top.filter(f => f.mimeType === 'application/vnd.google-apps.folder')
+    const groups = [{ name: '', files: top.filter(f => f.mimeType !== 'application/vnd.google-apps.folder') }]
+    for (const f of folders) groups.push({ name: f.name, id: f.id, files: (await docsList(f.id)).filter(x => x.mimeType !== 'application/vnd.google-apps.folder') })
+    _docs = groups
+    docsRenderList()
+  } catch (e) { el.innerHTML = emptyState('alert', esc(e.message || String(e))); _docs = null }
+  finally { _docsBusy = false }
+}
+function docsKind(f) {
+  const m = f.mimeType || ''
+  if (/pdf/.test(m)) return 'PDF'
+  if (/^image\//.test(m)) return 'Image'
+  if (/google-apps\.document|word/.test(m)) return 'Doc'
+  if (/google-apps\.spreadsheet|sheet|excel/.test(m)) return 'Sheet'
+  return (f.name.split('.').pop() || 'File').toUpperCase().slice(0, 5)
+}
+function docsSize(b) { b = +b || 0; return !b ? '' : b < 1024 * 1024 ? Math.max(1, Math.round(b / 1024)) + ' KB' : (b / 1048576).toFixed(1) + ' MB' }
+function docsRenderList() {
+  const el = document.getElementById('docs-list'); if (!el || !_docs) return
+  const q = (document.getElementById('docs-q')?.value || '').toLowerCase()
+  const total = _docs.reduce((n, g) => n + g.files.length, 0)
+  const sub = document.getElementById('docs-sub')
+  if (sub) sub.innerHTML = `<b>${total}</b> document${total !== 1 ? 's' : ''} · Drive › Business Docs`
+  const groups = _docs.map(g => ({ ...g, files: g.files.filter(f => !q || f.name.toLowerCase().includes(q) || g.name.toLowerCase().includes(q)) })).filter(g => g.files.length)
+  if (!groups.length) { el.innerHTML = total ? emptyState('search', 'No documents match.', null, { small: true, pad: '28px 20px' }) : emptyState('folder', 'No documents yet. Upload one, or drop files into the folder in Drive.'); return }
+  el.innerHTML = groups.map(g => `<div class="docs-grp">${g.name ? `<div class="docs-grp-h">${icon('folder', 14)} ${esc(g.name)}<span>${g.files.length}</span></div>` : ''}
+    <div class="docs-grid">${g.files.map(f => `<div class="il-card docs-card">
+      <button class="docs-open" onclick="docsPreview('${f.id}')" title="Preview">
+        <span class="il-ico docs-kind">${esc(docsKind(f))}</span>
+        <span class="il-main"><span class="att-lbl docs-name">${esc(f.name.replace(/\.[a-z0-9]{2,4}$/i, ''))}</span><span class="att-name">Updated ${fmtDate((f.modifiedTime || '').slice(0, 10))}${docsSize(f.size) ? ' · ' + docsSize(f.size) : ''}</span></span>
+      </button>
+      ${kebab([{ label: 'Preview', icon: 'eye', fn: `docsPreview('${f.id}')` }, { label: 'Download', icon: 'download', fn: `docsDownload('${f.id}')` }, { label: 'Open in Drive', icon: 'link', fn: `docsOpenDrive('${f.id}')` }])}
+    </div>`).join('')}</div></div>`).join('')
+}
+function docsFind(id) { for (const g of _docs || []) for (const f of g.files) if (f.id === id) return f; return null }
+function docsPreview(id) { const f = docsFind(id); previewDriveFile(id, f ? f.name.replace(/\.[a-z0-9]{2,4}$/i, '') : 'Document') }
+function docsOpenDrive(id) { const f = docsFind(id); window.open(f?.webViewLink || 'https://drive.google.com/file/d/' + id + '/view', '_blank', 'noopener') }
+async function docsDownload(id) {
+  try { const f = await driveFileFetch(id); const u = URL.createObjectURL(f.blob); const a = document.createElement('a'); a.href = u; a.download = f.name; a.click(); setTimeout(() => URL.revokeObjectURL(u), 5000) }
+  catch (e) { toast('Download failed: ' + (e.message || String(e)), 5000) }
+}
+async function docsOpenFolder() {
+  if (!_docsFolder && gsGetToken()) _docsFolder = await gdResolvePath(DOCS_PATH)
+  if (_docsFolder) window.open('https://drive.google.com/drive/folders/' + _docsFolder, '_blank', 'noopener'); else toast('Folder not found')
+}
+function docsDrag(e, on) { if (![...(e.dataTransfer?.types || [])].includes('Files')) return; e.preventDefault(); document.getElementById('panel-docs').classList.toggle('docs-drop', !!on) }
+function docsDrop(e) { e.preventDefault(); document.getElementById('panel-docs').classList.remove('docs-drop'); if (e.dataTransfer?.files?.length) docsUpload({ files: e.dataTransfer.files }) }
+async function docsUpload(input) {
+  const files = [...(input.files || [])]; if ('value' in input) input.value = ''
+  if (!files.length) return
+  const tok = gsGetToken(); if (!tok) { toast('Sign in with Google first'); return }
+  if (!_docsFolder) _docsFolder = await gdResolvePath(DOCS_PATH)
+  if (!_docsFolder) { toast('Folder "Business Docs" not found'); return }
+  toast(`Uploading ${files.length} file${files.length !== 1 ? 's' : ''}…`, 3000)
+  try {
+    for (const f of files) await invUploadToDrive(f, f.type || 'application/octet-stream', f.name, f.type || 'application/octet-stream', _docsFolder, tok)
+    toast('Uploaded to Drive'); renderDocs(true)
+  } catch (e) { toast('Upload failed: ' + (e.message || String(e)), 5000) }
 }
 
 // ── INVOICE PREVIEW ───────────────────────────────────────────
