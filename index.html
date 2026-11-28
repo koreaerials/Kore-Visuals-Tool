@@ -5772,10 +5772,11 @@ function removeInvLink() {
 }
 
 // ── DOCUMENTS ─────────────────────────────────────────────────
-// Lists Files/Kore Aerials Tool/Business Docs in Drive (plus one level of
+// Lists Files/Kore Aerials Tool/Business Documents in Drive (plus one level of
 // subfolders as groups). Nothing is stored in Sheets: Drive is the source. Files open
 // in the shared preview viewer; Upload puts new files straight into the folder.
-const DOCS_PATH = ['Files', 'Kore Aerials Tool', 'Business Docs']
+const DOCS_BASE = ['Files', 'Kore Aerials Tool'], DOCS_NAMES = ['Business Documents', 'Business Docs', 'Kore Aerials, LLC Docs']
+async function docsResolve() { for (const n of DOCS_NAMES) { const id = await gdResolvePath([...DOCS_BASE, n]); if (id) return id } return null }
 let _docs = null, _docsFolder = null, _docsBusy = false
 async function docsList(folderId) {
   const q = encodeURIComponent(`'${folderId}' in parents and trashed=false`)
@@ -5791,8 +5792,8 @@ async function renderDocs(force) {
   _docsBusy = true
   el.innerHTML = '<div class="inv-prev-msg" style="color:var(--text-2);height:auto;padding:40px">Loading documents from Drive…</div>'
   try {
-    _docsFolder = await gdResolvePath(DOCS_PATH)
-    if (!_docsFolder) { el.innerHTML = emptyState('folder', 'Folder "Business Docs" not found in Files › Kore Aerials Tool.'); _docs = null; return }
+    _docsFolder = await docsResolve()
+    if (!_docsFolder) { el.innerHTML = emptyState('folder', 'Folder "Business Documents" not found in Files › Kore Aerials Tool.'); _docs = null; return }
     const top = await docsList(_docsFolder)
     const folders = top.filter(f => f.mimeType === 'application/vnd.google-apps.folder')
     const groups = [{ name: '', files: top.filter(f => f.mimeType !== 'application/vnd.google-apps.folder') }]
@@ -5816,7 +5817,7 @@ function docsRenderList() {
   const q = (document.getElementById('docs-q')?.value || '').toLowerCase()
   const total = _docs.reduce((n, g) => n + g.files.length, 0)
   const sub = document.getElementById('docs-sub')
-  if (sub) sub.innerHTML = `<b>${total}</b> document${total !== 1 ? 's' : ''} · Drive › Business Docs`
+  if (sub) sub.innerHTML = `<b>${total}</b> document${total !== 1 ? 's' : ''} · Drive › Business Documents`
   const groups = _docs.map(g => ({ ...g, files: g.files.filter(f => !q || f.name.toLowerCase().includes(q) || g.name.toLowerCase().includes(q)) })).filter(g => g.files.length)
   if (!groups.length) { el.innerHTML = total ? emptyState('search', 'No documents match.', null, { small: true, pad: '28px 20px' }) : emptyState('folder', 'No documents yet. Upload one, or drop files into the folder in Drive.'); return }
   el.innerHTML = groups.map(g => `<div class="docs-grp">${g.name ? `<div class="docs-grp-h">${icon('folder', 14)} ${esc(g.name)}<span>${g.files.length}</span></div>` : ''}
@@ -5836,7 +5837,7 @@ async function docsDownload(id) {
   catch (e) { toast('Download failed: ' + (e.message || String(e)), 5000) }
 }
 async function docsOpenFolder() {
-  if (!_docsFolder && gsGetToken()) _docsFolder = await gdResolvePath(DOCS_PATH)
+  if (!_docsFolder && gsGetToken()) _docsFolder = await docsResolve()
   if (_docsFolder) window.open('https://drive.google.com/drive/folders/' + _docsFolder, '_blank', 'noopener'); else toast('Folder not found')
 }
 function docsDrag(e, on) { if (![...(e.dataTransfer?.types || [])].includes('Files')) return; e.preventDefault(); document.getElementById('panel-docs').classList.toggle('docs-drop', !!on) }
@@ -5845,8 +5846,8 @@ async function docsUpload(input) {
   const files = [...(input.files || [])]; if ('value' in input) input.value = ''
   if (!files.length) return
   const tok = gsGetToken(); if (!tok) { toast('Sign in with Google first'); return }
-  if (!_docsFolder) _docsFolder = await gdResolvePath(DOCS_PATH)
-  if (!_docsFolder) { toast('Folder "Business Docs" not found'); return }
+  if (!_docsFolder) _docsFolder = await docsResolve()
+  if (!_docsFolder) { toast('Folder "Business Documents" not found'); return }
   toast(`Uploading ${files.length} file${files.length !== 1 ? 's' : ''}…`, 3000)
   try {
     for (const f of files) await invUploadToDrive(f, f.type || 'application/octet-stream', f.name, f.type || 'application/octet-stream', _docsFolder, tok)
