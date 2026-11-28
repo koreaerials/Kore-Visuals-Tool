@@ -3573,7 +3573,8 @@ async function jobCreateIncomeIfNeeded(job) {
   // Auto-add to CRM if client is new
   if(job.clientName){
     if(_clients===null) await loadClientsFromSheets()
-    if(_clients && !_clients.find(c=>c.name===job.clientName)){
+    // Match by client id first: a renamed client must not get a blank duplicate
+    if(_clients && !(job.clientId && _clients.find(c=>c.id===job.clientId)) && !_clients.find(c=>c.name===job.clientName)){
       _clients.push({id:uid(),name:job.clientName,company:'',contacts:[],clientType:'',notes:'',followUpDate:''})
       try{await writeClientsToSheets()}catch(_){}
     }
@@ -6867,6 +6868,11 @@ async function cliConfirmRename(oldName) {
   const incList = load(K.inc) || []
   let incChanged = false
   incList.forEach(e => { if (e.client === oldName) { e.client = newName; incChanged = true } })
+  // Jobs follow the rename too (by client id or old name)
+  const recId = rec?.id
+  const jobList = load(K.jobs) || []; let jobsChanged = false
+  jobList.forEach(j => { if (j.clientName === oldName || (recId && j.clientId === recId)) { if (j.clientName !== newName) { j.clientName = newName; jobsChanged = true } } })
+  if (jobsChanged) save(K.jobs, jobList)
   if (incChanged) localStorage.setItem(K.inc, JSON.stringify(incList))
   _cliDetailName = newName
   const statusEl = document.getElementById('cli-save-status')
