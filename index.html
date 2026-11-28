@@ -1303,6 +1303,9 @@ html[data-theme] .btn.inv-gen-test{background:var(--orange);color:#111;border-co
 @media (hover:none){.mail-qa{display:none!important}}
 button.mail-del:hover{color:var(--red);border-color:rgba(255,107,94,.4)}
 .mail-undo{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:3000;display:flex;align-items:center;gap:14px;background:var(--surface-2);border:1px solid var(--line-2);border-radius:12px;padding:10px 12px 10px 16px;font-size:13.5px;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+.mail-undo button.x{color:var(--text-3);font-size:16px;font-weight:400;padding:2px 4px}
+.mail-keys{font-size:11px;color:var(--text-3);text-align:center;padding:10px 8px 12px}.mail-keys b{font-weight:600;color:var(--text-2);background:var(--hover);border-radius:4px;padding:0 4px}
+@media (hover:none){.mail-keys{display:none}}
 .mail-undo button{border:0;background:none;color:var(--accent-text);font:inherit;font-weight:700;cursor:pointer;padding:4px 6px}
 @media(max-width:899px){.mail-undo{bottom:96px}.mail-del span{display:none}}
 #cli-emails .mail-row{border:1px solid var(--line);border-radius:10px;margin-bottom:6px}
@@ -1386,7 +1389,8 @@ button.mail-del:hover{color:var(--red);border-color:rgba(255,107,94,.4)}
 }
 
 /* ── GOOGLE BUSINESS ── */
-.gbp-card{margin-bottom:16px}
+.gbp-card{margin-bottom:16px;min-width:0;max-width:100%;overflow:hidden}
+.gbp-rev-txt .dv-att-s{white-space:normal;word-break:break-word}
 .gbp-links{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:4px 0 12px}
 .gbp-btn{display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 8px;border:1px solid var(--line);border-radius:10px;color:var(--text);text-decoration:none;font-size:13px;font-weight:500;background:var(--hover);white-space:nowrap}
 .gbp-btn:hover{border-color:var(--accent);color:var(--accent)}
@@ -3807,7 +3811,7 @@ async function jobMarkPaid(id) {
   if(job.incomeId) {
     // Income entry already exists — just mark it Paid
     const incList=load(K.inc); const ii=incList.findIndex(e=>e.id===job.incomeId)
-    if(ii>=0){ incList[ii].status='Paid'; if(!incList[ii].date) incList[ii].date=today(); save(K.inc,incList); gsQueueSync(K.inc) }
+    if(ii>=0){ const was=incList[ii].status; incList[ii].status='Paid'; if(!incList[ii].date) incList[ii].date=today(); save(K.inc,incList); gsQueueSync(K.inc); if(was!=='Paid') reviewAsk(incList[ii].client||job.clientName) }
   } else {
     // No income entry yet — create one as Paid
     // Carry over agreement link from job if present
@@ -4008,7 +4012,9 @@ function confirmManualRenew(id) {
 }
 function updateIncField(id, field, val) {
   const list=load(K.inc), i=list.findIndex(e=>e.id===id); if(i<0)return
+  const wasPaid=list[i].status==='Paid'
   list[i][field]=val; save(K.inc,list)
+  if(field==='status'&&val==='Paid'&&!wasPaid) reviewAsk(list[i].client)
   // Sync income status → linked job stage (bidirectional)
   if(field==='status'){
     const jobs=load(K.jobs), ji=jobs.findIndex(j=>j.incomeId===id)
@@ -6101,12 +6107,43 @@ async function mailFixSelfLinks() {
   if (n) { try { await writeClientsToSheets(); toast(`Removed your own email from ${n} client contact${n !== 1 ? 's' : ''}`) } catch {} }
 }
 
+// Desktop shortcuts on the Inbox tab (ignored while typing): j/k next/previous, e archive,
+// # or Delete trash, r reply, c compose, / search, Esc back
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('panel-inbox')?.classList.contains('on')) return
+  if (e.metaKey || e.ctrlKey || e.altKey) return
+  const tag = (e.target.tagName || '').toLowerCase(); if (['input', 'textarea', 'select'].includes(tag) || e.target.isContentEditable) { if (e.key === 'Escape') e.target.blur(); return }
+  if (document.querySelector('.smod-overlay.open')) return
+  const ts = _mail.threads || [], i = ts.findIndex(t => t.id === _mail.open)
+  const go = d => { const n = ts[Math.max(0, Math.min(ts.length - 1, (i < 0 ? -1 : i) + d))]; if (n) { mailOpen(n.id); setTimeout(() => document.querySelector('.mail-row.on')?.scrollIntoView({ block: 'nearest' }), 50) } }
+  const k = e.key
+  if (k === 'j' || k === 'ArrowDown') { e.preventDefault(); go(1) }
+  else if (k === 'k' || k === 'ArrowUp') { e.preventDefault(); go(-1) }
+  else if (k === 'e' && _mail.open) { e.preventDefault(); const nx = ts[i + 1] || ts[i - 1]; mailArchive(false, _mail.open).then(() => nx && mailOpen(nx.id)) }
+  else if ((k === '#' || k === 'Delete' || k === 'Backspace') && _mail.open) { e.preventDefault(); const nx = ts[i + 1] || ts[i - 1]; mailTrash(_mail.open).then(() => nx && mailOpen(nx.id)) }
+  else if (k === 'r' && _mail.open) { e.preventDefault(); document.getElementById('mail-reply-text')?.focus() }
+  else if (k === 'c') { e.preventDefault(); mailCompose() }
+  else if (k === '/') { e.preventDefault(); document.getElementById('mail-q')?.focus() }
+  else if (k === 'Escape') mailBack()
+})
+// Quietly refresh the list every 3 minutes while the Inbox is open (only when nothing's open/being written)
+setInterval(() => {
+  if (document.hidden || !mailHasScope()) return
+  if (document.getElementById('panel-inbox')?.classList.contains('on') && !_mail.open && !_mail.compose && !_mail.busy) mailLoad()
+  else mailBadge()
+}, 180000)
+document.addEventListener('visibilitychange', () => { if (!document.hidden) mailBadge(true) })
 async function mailBadge(force) {
   if (!mailHasScope() || !gsGetToken()) return
   if (!force && Date.now() - _mail.badgeAt < 120000) return
   _mail.badgeAt = Date.now()
   // Unread Primary threads, counted the way Gmail's sidebar does (up to 99+)
   try { const l = await gm('/threads?' + new URLSearchParams({ maxResults: '100', q: 'in:inbox category:primary is:unread' })); const n = (l.threads || []).length; _mail.unread = n >= 100 ? '99+' : n } catch { return }
+  // Unread from clients & leads, for the Dashboard's Needs attention list
+  try {
+    const emails = [...mailPeople().keys()].slice(0, 60)
+    if (emails.length) { const r = await gm('/threads?' + new URLSearchParams({ maxResults: '50', q: `in:inbox is:unread {${emails.map(e => 'from:' + e).join(' ')}}` })); const n = (r.threads || []).length; if (n !== _mail.peopleUnread) { _mail.peopleUnread = n; if (document.getElementById('panel-dashboard')?.classList.contains('on')) renderDash() } }
+  } catch {}
   for (const id of ['nav-mail-cnt', 'nav-mail-cnt-m']) { const b = document.getElementById(id); if (b) b.textContent = _mail.unread || '' }
 }
 
@@ -6197,7 +6234,7 @@ function renderInbox() {
           <span class="mail-subj">${w ? `<span class="mail-tag ${w.vendor ? 'vendor' : w.kind}">${w.vendor ? 'Vendor' : w.kind === 'client' ? 'Client' : 'Lead'}</span>` : ''}${esc(t.subject)}</span>
           <span class="mail-snip">${esc(t.snippet.replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&'))}</span>
         </button><span class="mail-qa">${_mail.folder !== 'sent' ? `<button title="Archive" aria-label="Archive" onclick="mailArchive(false,'${t.id}')">${icon('box', 14)}</button>` : ''}<button class="del" title="Delete" aria-label="Delete" onclick="mailTrash('${t.id}')">${icon('trash', 14)}</button></span></div>`
-      }).join('') + (_mail.next ? `<button class="dv-link mail-more" onclick="mailLoad(true)">${_mail.busy ? 'Loading…' : 'Load more'}</button>` : '')
+      }).join('') + (_mail.next ? `<button class="dv-link mail-more" onclick="mailLoad(true)">${_mail.busy ? 'Loading…' : 'Load more'}</button>` : '') + `<div class="mail-keys">Shortcuts: <b>j</b>/<b>k</b> move · <b>e</b> archive · <b>#</b> delete · <b>r</b> reply · <b>c</b> new · <b>/</b> search</div>`
   // Keep the list's scroll position across re-renders (delete/archive/open used to jump to the top)
   const _ls = el.querySelector('.mail-list'), keepTop = _ls ? _ls.scrollTop : 0, keepWin = window.scrollY
   el.innerHTML = `<div class="mail-wrap${_mail.open || _mail.compose ? ' reading' : ''}"><div class="mail-list">${list}</div><div class="mail-read" id="mail-read">${_mail.compose ? mailComposeHtml() : mailThreadHtml()}</div></div>`
@@ -6390,6 +6427,15 @@ async function mailTrash(tid) {
       mailBadge(true); toast('Restored')
     })
   } catch (e) { toast('Delete failed: ' + (e.message || e), 5000) }
+}
+function actionToast(msg, label, fn, ms = 8000) {
+  document.getElementById('mail-undo')?.remove()
+  const d = document.createElement('div'); d.id = 'mail-undo'; d.className = 'mail-undo'
+  d.innerHTML = `<span>${esc(msg)}</span><button>${esc(label)}</button><button class="x" aria-label="Dismiss">×</button>`
+  const [b1, b2] = d.querySelectorAll('button')
+  b1.onclick = async () => { d.remove(); try { await fn() } catch (e) { toast(String(e.message || e)) } }
+  b2.onclick = () => d.remove()
+  document.body.appendChild(d); setTimeout(() => d.remove(), ms)
 }
 function mailUndoToast(msg, undo) {
   document.getElementById('mail-undo')?.remove()
@@ -6740,7 +6786,7 @@ function tplRender() {
     <textarea id="tpl-text" rows="12" aria-label="Message">${esc(body)}</textarea>
     ${l ? '' : '<div class="ld-note">Fill-ins: {first} {name} {company} {portfolio} {review} {quote}</div>'}
     <div class="tpl-acts">${l ? `
-      ${l.email ? `<button class="btn btn-g" onclick="tplSend('email')">Open in Gmail</button>` : ''}
+      ${l.email && mailHasScope() ? `<button class="btn btn-g" id="tpl-send-now" onclick="tplSend('direct')">Send now</button><button class="btn btn-s" onclick="tplSend('email')">Open in Gmail</button>` : l.email ? `<button class="btn btn-g" onclick="tplSend('email')">Open in Gmail</button>` : ''}
       <button class="btn ${l.email ? 'btn-s' : 'btn-g'}" onclick="tplSend('copy')">${ig ? 'Copy + open Instagram' : 'Copy message'}</button>
       ${l.phone ? `<button class="btn btn-s" onclick="tplSend('sms')">Text</button>` : ''}`
       : `<button class="btn btn-g" onclick="tplSave()">Save template</button><button class="btn btn-s" onclick="tplDelete()">Delete</button>${load(K.tpl).length ? '<button class="btn btn-s" onclick="tplReset()">Reset all to defaults</button>' : ''}`}</div>
@@ -6759,6 +6805,12 @@ async function tplSend(how) {
   const l = _tplLead ? leadFind(_tplLead) : null; if (!l) return
   const t = tplAll().find(x => x.id === _tplSel)
   const subj = document.getElementById('tpl-subj').value, body = document.getElementById('tpl-text').value
+  if (how === 'direct') {
+    const btn = document.getElementById('tpl-send-now'); if (btn) { btn.disabled = true; btn.textContent = 'Sending…' }
+    try { await gm('/messages/send', { method: 'POST', body: JSON.stringify({ raw: mailMime({ to: l.email, subject: subj || '(no subject)', body }) }) }) }
+    catch (e) { toast('Send failed: ' + (e.message || e), 5000); if (btn) { btn.disabled = false; btn.textContent = 'Send now' } return }
+    ldLogTouch(l.id, 'email', t?.name || 'Email'); tplClose(); toast(`Sent to ${l.name}`); return
+  }
   if (how === 'email') {
     const coarse = matchMedia('(pointer:coarse)').matches
     const url = coarse ? `mailto:${encodeURIComponent(l.email)}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`
@@ -7959,18 +8011,18 @@ async function saveClientDetail(name) {
   cliCtCommit()
   const contacts = _cliCt.filter(c => c.name || c.role || c.phone || c.email).map(({ name, role, phone, email, primary, vendor }) => ({ name, role, phone, email, primary: !!primary && !vendor, ...(vendor ? { vendor: true } : {}) }))
   const existing = _clients.find(c => c.name === name)
+  const prevFu = existing?.followUpDate || '', prevEv = existing?.calendarEventId || ''
   if (existing) {
     Object.assign(existing, { company, clientType, followUpDate, notes, contacts, source })
   } else {
     _clients.push({ id:uid(), name, company, contacts, clientType, notes, followUpDate, source })
   }
-  // Auto-create a Google Calendar reminder event if a follow-up date is set
-  if (followUpDate && gsGetToken()) {
-    const evLink = await gcCreateEvent(followUpDate, `Follow up: ${name}`)
-    if (evLink) {
-      const rec = _clients.find(c => c.name === name)
-      if (rec) rec.calendarEventId = evLink
-    }
+  // Calendar reminder for the follow-up date: only touched when the date actually changes
+  // (every Save used to add another identical event)
+  if (gsGetToken() && followUpDate !== prevFu) {
+    const rec = _clients.find(c => c.name === name)
+    if (prevEv) { try { await gcDeleteEvent(prevEv) } catch {} ; if (rec) rec.calendarEventId = '' }
+    if (followUpDate) { const evLink = await gcCreateEvent(followUpDate, `Follow up: ${name}`); if (evLink && rec) rec.calendarEventId = evLink }
   }
   const statusEl = document.getElementById('cli-save-status')
   statusEl.style.color = 'var(--text-2)'
@@ -9633,6 +9685,7 @@ function dashAttention() {
     act: 'Mark paid', fn: `dashMarkPaid('${e.id}')`, act2: 'Open', fn2: "navTo('income')" }))
   gearAttention(t).forEach(a => items.push(a))
   leadsAttention(t).forEach(a => items.push(a))
+  if (_mail.peopleUnread) items.push({ lvl: 2, ico: 'mail', tone: 'amber', title: `${_mail.peopleUnread} unread email${_mail.peopleUnread !== 1 ? 's' : ''} from clients & leads`, sub: 'Waiting in your Inbox', act: 'Read', fn: "navTo('inbox');mailFolder('people')" })
   mailBadge()
   const gearSubs = new Set(load(K.gear).map(g => g.faaSubId).filter(Boolean))
   loadP(K.sub).filter(s => subOverdue(s) && !gearSubs.has(s.id)).forEach(s => items.push({
@@ -9657,6 +9710,22 @@ function dashAttention() {
   return items.sort((a, b) => b.lvl - a.lvl)
 }
 
+// After a payment is marked Paid: offer a one-tap thank-you + Google review request to the client
+function reviewAsk(client) {
+  if (!client || !gbpCfg().review) return
+  const c = (_clients || []).find(x => (x.name || '').toLowerCase() === client.toLowerCase())
+  const cs = (c?.contacts || []).filter(x => x.email && !x.vendor), ct = cs.find(x => x.primary) || cs[0]
+  if (!ct) return
+  setTimeout(() => actionToast(`${client} paid. Ask for a Google review?`, 'Ask for review', () => reviewCompose(ct, client)), 600)
+}
+function reviewCompose(ct, client) {
+  const t = tplAll().find(x => x.id === 't-rev') || TPL_DEFAULTS.find(x => x.id === 't-rev')
+  const person = { name: ct.name || client, company: client, email: ct.email }
+  if (mailHasScope()) {
+    mailCompose(ct.email)
+    setTimeout(() => { const sj = document.getElementById('mail-c-subj'), tx = document.getElementById('mail-c-text'); if (sj) sj.value = tplFill(t.subject, person); if (tx) tx.value = tplFill(t.body, person) }, 80)
+  } else window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(ct.email)}&su=${encodeURIComponent(tplFill(t.subject, person))}&body=${encodeURIComponent(tplFill(t.body, person))}`, '_blank', 'noopener')
+}
 function dashMarkPaid(id) {
   const e = load(K.inc).find(x => x.id === id); if (!e) return
   if (!confirm(`Mark ${fmt(e.amount)} from ${e.client || 'this client'} as paid?`)) return
