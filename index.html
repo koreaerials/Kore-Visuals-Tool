@@ -7913,20 +7913,32 @@ function cliCtCommit() {
   if (!c.name && !c.role && !c.phone && !c.email) { _cliCt.splice(_cliCtEdit, 1); if (_cliCt.length && !_cliCt.some(x => x.primary)) _cliCt[0].primary = true }
   _cliCtEdit = -1
 }
-function cliCtDone(i) { cliCtCommit(); cliRenderContacts() }
+function cliCtDone(i) { cliCtCommit(); cliRenderContacts(); cliSaveContacts() }
 function cliCtCancel(i) {
   const c = _cliCt[i]
   if (c && c._new) { _cliCt.splice(i, 1); if (_cliCt.length && !_cliCt.some(x => x.primary)) _cliCt[0].primary = true }
   _cliCtEdit = -1; cliRenderContacts()
 }
 function cliCtEditStart(i) { cliCtCommit(); _cliCtEdit = i; cliRenderContacts() }
-function cliCtPrimary(i) { cliCtCommit(); _cliCt.forEach((c, j) => c.primary = j === i); cliRenderContacts() }
+function cliCtPrimary(i) { cliCtCommit(); _cliCt.forEach((c, j) => c.primary = j === i); cliRenderContacts(); cliSaveContacts() }
 function cliCtRemove(i) {
   cliCtCommit()
   const c = _cliCt[i]; if (!c) return
   if ((c.name || c.phone || c.email) && !confirm(`Remove ${c.name || 'this contact'}?`)) return
-  _cliCt.splice(i, 1); if (_cliCt.length && !_cliCt.some(x => x.primary)) _cliCt[0].primary = true
-  cliRenderContacts()
+  _cliCt.splice(i, 1); if (!_cliCt.some(x => x.primary)) { const nx = _cliCt.find(x => !x.vendor); if (nx) nx.primary = true }
+  cliRenderContacts(); cliSaveContacts()
+}
+// Contact edits (Done, remove, make primary) save straight to Sheets. Before, they only stuck
+// after "Save Changes", so a removed contact came back on refresh.
+async function cliSaveContacts() {
+  const name = _cliDetailName; if (!name) return
+  if (!_cliLoaded) await loadClientsFromSheets()
+  if (!_clients) { toast("Couldn't save: clients haven't loaded from Sheets", 5000); return }
+  const contacts = _cliCt.filter(c => c.name || c.role || c.phone || c.email).map(({ name, role, phone, email, primary, vendor }) => ({ name, role, phone, email, primary: !!primary && !vendor, ...(vendor ? { vendor: true } : {}) }))
+  let c = _clients.find(x => x.name === name)
+  if (c) c.contacts = contacts
+  else { c = { id: uid(), name, company: '', clientType: '', notes: '', followUpDate: '', contacts }; _clients.push(c) }
+  try { await writeClientsToSheets(); toast('Contacts saved') } catch (e) { toast('Contacts not saved: ' + (e.message || e), 5000) }
 }
 
 function backToClientList() {
