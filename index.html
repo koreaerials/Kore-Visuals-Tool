@@ -1210,6 +1210,27 @@ html[data-theme] #panel-wishlist .wish-link{color:var(--accent-text)}
 .inv-test-row small{display:block;font-size:12px;color:var(--text-2);margin-top:2px;line-height:1.4}
 .inv-test-row:has(input:checked){border-color:var(--orange);background:rgba(245,196,81,.07)}
 html[data-theme] .btn.inv-gen-test{background:var(--orange);color:#111;border-color:var(--orange)}
+/* ── INVOICE LINK ── */
+.il-box{max-width:440px!important}
+.il-job{display:flex;flex-direction:column;gap:3px;margin:-6px 0 16px}
+.il-job b{font-size:15px;font-weight:600}
+.il-job span{font-size:13px;color:var(--text-2)}
+.il-card{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--surface-2)}
+.il-ico{width:42px;height:42px;border-radius:11px;background:var(--accent-soft);color:var(--accent-text);display:flex;align-items:center;justify-content:center;flex:none}
+.il-main{flex:1;min-width:0}
+.il-lbl{display:block;font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text-2);margin-bottom:4px}
+.il-num{font-family:var(--font-d);font-size:19px;font-weight:600;color:var(--text)}
+.il-prev{flex:none;justify-content:center}
+.il-links{display:flex;align-items:center;gap:8px;justify-content:center;margin:12px 0 4px;color:var(--text-2);font-size:13px}
+.il-link{border:0;background:none;font:inherit;font-size:13px;font-weight:500;color:var(--text-2);cursor:pointer;padding:4px 2px}
+.il-link:hover{color:var(--text)}
+.il-danger:hover{color:var(--red)}
+.il-edit{margin-top:14px}
+.il-row{display:flex;gap:8px}
+.il-row input{flex:1;min-width:0}
+.il-row .btn{flex:none;justify-content:center;padding-left:18px;padding-right:18px}
+.il-hint{font-size:12px;color:var(--text-2);margin-top:8px}
+.il-status{font-size:12px;min-height:14px;margin-top:8px}
 /* ── INVOICE PREVIEW ── */
 #inv-prev-overlay{z-index:1600}
 .inv-prev-box{max-width:860px!important;width:min(860px,94vw);display:flex;flex-direction:column;height:min(92vh,1100px)}
@@ -5673,12 +5694,19 @@ function openInvLinkModal(id) {
   const has = !!(e.invoiceNum)
   document.getElementById('inv-link-input').value = e.invoiceNum||''
   document.getElementById('inv-link-client').textContent = e.client||''
+  document.getElementById('inv-link-meta').textContent = [e.desc||e.description||'', e.amount ? fmt(e.amount) : '', e.status||''].filter(Boolean).join(' · ')
   document.getElementById('inv-link-current').style.display = has ? 'flex' : 'none'
+  document.getElementById('inv-link-links').style.display = has ? 'flex' : 'none'
+  document.getElementById('inv-link-edit').style.display = has ? 'none' : 'block'
   document.getElementById('inv-link-current-num').textContent = has ? e.invoiceNum : ''
   document.getElementById('inv-link-status').textContent = ''
   document.getElementById('inv-link-overlay').classList.add('open')
 }
 
+function invLinkEdit() {
+  const ed = document.getElementById('inv-link-edit'); ed.style.display = 'block'
+  const inp = document.getElementById('inv-link-input'); inp.focus(); inp.select()
+}
 function closeInvLinkModal() {
   document.getElementById('inv-link-overlay').classList.remove('open')
   _invLinkId = null
@@ -9733,27 +9761,27 @@ function renderSocReels() {
 
 <!-- INVOICE LINK MODAL -->
 <div class="smod-overlay" id="inv-link-overlay" onclick="if(event.target===this)closeInvLinkModal()">
-  <div class="smod" style="max-width:380px">
+  <div class="smod il-box">
     <div class="smod-hdr">
-      <span class="smod-ttl">Link Invoice</span>
+      <span class="smod-ttl">Invoice</span>
       <button class="smod-close" onclick="closeInvLinkModal()">&#x2715;</button>
     </div>
-    <div style="font-size:12px;color:var(--text-2);margin-bottom:14px">Job: <strong id="inv-link-client"></strong></div>
-    <div id="inv-link-current" style="display:none;align-items:center;gap:10px;background:var(--card-2,rgba(0,0,0,0.06));border-radius:8px;padding:10px 12px;margin-bottom:14px">
-      <span style="font-size:12px;color:var(--text-2);flex-shrink:0">Linked invoice:</span>
-      <span id="inv-link-current-num" style="font-size:14px;font-weight:700;color:var(--blue);flex:1"></span>
-      <button class="btn btn-sm" style="flex-shrink:0" onclick="previewLinkedInvoice()"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:3px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Preview</button>
+    <div class="il-job"><b id="inv-link-client"></b><span id="inv-link-meta"></span></div>
+    <div id="inv-link-current" class="il-card" style="display:none">
+      <span class="il-ico"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
+      <div class="il-main"><div class="il-lbl">Linked invoice</div><div class="il-num" id="inv-link-current-num"></div></div>
+      <button class="btn btn-p il-prev" onclick="previewLinkedInvoice()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Preview</button>
     </div>
-    <div class="smod-row" style="margin-bottom:4px">
-      <div class="smod-lbl">Invoice Number</div>
-      <input type="text" id="inv-link-input" class="isel" style="width:100%;box-sizing:border-box" placeholder="e.g. TO20260318" onkeydown="if(event.key==='Enter')saveInvLink()">
+    <div class="il-links" id="inv-link-links" style="display:none"><button class="il-link" onclick="invLinkEdit()">Change number</button><span>·</span><button class="il-link il-danger" onclick="removeInvLink()">Unlink</button></div>
+    <div class="il-edit" id="inv-link-edit">
+      <label class="il-lbl" for="inv-link-input">Invoice number</label>
+      <div class="il-row">
+        <input type="text" id="inv-link-input" class="isel" placeholder="e.g. ON20261126" onkeydown="if(event.key==='Enter')saveInvLink()">
+        <button class="btn btn-g" onclick="saveInvLink()">Link</button>
+      </div>
+      <div class="il-hint">Invoices you generate here link themselves. Use this for one you made elsewhere.</div>
     </div>
-    <div id="inv-link-status" style="font-size:12px;min-height:18px;margin-bottom:10px"></div>
-    <div class="smod-footer">
-      <button class="btn btn-p" onclick="saveInvLink()" style="flex:1"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:4px"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>Link Invoice</button>
-      <button class="btn btn-d btn-sm" onclick="removeInvLink()" id="inv-link-remove-btn">Remove Link</button>
-      <button class="btn btn-s" onclick="closeInvLinkModal()">Cancel</button>
-    </div>
+    <div id="inv-link-status" class="il-status"></div>
   </div>
 </div>
 
