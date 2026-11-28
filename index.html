@@ -1289,6 +1289,10 @@ html[data-theme] .btn.inv-gen-test{background:var(--orange);color:#111;border-co
 .mail-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 4px 2px 8px;border-radius:6px;background:var(--hover);border:1px solid var(--line-2);color:var(--text-2)}
 .mail-chip button{border:0;background:none;color:var(--text-3);cursor:pointer;font-size:14px;line-height:1;padding:0 3px}.mail-chip button:hover{color:var(--red)}
 .mail-move{width:auto;font-size:12px;padding:3px 8px;border-radius:6px}
+.cl-ct-vend{grid-column:1/-1;display:flex;align-items:flex-start;gap:8px;font-size:13px;cursor:pointer;line-height:1.4}.cl-ct-vend input{width:auto;margin:2px 0 0}.cl-ct-vend span{color:var(--text-2);font-size:12px}
+.cl-ct-vbadge{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:5px;background:rgba(167,139,250,.14);color:var(--purple);margin-left:8px}
+.mail-tag.vendor{background:rgba(167,139,250,.14);color:var(--purple)}
+.mail-link-who{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;font-size:13px}.mail-link-who label{display:flex;align-items:center;gap:8px;cursor:pointer}.mail-link-who input{width:auto;margin:0}.mail-link-who span{color:var(--text-2);font-size:12px}
 .mail-link-list{display:flex;flex-direction:column;gap:4px;max-height:50vh;overflow-y:auto;margin-top:10px}
 .mail-link-item{display:flex;flex-direction:column;align-items:flex-start;gap:2px;border:1px solid var(--line);background:none;color:var(--text);font:inherit;font-size:13.5px;text-align:left;padding:9px 12px;border-radius:10px;cursor:pointer}
 .mail-link-item:hover{border-color:var(--accent);background:var(--hover)}.mail-link-item span{font-size:12px;color:var(--text-2)}
@@ -5888,7 +5892,7 @@ async function invClientEmail(name) {
   if (!_clients && gsGetToken()) { try { await loadClientsFromSheets() } catch {} }
   const n = (name || '').trim().toLowerCase(); if (!n) return ''
   const c = (_clients || []).find(c => (c.name || '').trim().toLowerCase() === n || (c.company || '').trim().toLowerCase() === n)
-  const cs = (c?.contacts || []).filter(x => x && x.email)
+  const cs = (c?.contacts || []).filter(x => x && x.email && !x.vendor)
   // Invoices go to whoever handles payments (role says payments/billing/accounts/finance), else the primary contact
   const pay = cs.find(x => /pay|billing|bill|account|finance|bookkeep/i.test(x.role || ''))
   return ((pay || cs.find(x => x.primary) || cs[0])?.email || '').trim()
@@ -6068,11 +6072,34 @@ function mailWhen(ms) {
 function mailPeople() {
   const map = new Map()
   for (const l of leadsAll()) if (l.email) map.set(l.email.trim().toLowerCase(), { kind: 'lead', name: l.name, id: l.id })
-  for (const c of _clients || []) for (const ct of c.contacts || []) if (ct.email) map.set(ct.email.trim().toLowerCase(), { kind: 'client', name: c.name, id: c.id })
+  for (const c of _clients || []) for (const ct of c.contacts || []) if (ct.email) map.set(ct.email.trim().toLowerCase(), { kind: 'client', name: c.name, id: c.id, vendor: !!ct.vendor })
+  if (_mail.me) map.delete(_mail.me)
   return map
 }
+// Everyone on the thread except you (From/To/Cc of every message), unique by address.
+// In Sent, every message is from you, so the other side comes from To/Cc.
+function mailSplitAddrs(v) { return String(v || '').split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(x => x.trim()).filter(Boolean) }
+function mailParticipants() {
+  const seen = new Map(), me = _mail.me
+  for (const m of [...(_mail.thread?.msgs || [])].reverse()) for (const raw of [m.from, ...mailSplitAddrs(m.to), ...mailSplitAddrs(m.cc)]) {
+    const email = mailAddr(raw); if (!email || !/@/.test(email) || email === me || seen.has(email)) continue
+    if (/no-?reply|mailer-daemon/i.test(email)) continue
+    const nm = mailName(raw); seen.set(email, { email, name: nm && nm !== email ? nm : '' })
+  }
+  return [...seen.values()]
+}
 function mailWho(addr, people) { return (people || mailPeople()).get((addr || '').toLowerCase()) }
-async function mailMe() { if (!_mail.me) { try { _mail.me = ((await gm('/profile')).emailAddress || '').toLowerCase() } catch {} } return _mail.me }
+async function mailMe() {
+  if (!_mail.me) { try { _mail.me = ((await gm('/profile')).emailAddress || '').toLowerCase(); mailFixSelfLinks() } catch {} }
+  return _mail.me
+}
+// An earlier "Link to client" in Sent could save your own address as a client contact; take it back out.
+async function mailFixSelfLinks() {
+  if (!_mail.me || !_cliLoaded || !_clients) return
+  let n = 0
+  for (const c of _clients) { const before = (c.contacts || []).length; c.contacts = (c.contacts || []).filter(x => (x.email || '').trim().toLowerCase() !== _mail.me); n += before - c.contacts.length; if (c.contacts.length && !c.contacts.some(x => x.primary)) c.contacts[0].primary = true }
+  if (n) { try { await writeClientsToSheets(); toast(`Removed your own email from ${n} client contact${n !== 1 ? 's' : ''}`) } catch {} }
+}
 
 async function mailBadge(force) {
   if (!mailHasScope() || !gsGetToken()) return
@@ -6167,7 +6194,7 @@ function renderInbox() {
         const w = mailWho(mailAddr(t.from), people)
         return `<div class="mail-rw"><button class="mail-row${t.unread ? ' unread' : ''}${_mail.open === t.id ? ' on' : ''}" onclick="mailOpen('${t.id}')">
           <span class="mail-r1"><span class="mail-from">${esc(mailName(t.from))}${t.count > 1 ? ` <i>${t.count}</i>` : ''}</span><span class="mail-date">${t.attach ? icon('paperclip', 12) : ''}${mailWhen(t.date)}</span></span>
-          <span class="mail-subj">${w ? `<span class="mail-tag ${w.kind}">${w.kind === 'client' ? 'Client' : 'Lead'}</span>` : ''}${esc(t.subject)}</span>
+          <span class="mail-subj">${w ? `<span class="mail-tag ${w.vendor ? 'vendor' : w.kind}">${w.vendor ? 'Vendor' : w.kind === 'client' ? 'Client' : 'Lead'}</span>` : ''}${esc(t.subject)}</span>
           <span class="mail-snip">${esc(t.snippet.replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&'))}</span>
         </button><span class="mail-qa">${_mail.folder !== 'sent' ? `<button title="Archive" aria-label="Archive" onclick="mailArchive(false,'${t.id}')">${icon('box', 14)}</button>` : ''}<button class="del" title="Delete" aria-label="Delete" onclick="mailTrash('${t.id}')">${icon('trash', 14)}</button></span></div>`
       }).join('') + (_mail.next ? `<button class="dv-link mail-more" onclick="mailLoad(true)">${_mail.busy ? 'Loading…' : 'Load more'}</button>` : '')
@@ -6211,10 +6238,11 @@ function mailThreadHtml() {
   if (T.loading) return `<div class="mail-msg">Opening…</div>`
   if (T.err) return `<div class="mail-msg">${esc(T.err)}</div>`
   const ms = T.msgs, last = ms[ms.length - 1], people = mailPeople()
-  const otherAddr = mailAddr(ms.map(m => m.from).reverse().find(f => mailAddr(f) !== _mail.me) || last.to)
+  const parts = mailParticipants(), otherAddr = parts[0]?.email || ''
   const w = mailWho(otherAddr, people)
-  const link = w ? (w.kind === 'client' ? `<button class="btn btn-s btn-sm" onclick="navTo('clients');openClientDetail(${esc(JSON.stringify(w.name))})">${icon('users', 13)} ${esc(w.name)}</button>` : `<button class="btn btn-s btn-sm" onclick="leadOpen('${w.id}')">${icon('users', 13)} Lead: ${esc(w.name)}</button>`)
-    : (otherAddr && otherAddr !== _mail.me ? `<button class="btn btn-s btn-sm" onclick="mailLinkOpen()">${icon('link', 13)} Link to client</button><button class="btn btn-s btn-sm" onclick="mailAddLead()">+ Add as lead</button>` : '')
+  const unknown = parts.filter(x => !people.get(x.email))
+  const link = (w && unknown.length ? `<button class="btn btn-s btn-sm" onclick="mailLinkOpen()">${icon('link', 13)} Link ${unknown.length} more</button>` : '') + (w ? (w.kind === 'client' ? `<button class="btn btn-s btn-sm" onclick="navTo('clients');openClientDetail(${esc(JSON.stringify(w.name))})">${icon('users', 13)} ${esc(w.name)}</button>` : `<button class="btn btn-s btn-sm" onclick="leadOpen('${w.id}')">${icon('users', 13)} Lead: ${esc(w.name)}</button>`)
+    : (unknown.length ? `<button class="btn btn-s btn-sm" onclick="mailLinkOpen()">${icon('link', 13)} Link to client</button><button class="btn btn-s btn-sm" onclick="mailAddLead()">+ Add as lead</button>` : ''))
   const tl = [...new Set(ms.flatMap(m => m.labels))].filter(id => mailLabelName(id))
   const chips = `<div class="mail-chips">${tl.map(id => `<span class="mail-chip">${icon('folder', 11)} ${esc(mailLabelName(id).replace(/\//g, ' › '))}<button title="Remove from folder" onclick="mailUnlabel('${id}')">×</button></span>`).join('')}
     ${(_mail.labels || []).length ? `<select class="mail-move" onchange="mailMove(this.value);this.value=''" aria-label="Move to folder"><option value="">Move to…</option>${_mail.labels.filter(l => !tl.includes(l.id)).map(l => `<option value="${esc(l.id)}">${esc(l.name.replace(/\//g, ' › '))}</option>`).join('')}</select>` : ''}</div>`
@@ -6310,13 +6338,15 @@ async function mailUnlabel(labelId) {
 // Link the sender to an existing client: their address becomes a contact on that client, so
 // the client's page shows every email with them and the Inbox tags them as Client.
 function mailLinkOpen() {
-  const ms = _mail.thread?.msgs || []
-  const m = [...ms].reverse().find(x => mailAddr(x.from) !== _mail.me) || ms[0]; if (!m) return
-  _mail.linkFrom = { name: mailName(m.from), email: mailAddr(m.from) }
+  const people = mailPeople()
+  const parts = mailParticipants().filter(x => !people.get(x.email)); if (!parts.length) { toast('Everyone on this email is already linked'); return }
+  _mail.linkFrom = parts
   let ov = document.getElementById('mail-link-ov')
   if (!ov) { ov = document.createElement('div'); ov.id = 'mail-link-ov'; ov.className = 'smod-overlay'; ov.onclick = e => { if (e.target === ov) ov.classList.remove('open') }; document.body.appendChild(ov) }
   ov.innerHTML = `<div class="smod" style="max-width:440px"><div class="smod-hdr"><span class="smod-ttl">Link to a client</span><button class="smod-close" onclick="document.getElementById('mail-link-ov').classList.remove('open')">&#x2715;</button></div>
-    <div class="ld-note" style="margin:0 0 10px"><b>${esc(_mail.linkFrom.name)}</b> · ${esc(_mail.linkFrom.email)} will be saved as a contact on the client you pick.</div>
+    <div class="ld-note" style="margin:0 0 8px">Save ${parts.length > 1 ? 'these people' : 'this person'} as contacts on the client you pick:</div>
+    <div class="mail-link-who">${parts.map((x, i) => `<label><input type="checkbox" data-i="${i}" checked> <b>${esc(x.name || x.email)}</b>${x.name ? ` <span>${esc(x.email)}</span>` : ''}</label>`).join('')}</div>
+    <label class="cl-ct-vend" style="margin:0 0 10px"><input type="checkbox" id="mail-link-vendor"> Venue / vendor on this client's job, not the client</label>
     <input id="mail-link-q" placeholder="Search clients" oninput="mailLinkList()" autocomplete="off"><div id="mail-link-list" class="mail-link-list"></div></div>`
   ov.classList.add('open'); mailLinkList(); setTimeout(() => document.getElementById('mail-link-q')?.focus(), 50)
   if (_clients === null) loadClientsFromSheets().then(mailLinkList)
@@ -6324,20 +6354,22 @@ function mailLinkOpen() {
 function mailLinkList() {
   const box = document.getElementById('mail-link-list'); if (!box) return
   const q = (document.getElementById('mail-link-q')?.value || '').toLowerCase()
-  const dom = (_mail.linkFrom?.email || '').split('@')[1] || ''
+  const dom = ((_mail.linkFrom || [])[0]?.email || '').split('@')[1] || ''
   const xs = (_clients || []).filter(c => !q || c.name.toLowerCase().includes(q) || (c.company || '').toLowerCase().includes(q))
     .sort((a, b) => { const s = c => (c.contacts || []).some(x => (x.email || '').toLowerCase().endsWith('@' + dom) && !/gmail|yahoo|icloud|outlook|hotmail/.test(dom)) ? 0 : 1; return s(a) - s(b) || a.name.localeCompare(b.name) })
   box.innerHTML = _clients === null ? '<div class="ld-note">Loading clients…</div>' : xs.length ? xs.slice(0, 50).map(c => `<button class="mail-link-item" onclick="mailLinkTo(${esc(JSON.stringify(c.id || c.name))})"><b>${esc(c.name)}</b>${c.company && c.company !== c.name ? `<span>${esc(c.company)}</span>` : ''}</button>`).join('') : '<div class="ld-note">No clients match.</div>'
 }
 async function mailLinkTo(key) {
   const c = (_clients || []).find(x => x.id === key || x.name === key); if (!c || !_mail.linkFrom) return
-  const f = _mail.linkFrom
+  const picked = [...document.querySelectorAll('.mail-link-who input:checked')].map(x => _mail.linkFrom[+x.dataset.i]).filter(Boolean)
+  if (!picked.length) { toast('Tick at least one person'); return }
   c.contacts = Array.isArray(c.contacts) ? c.contacts : []
-  const ex = c.contacts.find(x => (x.email || '').toLowerCase() === f.email)
-  if (!ex) {
-    const same = c.contacts.find(x => x.name && x.name.toLowerCase() === f.name.toLowerCase() && !x.email)
+  const vend = !!document.getElementById('mail-link-vendor')?.checked
+  for (const f of picked) {
+    if (f.email === _mail.me || c.contacts.some(x => (x.email || '').toLowerCase() === f.email)) continue
+    const same = f.name && c.contacts.find(x => x.name && x.name.toLowerCase() === f.name.toLowerCase() && !x.email)
     if (same) same.email = f.email
-    else c.contacts.push({ name: f.name === f.email ? '' : f.name, role: '', phone: '', email: f.email, primary: !c.contacts.length })
+    else c.contacts.push({ name: f.name || '', role: '', phone: '', email: f.email, primary: !vend && !c.contacts.some(x => x.primary && !x.vendor), ...(vend ? { vendor: true } : {}) })
   }
   document.getElementById('mail-link-ov')?.classList.remove('open')
   try { await writeClientsToSheets(); toast(`Linked to ${c.name}`) } catch (e) { toast("Linked here, but couldn't save to Sheets yet: " + (e.message || e), 6000) }
@@ -6380,11 +6412,11 @@ async function mailFile(mid, aid, name, mime) {
   } catch (e) { toast('Download failed: ' + (e.message || e), 5000) }
 }
 function mailAddLead() {
-  const ms = _mail.thread?.msgs || []
-  const m = [...ms].reverse().find(x => mailAddr(x.from) !== _mail.me) || ms[0]; if (!m) return
+  const ms = _mail.thread?.msgs || [], who = mailParticipants()[0]; if (!who) return
+  const m = [...ms].reverse().find(x => mailAddr(x.from) === who.email) || ms[ms.length - 1]
   leadOpen(null, 'New')
-  document.getElementById('ld-name').value = mailName(m.from) || ''
-  document.getElementById('ld-email').value = mailAddr(m.from)
+  document.getElementById('ld-name').value = who.name || who.email.split('@')[0]
+  document.getElementById('ld-email').value = who.email
   document.getElementById('ld-notes').value = `Emailed ${fmtDate(toStr(new Date(+m.date)))}: ${ms[0].subject || ''}\n${(m.text || '').trim().slice(0, 400)}`
   document.getElementById('ld-source').value = 'Website'
 }
@@ -7820,7 +7852,7 @@ function renderClientDetail(name) {
       </div>
     </div>` : ''}
   `
-  _cliCt = contacts.map(x => ({ name: x.name || '', role: x.role || '', phone: x.phone || '', email: x.email || '', primary: !!x.primary }))
+  _cliCt = contacts.map(x => ({ name: x.name || '', role: x.role || '', phone: x.phone || '', email: x.email || '', primary: !!x.primary && !x.vendor, vendor: !!x.vendor }))
   if (_cliCt.length && !_cliCt.some(x => x.primary)) _cliCt[0].primary = true
   _cliCtEdit = -1
   cliRenderContacts()
@@ -7830,7 +7862,7 @@ function renderClientDetail(name) {
 // ── Client contacts (state-driven cards) ──
 let _cliCt = [], _cliCtEdit = -1
 function cliHeadLine(c) {
-  const cs = Array.isArray(c.contacts) ? c.contacts : []
+  const cs = (Array.isArray(c.contacts) ? c.contacts : []).filter(x => !x.vendor)
   const pc = cs.find(x => x.primary) || cs[0]
   // Skip the contact's name when it's the same as the client's (e.g. Ben Bradfield · Ben Bradfield)
   const same = pc && (pc.name || '').trim().toLowerCase() === (c.name || '').trim().toLowerCase()
@@ -7849,13 +7881,14 @@ function cliRenderContacts() {
         <div class="ff"><label>Role</label><input class="inp" id="ct-role" value="${esc(ct.role)}" placeholder="Owner, Marketing..."></div>
         <div class="ff"><label>Phone</label><input class="inp" id="ct-phone" type="tel" value="${esc(ct.phone)}" placeholder="(516) 555-0123"></div>
         <div class="ff"><label>Email</label><input class="inp" id="ct-email" type="email" value="${esc(ct.email)}" placeholder="name@company.com"></div>
+        <label class="cl-ct-vend"><input type="checkbox" id="ct-vendor"${ct.vendor ? ' checked' : ''}> Venue / vendor, not the client <span>(emails still show here, but they never get invoices and aren't shown as the client's contact)</span></label>
       </div>
       <div class="cl-ct-acts"><button class="btn btn-p btn-sm" onclick="cliCtDone(${i})" type="button">Done</button><button class="btn btn-s btn-sm" onclick="cliCtCancel(${i})" type="button">Cancel</button></div>
     </div>` : `
     <div class="cl-ct">
       <span class="cl-ct-av">${cliCtInitials(ct.name)}</span>
       <div class="cl-ct-main">
-        <div class="cl-ct-name">${esc(ct.name || 'Unnamed contact')}${ct.role ? `<span class="cl-ct-role">${esc(ct.role)}</span>` : ''}${ct.primary ? '<span class="cl-ct-pri">Primary</span>' : ''}</div>
+        <div class="cl-ct-name">${esc(ct.name || 'Unnamed contact')}${ct.role ? `<span class="cl-ct-role">${esc(ct.role)}</span>` : ''}${ct.vendor ? '<span class="cl-ct-vbadge">Venue / vendor</span>' : ct.primary ? '<span class="cl-ct-pri">Primary</span>' : ''}</div>
         <div class="cl-ct-lines">
           ${ct.phone ? `<a href="tel:${esc(ct.phone.replace(/[^\d+]/g, ''))}">${icon('phone', 13)} ${esc(cliFmtPhone(ct.phone))}</a>` : ''}
           ${ct.email ? `<a href="mailto:${esc(ct.email)}">${icon('mail', 13)} ${esc(ct.email)}</a>` : ''}
@@ -7863,7 +7896,7 @@ function cliRenderContacts() {
         </div>
       </div>
       <div class="cl-ct-btns">
-        ${ct.primary ? '' : `<button class="cl-ct-ib" title="Make primary" onclick="cliCtPrimary(${i})" type="button">☆</button>`}
+        ${ct.primary || ct.vendor ? '' : `<button class="cl-ct-ib" title="Make primary" onclick="cliCtPrimary(${i})" type="button">☆</button>`}
         <button class="cl-ct-ib" title="Edit" onclick="cliCtEditStart(${i})" type="button">${icon('pencil', 14)}</button>
         <button class="cl-ct-ib cl-ct-del" title="Remove" onclick="cliCtRemove(${i})" type="button">${icon('trash', 14)}</button>
       </div>
@@ -7874,7 +7907,8 @@ function cliFmtPhone(p) { const d = (p || '').replace(/\D/g, ''); return d.lengt
 function cliCtCommit() {
   if (_cliCtEdit < 0) return
   const v = id => (document.getElementById(id)?.value || '').trim()
-  Object.assign(_cliCt[_cliCtEdit], { name: v('ct-name'), role: v('ct-role'), phone: v('ct-phone'), email: v('ct-email') })
+  Object.assign(_cliCt[_cliCtEdit], { name: v('ct-name'), role: v('ct-role'), phone: v('ct-phone'), email: v('ct-email'), vendor: !!document.getElementById('ct-vendor')?.checked })
+  if (_cliCt[_cliCtEdit].vendor && _cliCt[_cliCtEdit].primary) { _cliCt[_cliCtEdit].primary = false; const nx = _cliCt.find(x => !x.vendor); if (nx) nx.primary = true }
   const c = _cliCt[_cliCtEdit]
   if (!c.name && !c.role && !c.phone && !c.email) { _cliCt.splice(_cliCtEdit, 1); if (_cliCt.length && !_cliCt.some(x => x.primary)) _cliCt[0].primary = true }
   _cliCtEdit = -1
@@ -7911,7 +7945,7 @@ async function saveClientDetail(name) {
   const notes = document.getElementById('cli-notes').value.trim()
   const source = document.getElementById('cli-source')?.value || ''
   cliCtCommit()
-  const contacts = _cliCt.filter(c => c.name || c.role || c.phone || c.email).map(({ name, role, phone, email, primary }) => ({ name, role, phone, email, primary: !!primary }))
+  const contacts = _cliCt.filter(c => c.name || c.role || c.phone || c.email).map(({ name, role, phone, email, primary, vendor }) => ({ name, role, phone, email, primary: !!primary && !vendor, ...(vendor ? { vendor: true } : {}) }))
   const existing = _clients.find(c => c.name === name)
   if (existing) {
     Object.assign(existing, { company, clientType, followUpDate, notes, contacts, source })
@@ -10248,7 +10282,7 @@ function renderClientList() {
   document.getElementById('cli-results').innerHTML = sorted.length ? `<div class="cl-grid">${sorted.map(({ c, s: st }) => {
     const fu = getFuStatus(c.followUpDate)
     const initials = c.name.split(' ').map(w => w[0] || '').slice(0, 2).join('').toUpperCase()
-    const pc = (Array.isArray(c.contacts) ? c.contacts : []).find(x => x.primary) || (c.contacts || [])[0]
+    const ccs = (Array.isArray(c.contacts) ? c.contacts : []).filter(x => !x.vendor), pc = ccs.find(x => x.primary) || ccs[0]
     return `<button class="cl-card" onclick="openClientDetail('${esc(c.name).replace(/'/g, "\\'")}')">
       <span class="cl-av">${initials}</span>
       <span class="cl-main">
