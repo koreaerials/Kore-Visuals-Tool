@@ -6022,15 +6022,19 @@ function ldCard(l) {
 }
 
 function ldSourcesHtml(all) {
+  if (_clients === null && gsGetToken()) { loadClientsFromSheets().then(() => { if (_ldView === 'sources') renderLeads() }); return '<div class="ld-note">Loading clients…</div>' }
   const paid = loadP(K.inc).filter(e => e.status === 'Paid')
+  const revOf = name => { const c = name.toLowerCase(); return paid.filter(e => (e.client || '').toLowerCase() === c).reduce((a, e) => a + (+e.amount || 0), 0) }
   const rows = LD_SOURCES.map(src => {
     const xs = all.filter(l => (l.source || 'Other') === src && l.status !== 'Target')
     const won = xs.filter(l => l.status === 'Won'), lost = xs.filter(l => l.status === 'Lost')
-    const rev = won.reduce((sum, l) => { const c = ldClientName(l).toLowerCase(); return sum + paid.filter(e => (e.client || '').toLowerCase() === c && (!l.createdAt || (e.date || '') >= l.createdAt)).reduce((a, e) => a + (+e.amount || 0), 0) }, 0)
-    return { src, n: xs.length, won: won.length, lost: lost.length, open: xs.filter(l => LD_OPEN.includes(l.status)).length, rev }
-  }).filter(r => r.n)
+    // Paying clients from this source: clients tagged with it + clients of won leads
+    const names = new Set([...(_clients || []).filter(c => c.source === src).map(c => c.name.toLowerCase()), ...won.map(l => ldClientName(l).toLowerCase())])
+    const rev = [...names].reduce((a, n) => a + revOf(n), 0)
+    return { src, n: xs.length, won: won.length, lost: lost.length, open: xs.filter(l => LD_OPEN.includes(l.status)).length, rev, clients: names.size }
+  }).filter(r => r.n || r.clients)
   const pitched = all.filter(l => (l.touches || []).length && l.source === 'Outreach')
-  if (!rows.length) return emptyState('bar-chart', 'Stats show up once you have leads with a source.', { label: '+ Add lead', fn: 'leadOpen()' })
+  if (!rows.length) return emptyState('bar-chart', 'Stats show up once leads or clients have a source. Set "How they found you" on your clients to fill this in.', { label: '+ Add lead', fn: 'leadOpen()' })
   rows.sort((a, b) => b.rev - a.rev || b.won - a.won || b.n - a.n)
   const best = rows[0]
   const tot = rows.reduce((a, r) => ({ n: a.n + r.n, won: a.won + r.won, lost: a.lost + r.lost, rev: a.rev + r.rev }), { n: 0, won: 0, lost: 0, rev: 0 })
@@ -6038,12 +6042,12 @@ function ldSourcesHtml(all) {
   return `<div class="ld-stats">
     <div class="card ld-stat"><span class="dv-lbl">Leads</span><span class="num dv-num">${tot.n}</span><span class="dv-tiny">${tot.won} won · ${tot.lost} lost</span></div>
     <div class="card ld-stat"><span class="dv-lbl">Win rate</span><span class="num dv-num">${rate(tot)}</span><span class="dv-tiny">of closed leads</span></div>
-    <div class="card ld-stat"><span class="dv-lbl">Revenue from leads</span><span class="num dv-num">${fmt(tot.rev)}</span><span class="dv-tiny">${best.rev ? 'Best source: ' + esc(best.src) : 'Paid income from won leads'}</span></div>
+    <div class="card ld-stat"><span class="dv-lbl">Revenue by source</span><span class="num dv-num">${fmt(tot.rev)}</span><span class="dv-tiny">${best.rev ? 'Best source: ' + esc(best.src) : 'From clients with a source'}</span></div>
     <div class="card ld-stat"><span class="dv-lbl">Outreach pitched</span><span class="num dv-num">${pitched.length}</span><span class="dv-tiny">${pitched.filter(l => l.status === 'Won').length} became clients</span></div>
   </div>
-  <div class="card ld-src-card"><table class="ld-src-tbl"><thead><tr><th>Source</th><th>Leads</th><th>Open</th><th>Won</th><th>Win rate</th><th>Revenue</th><th>Avg job</th></tr></thead><tbody>
-    ${rows.map(r => `<tr><td><b>${esc(r.src)}</b><div class="ld-srcbar"><i style="width:${tot.rev ? Math.round(r.rev / tot.rev * 100) : 0}%"></i></div></td><td class="num">${r.n}</td><td class="num">${r.open}</td><td class="num">${r.won}</td><td class="num">${rate(r)}</td><td class="num"><b>${fmt(r.rev)}</b></td><td class="num">${r.won && r.rev ? fmt(r.rev / r.won) : '·'}</td></tr>`).join('')}
-  </tbody></table><div class="ld-note" style="margin:10px 2px 2px">Revenue counts paid income from clients you marked Won, matched by client name.</div></div>`
+  <div class="card ld-src-card"><table class="ld-src-tbl"><thead><tr><th>Source</th><th>Leads</th><th>Open</th><th>Clients</th><th>Win rate</th><th>Revenue</th><th>Per client</th></tr></thead><tbody>
+    ${rows.map(r => `<tr><td><b>${esc(r.src)}</b><div class="ld-srcbar"><i style="width:${tot.rev ? Math.round(r.rev / tot.rev * 100) : 0}%"></i></div></td><td class="num">${r.n}</td><td class="num">${r.open}</td><td class="num">${r.clients}</td><td class="num">${rate(r)}</td><td class="num"><b>${fmt(r.rev)}</b></td><td class="num">${r.clients && r.rev ? fmt(r.rev / r.clients) : '·'}</td></tr>`).join('')}
+  </tbody></table><div class="ld-note" style="margin:10px 2px 2px">Clients = clients with this source set (Clients › How they found you) plus leads you marked Won. Revenue = all their paid income.</div></div>`
 }
 
 // ── Lead form ──
@@ -6101,12 +6105,24 @@ function leadWin(id) {
 async function ldOfferJob(l) {
   navTo('jobs')
   await openJobForm()
+  ldTagClient(l)
   selectJobClient(ldClientName(l))
   document.getElementById('job-stage').value = 'Booked'
   if (l.quote) document.getElementById('job-amount').value = l.quote
   if (l.notes) document.getElementById('job-notes').value = l.notes
   document.getElementById('job-name').focus()
   toast(`${l.name} won! Finish the job details`, 3500)
+}
+// A won lead stamps its source onto the matching client (creating the client if needed),
+// so the Sources stats keep counting that client's income later.
+async function ldTagClient(l) {
+  if (!l.source || !_cliLoaded || !_clients) return
+  const nm = ldClientName(l), c = _clients.find(x => x.name.toLowerCase() === nm.toLowerCase())
+  if (c && c.source) return
+  if (c) c.source = l.source
+  else _clients.push({ id: uid(), name: nm, company: l.company && l.company !== nm ? l.company : '', clientType: l.category === 'Wedding' || l.category === 'Event' ? 'Personal' : 'Business', notes: l.notes || '', followUpDate: '', source: l.source,
+    contacts: (l.email || l.phone) ? [{ name: l.name, role: '', phone: l.phone || '', email: l.email || '', primary: true }] : [] })
+  try { await writeClientsToSheets() } catch (e) { console.warn('ldTagClient', e) }
 }
 function ldSetGoal() {
   const v = window.prompt('How many outreach messages per week? (pitches + follow-ups)', ldGoal())
@@ -7075,7 +7091,7 @@ async function saveAgreement() {
 
 // ── CLIENTS / CRM ─────────────────────────────────────────────
 const CLI_TAB = 'Clients'
-const CLI_COLS = ['id','name','company','clientType','notes','followUpDate','contacts','calendarEventId']
+const CLI_COLS = ['id','name','company','clientType','notes','followUpDate','contacts','calendarEventId','source']
 const CLI_TYPES = {'Real Estate':'re','Wedding':'wed','Business':'biz','Personal':'per','Production Company':'prod','Other':'oth'}
 let _clients = null // null = not yet loaded
 let _cliDetailName = null
@@ -7144,7 +7160,7 @@ function cliRowsToObjs(rows) {
     let contacts = []
     try { contacts = JSON.parse(r[6]||'[]') } catch(_) {}
     if (!Array.isArray(contacts)) contacts = []
-    return { id:r[0]||'', name:r[1]||'', company:r[2]||'', clientType:r[3]||'', notes:r[4]||'', followUpDate:r[5]||'', contacts, calendarEventId:r[7]||'' }
+    return { id:r[0]||'', name:r[1]||'', company:r[2]||'', clientType:r[3]||'', notes:r[4]||'', followUpDate:r[5]||'', contacts, calendarEventId:r[7]||'', source:r[8]||'' }
   })
 }
 // Strict read: rows on success, [] if the tab doesn't exist, throws on any other failure
@@ -7172,7 +7188,7 @@ async function writeClientsToSheets() {
   sheet.forEach(c => { if (!ids.has(c.id) && !names.has(c.name) && !_cliDeleted.has(c.id) && !_cliDeleted.has(c.name)) _clients.push(c) })
   _cliLoaded = true
   await gsEnsureClientsTab()
-  const rows = _clients.map(c => [c.id, c.name, c.company||'', c.clientType||'', c.notes||'', c.followUpDate||'', JSON.stringify(c.contacts||[]), c.calendarEventId||''])
+  const rows = _clients.map(c => [c.id, c.name, c.company||'', c.clientType||'', c.notes||'', c.followUpDate||'', JSON.stringify(c.contacts||[]), c.calendarEventId||'', c.source||''])
   await gsWriteTab(CLI_TAB, CLI_COLS, rows)
 }
 
@@ -7273,6 +7289,7 @@ function renderClientDetail(name) {
       <div class="cl-sec-hdr"><span class="smod-lbl" style="margin:0">Details</span></div>
       <div class="cl-details">
         <div class="ff"><label>Client type</label><select class="inp" id="cli-type">${typeOptions}</select></div>
+        <div class="ff"><label>How they found you</label><select class="inp" id="cli-source"><option value="">Not set</option>${LD_SOURCES.map(x => `<option${x === c.source ? ' selected' : ''}>${x}</option>`).join('')}</select></div>
         <div class="ff"><label>Follow-up date ${fu ? `<span class="fu-badge ${fu.cls}" style="margin-left:6px">${esc(fu.label)}</span>` : ''}</label><input class="inp" type="date" id="cli-followup" value="${c.followUpDate||''}"></div>
         <div class="ff wide"><label>Full business name <span class="cl-opt">only if different from "${esc(name)}"</span></label><input class="inp" id="cli-company" value="${esc(c.company && c.company !== name ? c.company : '')}" placeholder="e.g. legal name, LLC"></div>
         <div class="ff wide"><label>Notes</label><textarea class="inp" id="cli-notes" rows="3" placeholder="Internal notes about this client...">${esc(c.notes||'')}</textarea></div>
@@ -7375,13 +7392,14 @@ async function saveClientDetail(name) {
   const clientType = document.getElementById('cli-type').value
   const followUpDate = document.getElementById('cli-followup').value
   const notes = document.getElementById('cli-notes').value.trim()
+  const source = document.getElementById('cli-source')?.value || ''
   cliCtCommit()
   const contacts = _cliCt.filter(c => c.name || c.role || c.phone || c.email).map(({ name, role, phone, email, primary }) => ({ name, role, phone, email, primary: !!primary }))
   const existing = _clients.find(c => c.name === name)
   if (existing) {
-    Object.assign(existing, { company, clientType, followUpDate, notes, contacts })
+    Object.assign(existing, { company, clientType, followUpDate, notes, contacts, source })
   } else {
-    _clients.push({ id:uid(), name, company, contacts, clientType, notes, followUpDate })
+    _clients.push({ id:uid(), name, company, contacts, clientType, notes, followUpDate, source })
   }
   // Auto-create a Google Calendar reminder event if a follow-up date is set
   if (followUpDate && gsGetToken()) {
