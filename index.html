@@ -1231,6 +1231,16 @@ html[data-theme] .btn.inv-gen-test{background:var(--orange);color:#111;border-co
 .il-row .btn{flex:none;justify-content:center;padding-left:18px;padding-right:18px}
 .il-hint{font-size:12px;color:var(--text-2);margin-top:8px}
 .il-status{font-size:12px;min-height:14px;margin-top:8px}
+/* ── ATTACHMENTS ── */
+.att-list{display:flex;flex-direction:column;gap:8px}
+.att-card{gap:10px}
+.att-lbl{font-weight:600;font-size:14px}
+.att-name{font-size:12.5px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.att-prev{flex:none;padding:7px 12px}
+.il-addbtn{width:100%;margin-top:10px;padding:11px;border:1px dashed var(--line-2);border-radius:12px;background:none;color:var(--text-2);font:inherit;font-size:13.5px;font-weight:500;cursor:pointer}
+.il-addbtn:hover{color:var(--text);border-color:var(--text-2)}
+.att-chips{display:flex;gap:6px;flex-wrap:wrap}
+@media(max-width:899px){ .att-prev{padding:7px 10px} }
 /* ── INVOICE PREVIEW ── */
 #inv-prev-overlay{z-index:1600}
 .inv-prev-box{max-width:860px!important;width:min(860px,94vw);display:flex;flex-direction:column;height:min(92vh,1100px)}
@@ -2046,6 +2056,7 @@ const ICONS = {
   calendar:    '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
   more:        '<circle cx="12" cy="5" r="1.8" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.8" fill="currentColor" stroke="none"/>',
   plus:        '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  eye:         '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
   phone:       '<path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/>',
   mail:        '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>',
   search:      '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
@@ -5750,6 +5761,34 @@ async function invFetch(invNum) {
   if (!dl.ok) throw new Error('Could not open the invoice (' + dl.status + ')')
   return { blob: await dl.blob(), name: file.name, id: file.id, link: file.webViewLink || `https://drive.google.com/file/d/${file.id}/view` }
 }
+// Any Drive file by id: Google Docs/Sheets are exported as PDF, others downloaded as-is
+async function driveFileFetch(fileId) {
+  const tok = gsGetToken(); if (!tok) throw new Error('Sign in with Google to access Drive')
+  const H = { Authorization: 'Bearer ' + tok }
+  const mr = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?fields=name,mimeType,webViewLink`, { headers: H })
+  if (!mr.ok) throw new Error(mr.status === 404 ? "File not found in Drive (it may have been deleted or isn't shared with you)" : 'Drive error (' + mr.status + ')')
+  const m = await mr.json(), gdoc = /^application\/vnd\.google-apps\./.test(m.mimeType)
+  const r = await fetch(gdoc ? `https://www.googleapis.com/drive/v3/files/${fileId}/export?mimeType=application/pdf` : `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, { headers: H })
+  if (!r.ok) throw new Error('Could not open the file (' + r.status + ')')
+  return { blob: await r.blob(), name: gdoc ? m.name + '.pdf' : m.name, mime: gdoc ? 'application/pdf' : m.mimeType, id: fileId, link: m.webViewLink || `https://drive.google.com/file/d/${fileId}/view` }
+}
+async function previewDriveFile(fileId, title) {
+  const ov = document.getElementById('inv-prev-overlay'), body = document.getElementById('inv-prev-body')
+  document.getElementById('inv-prev-ttl').textContent = title || 'Attachment'
+  document.getElementById('inv-prev-acts').style.visibility = 'hidden'
+  body.innerHTML = '<div class="inv-prev-msg">Opening from Drive…</div>'
+  ov.classList.add('open')
+  try {
+    const f = await driveFileFetch(fileId)
+    if (_invPrev?.url) URL.revokeObjectURL(_invPrev.url)
+    _invPrev = { ...f, url: URL.createObjectURL(f.blob) }
+    document.getElementById('inv-prev-ttl').textContent = (title ? title + ' · ' : '') + f.name.replace(/\.pdf$/i, '')
+    document.getElementById('inv-prev-acts').style.visibility = ''
+    if (/pdf/.test(f.mime)) { try { await invRenderPdf(f.blob, body) } catch { body.innerHTML = `<iframe src="${_invPrev.url}" title="Preview"></iframe>` } }
+    else if (/^image\//.test(f.mime)) body.innerHTML = `<div class="inv-prev-pages"><img src="${_invPrev.url}" alt="" style="max-width:100%;border-radius:4px"></div>`
+    else body.innerHTML = `<div class="inv-prev-msg">No preview for this file type. Use Download or Open in Drive.</div>`
+  } catch (e) { body.innerHTML = `<div class="inv-prev-msg">${esc(e.message || String(e))}</div>` }
+}
 let _invPrev = null
 async function previewInvoice(invNum) {
   if (!invNum) return
@@ -5896,98 +5935,82 @@ function parseAttachments(val) {
   } catch { return val ? [{ label: 'Attachment', fileId: String(val) }] : [] }
 }
 
+// Attachments are kept as [{label, fileId}] JSON in the income entry's agreementId.
+// Each change saves straight away (no Save button).
+const ATT_TYPES = ['Agreement', 'Contract', 'Shot list', 'Receipt', 'Other']
+let _attList = [], _attType = 'Agreement', _attNames = {}
 function openAgrModal(id) {
   _agrId = id
   const e = load(K.inc).find(e=>e.id===id); if(!e) return
   document.getElementById('att-client').textContent = e.client||''
+  document.getElementById('att-meta').textContent = [e.desc||e.description||'', e.amount ? fmt(e.amount) : '', e.status||''].filter(Boolean).join(' · ')
   document.getElementById('att-status').textContent = ''
-  const rows = document.getElementById('att-rows')
-  rows.innerHTML = ''
-  const atts = parseAttachments(e.agreementId)
-  if(atts.length) atts.forEach(a => addAttachmentRow(a.label||'', a.fileId||''))
-  else addAttachmentRow('', '')
+  _attList = parseAttachments(e.agreementId).map(a => ({ label: a.label || 'Attachment', fileId: a.fileId || '' })).filter(a => a.fileId)
+  document.getElementById('att-add').style.display = _attList.length ? 'none' : 'block'
+  document.getElementById('att-add-btn').style.display = _attList.length ? '' : 'none'
+  _attType = 'Agreement'; attRenderChips(); document.getElementById('att-new-file').value = ''
+  attRender()
   document.getElementById('agr-modal-overlay').classList.add('open')
 }
-
 function closeAgrModal() {
   document.getElementById('agr-modal-overlay').classList.remove('open')
   _agrId = null
 }
-
-function addAttachmentRow(label='', fileId='') {
-  const rows = document.getElementById('att-rows')
-  const div = document.createElement('div')
-  div.className = 'att-row'
-  div.style.cssText = 'display:flex;gap:6px;align-items:center;margin-bottom:8px'
-  div.innerHTML = `
-    <input type="text" class="isel att-label" placeholder="Label" style="flex:0 0 110px;min-width:0;font-size:12px">
-    <input type="text" class="isel att-file" placeholder="File ID or Drive link" style="flex:1;min-width:0;font-size:12px">
-    <button class="btn btn-sm btn-s" title="Download" onclick="attDownloadRow(this)" style="flex-shrink:0;padding:5px 9px"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
-    <button class="btn btn-sm btn-d" title="Remove" onclick="this.closest('.att-row').remove()" style="flex-shrink:0;padding:5px 9px"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-  `
-  div.querySelector('.att-label').value = label
-  div.querySelector('.att-file').value = fileId
-  rows.appendChild(div)
+function attRenderChips() {
+  document.getElementById('att-chips').innerHTML = ATT_TYPES.map(t => `<button type="button" class="fbtn${t === _attType ? ' on' : ''}" onclick="_attType='${t}';attRenderChips()">${t}</button>`).join('')
 }
-
-async function saveAttachments() {
-  if(!_agrId) return
-  const atts = [...document.querySelectorAll('.att-row')].map(r => ({
-    label: r.querySelector('.att-label').value.trim(),
-    fileId: parseFileId(r.querySelector('.att-file').value.trim())
-  })).filter(a => a.fileId)
-  const val = atts.length ? JSON.stringify(atts) : ''
-  const list = load(K.inc)
-  const i = list.findIndex(e=>e.id===_agrId); if(i<0) return
-  list[i].agreementId = val
-  const token = gsGetToken()
-  if(token) {
-    try {
-      const colIdx = SHEET_SCHEMA[K.inc].cols.indexOf('agreementId')
-      const colLetter = String.fromCharCode(65 + colIdx)
-      const range = `Income!${colLetter}${i + 2}`
-      await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${GS_SPREADSHEET_ID}/values/${encodeURIComponent(range)}?valueInputOption=RAW`, {
-        method: 'PUT',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ range, majorDimension: 'ROWS', values: [[val]] })
-      })
-    } catch(err) { console.log('Attachment Sheets write failed:', err) }
-  }
-  localStorage.setItem(K.inc, JSON.stringify(list))
-  renderIncTable()
-  toast(atts.length ? `${atts.length} attachment${atts.length>1?'s':''} saved!` : 'Attachments cleared')
-  closeAgrModal()
+function attShowAdd() {
+  document.getElementById('att-add').style.display = 'block'; document.getElementById('att-add-btn').style.display = 'none'
+  setTimeout(() => document.getElementById('att-new-file').focus(), 30)
 }
-
-async function attDownloadRow(btn) {
-  const row = btn.closest('.att-row')
-  const label = row.querySelector('.att-label').value.trim() || 'attachment'
-  const raw = row.querySelector('.att-file').value.trim()
-  if(!raw){ toast('No file ID entered'); return }
+function attRender() {
+  const el = document.getElementById('att-rows')
+  if (!_attList.length) { el.innerHTML = ''; return }
+  el.innerHTML = _attList.map((a, i) => `<div class="il-card att-card">
+      <span class="il-ico">${icon('paperclip', 18)}</span>
+      <div class="il-main"><div class="att-lbl">${esc(a.label)}</div><div class="att-name" id="att-name-${i}">${esc(_attNames[a.fileId] || 'Google Drive file')}</div></div>
+      <button class="btn btn-p att-prev" onclick="attPreview(${i})">${icon('eye', 14)} Preview</button>
+      <button class="cl-ct-ib" title="Download" onclick="attDownload(${i})">${icon('download', 15)}</button>
+      <button class="cl-ct-ib cl-ct-del" title="Remove" onclick="attRemove(${i})">${icon('trash', 15)}</button>
+    </div>`).join('')
+  // fill in real file names from Drive
+  const tok = gsGetToken(); if (!tok) return
+  _attList.forEach((a, i) => {
+    if (_attNames[a.fileId]) return
+    fetch(`https://www.googleapis.com/drive/v3/files/${a.fileId}?fields=name`, { headers: { Authorization: 'Bearer ' + tok } })
+      .then(r => r.ok ? r.json() : null).then(m => { if (!m?.name) return; _attNames[a.fileId] = m.name; const n = document.getElementById('att-name-' + i); if (n) n.textContent = m.name }).catch(() => {})
+  })
+}
+function attSave(msg) {
+  const list = load(K.inc), i = list.findIndex(e => e.id === _agrId); if (i < 0) return
+  list[i].agreementId = _attList.length ? JSON.stringify(_attList.map(({ label, fileId }) => ({ label, fileId }))) : ''
+  save(K.inc, list); renderIncTable()
+  if (msg) toast(msg)
+}
+function attAdd() {
+  const raw = document.getElementById('att-new-file').value.trim()
+  const st = document.getElementById('att-status')
+  if (!raw) { st.textContent = 'Paste a Drive link or file ID first.'; st.style.color = 'var(--red)'; return }
   const fileId = parseFileId(raw)
-  const token = gsGetToken()
-  if(!token){ toast('Sign in with Google to access Drive'); return }
-  const statusEl = document.getElementById('att-status')
-  statusEl.textContent = `Downloading "${label}"…`
-  statusEl.style.color = 'var(--text-2)'
-  try {
-    let fileName = label
-    try {
-      const metaResp = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?fields=name`, { headers: { 'Authorization': `Bearer ${token}` } })
-      if(metaResp.ok) { const m = await metaResp.json(); if(m.name) fileName = m.name }
-    } catch(_) {}
-    const dlResp = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, { headers: { 'Authorization': `Bearer ${token}` } })
-    if(!dlResp.ok) { statusEl.textContent = `"${label}" not found`; statusEl.style.color = 'var(--red)'; return }
-    const blob = await dlResp.blob()
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a'); a.href = url; a.download = fileName; a.click()
-    setTimeout(() => URL.revokeObjectURL(url), 5000)
-    statusEl.textContent = `Downloaded: ${fileName}`
-    statusEl.style.color = 'var(--green)'
-  } catch(err) {
-    statusEl.textContent = `"${label}" not found`
-    statusEl.style.color = 'var(--red)'
-  }
+  if (!/^[a-zA-Z0-9_-]{20,}$/.test(fileId)) { st.textContent = "That doesn't look like a Google Drive link."; st.style.color = 'var(--red)'; return }
+  st.textContent = ''
+  _attList.push({ label: _attType, fileId })
+  document.getElementById('att-new-file').value = ''
+  document.getElementById('att-add').style.display = 'none'; document.getElementById('att-add-btn').style.display = ''
+  attRender(); attSave(`${_attType} attached`)
+}
+function attRemove(i) {
+  const a = _attList[i]; if (!a) return
+  if (!confirm(`Remove "${a.label}" from this job? The file stays in Drive.`)) return
+  _attList.splice(i, 1); attRender(); attSave('Attachment removed')
+  if (!_attList.length) { document.getElementById('att-add').style.display = 'block'; document.getElementById('att-add-btn').style.display = 'none' }
+}
+function attPreview(i) { const a = _attList[i]; if (a) previewDriveFile(a.fileId, a.label) }
+async function attDownload(i) {
+  const a = _attList[i]; if (!a) return
+  const st = document.getElementById('att-status'); st.style.color = 'var(--text-2)'; st.textContent = `Downloading ${a.label}…`
+  try { const f = await driveFileFetch(a.fileId); const u = URL.createObjectURL(f.blob); const el = document.createElement('a'); el.href = u; el.download = f.name; el.click(); setTimeout(() => URL.revokeObjectURL(u), 5000); st.textContent = '' }
+  catch (e) { st.textContent = e.message || String(e); st.style.color = 'var(--red)' }
 }
 
 // ── AGREEMENT GENERATOR ───────────────────────────────────────
@@ -9787,22 +9810,24 @@ function renderSocReels() {
 
 <!-- ATTACHMENT MODAL -->
 <div class="smod-overlay" id="agr-modal-overlay" onclick="if(event.target===this)closeAgrModal()">
-  <div class="smod" style="max-width:460px">
+  <div class="smod il-box">
     <div class="smod-hdr">
-      <span class="smod-ttl">Link Attachments</span>
+      <span class="smod-ttl">Attachments</span>
       <button class="smod-close" onclick="closeAgrModal()">&#x2715;</button>
     </div>
-    <div style="font-size:12px;color:var(--text-2);margin-bottom:14px">Job: <strong id="att-client"></strong></div>
-    <div class="smod-row" style="margin-bottom:8px">
-      <div class="smod-lbl">Attachments</div>
-      <div id="att-rows"></div>
-      <button class="btn btn-s btn-sm" onclick="addAttachmentRow()" type="button" style="margin-top:2px">+ Add Attachment</button>
+    <div class="il-job"><b id="att-client"></b><span id="att-meta"></span></div>
+    <div id="att-rows" class="att-list"></div>
+    <button class="il-addbtn" id="att-add-btn" onclick="attShowAdd()" type="button">+ Add attachment</button>
+    <div class="il-edit att-add" id="att-add" style="display:none">
+      <label class="il-lbl">Type</label>
+      <div class="att-chips" id="att-chips"></div>
+      <label class="il-lbl" for="att-new-file" style="margin-top:12px">Google Drive link or file ID</label>
+      <div class="il-row">
+        <input type="text" id="att-new-file" class="isel" placeholder="Paste a Drive share link" onkeydown="if(event.key==='Enter')attAdd()">
+        <button class="btn btn-g" onclick="attAdd()">Add</button>
+      </div>
     </div>
-    <div id="att-status" style="font-size:12px;min-height:18px;margin-bottom:10px"></div>
-    <div class="smod-footer">
-      <button class="btn btn-p" onclick="saveAttachments()" style="flex:1"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:4px"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>Save Attachments</button>
-      <button class="btn btn-s" onclick="closeAgrModal()">Cancel</button>
-    </div>
+    <div id="att-status" class="il-status"></div>
   </div>
 </div>
 
