@@ -6141,7 +6141,11 @@ function renderInbox() {
           <span class="mail-snip">${esc(t.snippet.replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&'))}</span>
         </button><span class="mail-qa">${_mail.folder !== 'sent' ? `<button title="Archive" aria-label="Archive" onclick="mailArchive(false,'${t.id}')">${icon('box', 14)}</button>` : ''}<button class="del" title="Delete" aria-label="Delete" onclick="mailTrash('${t.id}')">${icon('trash', 14)}</button></span></div>`
       }).join('') + (_mail.next ? `<button class="dv-link mail-more" onclick="mailLoad(true)">${_mail.busy ? 'Loading…' : 'Load more'}</button>` : '')
+  // Keep the list's scroll position across re-renders (delete/archive/open used to jump to the top)
+  const _ls = el.querySelector('.mail-list'), keepTop = _ls ? _ls.scrollTop : 0, keepWin = window.scrollY
   el.innerHTML = `<div class="mail-wrap${_mail.open || _mail.compose ? ' reading' : ''}"><div class="mail-list">${list}</div><div class="mail-read" id="mail-read">${_mail.compose ? mailComposeHtml() : mailThreadHtml()}</div></div>`
+  const nl = el.querySelector('.mail-list'); if (nl && keepTop) nl.scrollTop = keepTop
+  if (matchMedia('(max-width:899px)').matches && !_mail.open && !_mail.compose && keepWin) window.scrollTo(0, keepWin)
   if (_mail.thread && !_mail.compose) mailFillFrames()
 }
 
