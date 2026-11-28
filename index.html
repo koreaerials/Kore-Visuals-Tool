@@ -3454,6 +3454,22 @@ async function delJob(id) {
 
 async function jobSetStage(id, stage) {
   const list=load(K.jobs); const i=list.findIndex(j=>j.id===id); if(i<0)return
+  // Keep the linked income entry in step with the job:
+  //  back before Invoiced -> the unpaid entry the invoice created is removed (asks first)
+  //  Paid -> Invoiced      -> the entry goes back to Pending
+  if(list[i].incomeId){
+    const inc=load(K.inc), ii=inc.findIndex(e=>e.id===list[i].incomeId), e=inc[ii]
+    if(e && ['Lead','Quoted','Booked','Shooting','Editing','Delivered'].includes(stage)){
+      if(e.status==='Pending'||e.status==='Unpaid'){
+        if(!confirm(`Moving "${list[i].name}" back to ${stage} removes its ${fmt(e.amount)} ${e.status.toLowerCase()} entry from Income. Continue?`)) return
+        inc.splice(ii,1); save(K.inc,inc); list[i].incomeId=''
+      } else if(e.status==='Paid'){
+        if(!confirm(`"${list[i].name}" is marked Paid in Income (${fmt(e.amount)}). Move it back to ${stage} anyway? The payment stays in Income.`)) return
+      }
+    } else if(e && stage==='Invoiced' && e.status==='Paid'){
+      inc[ii].status='Pending'; save(K.inc,inc)
+    } else if(!e) list[i].incomeId=''
+  }
   list[i].stage=stage
   if(stage==='Booked' && list[i].filmingDate && !list[i].calendarEventId && gsGetToken()) {
     const calTitle=`${list[i].name}${list[i].clientName?' — '+list[i].clientName:''}`
@@ -3461,8 +3477,8 @@ async function jobSetStage(id, stage) {
     if(evLink){ list[i].calendarEventId=evLink; toast('Booked — Calendar event created') }
   }
   save(K.jobs,list); gsQueueSync(K.jobs)
-  if(stage==='Invoiced') await jobCreateIncomeIfNeeded(list[i])
-  renderJobsBoard(); renderDash()
+  if(stage==='Invoiced' && !list[i].incomeId) await jobCreateIncomeIfNeeded(list[i])
+  renderJobsBoard(); renderIncTable(); renderDash()
 }
 
 async function jobMarkPaid(id) {
